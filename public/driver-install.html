@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CP210x Driver Installation</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --text-color: #2c3e50;
+            --light-gray: #ecf0f1;
+            --dark-gray: #7f8c8d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f9f9f9;
+            color: var(--text-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .container {
+            max-width: 480px;
+            width: 100%;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        p {
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            height: 12px;
+            background-color: var(--light-gray);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .status-message {
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 20px;
+            min-height: 20px;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: auto;
+            padding-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .primary-button {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .primary-button:hover:not(:disabled) {
+            background-color: var(--secondary-color);
+        }
+
+        .secondary-button {
+            background-color: var(--light-gray);
+            color: var(--text-color);
+        }
+
+        .secondary-button:hover:not(:disabled) {
+            background-color: #dce4e8;
+        }
+
+        .info-box {
+            background-color: #d4e6f1;
+            border-left: 4px solid var(--primary-color);
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .info-box.warning {
+            background-color: #fdebd0;
+            border-left-color: var(--warning-color);
+        }
+
+        .info-box.success {
+            background-color: #d5f5e3;
+            border-left-color: var(--success-color);
+        }
+
+        .info-box.error {
+            background-color: #fadbd8;
+            border-left-color: var(--danger-color);
+        }
+
+        .info-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .device-check {
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: var(--light-gray);
+            border-radius: 4px;
+        }
+
+        .device-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-icon {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .status-icon.connected {
+            background-color: var(--success-color);
+        }
+
+        .status-icon.disconnected {
+            background-color: var(--danger-color);
+        }
+
+        .check-button {
+            font-size: 0.8rem;
+            padding: 6px 12px;
+        }
+
+        /* Different stages containers */
+        #welcome-view, #installing-view, #complete-view, #error-view {
+            display: none;
+        }
+
+        .active-view {
+            display: block !important;
+        }
+
+        .completion-icon {
+            font-size: 3rem;
+            text-align: center;
+            margin: 20px 0;
+            color: var(--success-color);
+        }
+
+        .error-icon {
+            font-size: 3rem;
+            text-align: center;
+            margin: 20px 0;
+            color: var(--danger-color);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 15px 0 10px;
+        }
+
+        .manual-steps {
+            margin-left: 20px;
+        }
+
+        .manual-steps li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>CP210x USB to UART Driver Installation</h1>
+            <p>This driver is required for communicating with your device.</p>
+        </header>
+
+        <!-- Welcome View -->
+        <div id="welcome-view" class="active-view">
+            <div class="info-box">
+                <div class="info-title">Driver Required</div>
+                <p>To use your device with this application, the Silicon Labs CP210x USB to UART driver needs to be installed.</p>
+            </div>
+
+            <p>This driver enables your computer to communicate with devices using the CP210x chipset. Installation requires administrator privileges.</p>
+
+            <div class="device-check">
+                <div class="device-status">
+                    <div id="device-status-icon" class="status-icon disconnected"></div>
+                    <span id="device-status-text">Device not detected</span>
+                </div>
+                <button id="check-device-button" class="secondary-button check-button">Check Device</button>
+            </div>
+
+            <div class="button-container">
+                <button id="install-button" class="primary-button">Install Driver</button>
+                <button id="skip-button" class="secondary-button">Skip for Now</button>
+            </div>
+        </div>
+
+        <!-- Installing View -->
+        <div id="installing-view">
+            <p>Installing CP210x driver. This may take a moment and might prompt for administrator permissions.</p>
+            
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+                </div>
+                <div id="status-message" class="status-message">Preparing installation...</div>
+            </div>
+
+            <div class="info-box warning">
+                <div class="info-title">⚠️ Important</div>
+                <p>If prompted, please allow the installation to proceed by clicking "Yes" on any security dialogs.</p>
+            </div>
+
+            <div class="button-container">
+                <button id="cancel-button" class="secondary-button">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Complete View -->
+        <div id="complete-view">
+            <div class="completion-icon">✓</div>
+            <h2 class="section-title">Installation Complete</h2>
+            <p>The CP210x driver has been successfully installed on your system.</p>
+
+            <div class="info-box success">
+                <div class="info-title">Your device is ready to use</div>
+                <p>You can now connect your device and start using the application.</p>
+            </div>
+
+            <div class="device-check">
+                <div class="device-status">
+                    <div id="complete-device-status-icon" class="status-icon disconnected"></div>
+                    <span id="complete-device-status-text">Device not detected</span>
+                </div>
+                <button id="complete-check-device-button" class="secondary-button check-button">Check Device</button>
+            </div>
+
+            <div class="button-container">
+                <button id="done-button" class="primary-button">Done</button>
+            </div>
+        </div>
+
+        <!-- Error View -->
+        <div id="error-view">
+            <div class="error-icon">⚠️</div>
+            <h2 class="section-title">Installation Failed</h2>
+            <p>We encountered a problem during driver installation.</p>
+
+            <div class="info-box error">
+                <div class="info-title">Error Details</div>
+                <p id="error-message">Unknown error occurred during installation.</p>
+            </div>
+
+            <h3 class="section-title">Try These Solutions:</h3>
+            <ul class="manual-steps">
+                <li>Make sure you have administrator privileges</li>
+                <li>Try restarting your computer</li>
+                <li>Install the driver manually</li>
+            </ul>
+
+            <h3 class="section-title">Manual Installation Steps:</h3>
+            <div class="info-box">
+                <div class="info-title">Extract Driver Files</div>
+                <p>You can extract the driver files and install them manually using Device Manager.</p>
+                <button id="extract-button" class="secondary-button" style="margin-top: 8px;">Extract Driver Files</button>
+            </div>
+
+            <div class="button-container">
+                <button id="retry-button" class="primary-button">Retry Installation</button>
+                <button id="error-done-button" class="secondary-button">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get references to DOM elements
+        const welcomeView = document.getElementById('welcome-view');
+        const installingView = document.getElementById('installing-view');
+        const completeView = document.getElementById('complete-view');
+        const errorView = document.getElementById('error-view');
+        
+        const installButton = document.getElementById('install-button');
+        const skipButton = document.getElementById('skip-button');
+        const cancelButton = document.getElementById('cancel-button');
+        const doneButton = document.getElementById('done-button');
+        const errorDoneButton = document.getElementById('error-done-button');
+        const retryButton = document.getElementById('retry-button');
+        const extractButton = document.getElementById('extract-button');
+        
+        const checkDeviceButton = document.getElementById('check-device-button');
+        const completeCheckDeviceButton = document.getElementById('complete-check-device-button');
+        
+        const deviceStatusIcon = document.getElementById('device-status-icon');
+        const deviceStatusText = document.getElementById('device-status-text');
+        const completeDeviceStatusIcon = document.getElementById('complete-device-status-icon');
+        const completeDeviceStatusText = document.getElementById('complete-device-status-text');
+        
+        const progressFill = document.getElementById('progress-fill');
+        const statusMessage = document.getElementById('status-message');
+        const errorMessage = document.getElementById('error-message');
+
+        // Function to switch views
+        function showView(view) {
+            // Hide all views
+            welcomeView.classList.remove('active-view');
+            installingView.classList.remove('active-view');
+            completeView.classList.remove('active-view');
+            errorView.classList.remove('active-view');
+            
+            // Show the requested view
+            view.classList.add('active-view');
+        }
+
+        // Function to update device status
+        async function updateDeviceStatus(iconElement, textElement) {
+            try {
+                const result = await window.driverAPI.checkForDevice();
+                if (result.deviceFound) {
+                    iconElement.className = 'status-icon connected';
+                    textElement.textContent = 'Device detected';
+                } else {
+                    iconElement.className = 'status-icon disconnected';
+                    textElement.textContent = result.error ? 'Error checking device' : 'Device not detected';
+                }
+            } catch (err) {
+                iconElement.className = 'status-icon disconnected';
+                textElement.textContent = 'Error checking device';
+                console.error('Error checking for device:', err);
+            }
+        }
+
+        // Check device status initially
+        updateDeviceStatus(deviceStatusIcon, deviceStatusText);
+
+        // Set up event listeners
+        installButton.addEventListener('click', async () => {
+            showView(installingView);
+            startInstallation();
+        });
+
+        skipButton.addEventListener('click', async () => {
+            await window.driverAPI.skipInstallation();
+        });
+
+        cancelButton.addEventListener('click', async () => {
+            await window.driverAPI.closeWindow();
+        });
+
+        doneButton.addEventListener('click', async () => {
+            await window.driverAPI.closeWindow();
+        });
+
+        errorDoneButton.addEventListener('click', async () => {
+            await window.driverAPI.closeWindow();
+        });
+
+        retryButton.addEventListener('click', () => {
+            showView(installingView);
+            startInstallation();
+        });
+
+        checkDeviceButton.addEventListener('click', () => {
+            updateDeviceStatus(deviceStatusIcon, deviceStatusText);
+        });
+
+        completeCheckDeviceButton.addEventListener('click', () => {
+            updateDeviceStatus(completeDeviceStatusIcon, completeDeviceStatusText);
+        });
+
+        extractButton.addEventListener('click', async () => {
+            try {
+                // Call the extract driver files function
+                const result = await window.driverAPI.extractDriverFiles();
+                if (result && result.success) {
+                    alert(`Driver files extracted to: ${result.path}\n\nTo install manually:\n1. Open Device Manager\n2. Right-click on your device\n3. Select "Update driver"\n4. Choose "Browse my computer for drivers"\n5. Navigate to the extracted location\n6. Follow the prompts to complete installation`);
+                } else {
+                    alert(`Failed to extract driver files: ${result.error}`);
+                }
+            } catch (err) {
+                alert(`Error extracting driver files: ${err.message}`);
+            }
+        });
+
+        // Start installation process
+        async function startInstallation() {
+            try {
+                // Get initial installation state
+                const initialState = await window.driverAPI.getInstallationState();
+                updateProgressUI(initialState);
+                
+                // Set up listener for installation updates
+                const removeListener = window.driverAPI.onInstallationUpdate((state) => {
+                    updateProgressUI(state);
+                    
+                    // When installation completes or fails
+                    if (state.completed) {
+                        setTimeout(() => {
+                            showView(completeView);
+                            updateDeviceStatus(completeDeviceStatusIcon, completeDeviceStatusText);
+                        }, 1000);
+                        removeListener();
+                    } else if (state.error) {
+                        errorMessage.textContent = state.error.message || 'Unknown error occurred';
+                        setTimeout(() => {
+                            showView(errorView);
+                        }, 1000);
+                        removeListener();
+                    }
+                });
+                
+                // Start the installation process
+                const result = await window.driverAPI.startInstallation();
+                
+                if (result.alreadyInstalled) {
+                    showView(completeView);
+                    updateDeviceStatus(completeDeviceStatusIcon, completeDeviceStatusText);
+                }
+            } catch (err) {
+                console.error('Error during installation:', err);
+                errorMessage.textContent = err.message || 'Unknown error occurred';
+                showView(errorView);
+            }
+        }
+
+        // Update the UI with installation progress
+        function updateProgressUI(state) {
+            if (!state) return;
+            
+            // Update progress bar
+            progressFill.style.width = `${state.progress}%`;
+            
+            // Update status message
+            statusMessage.textContent = state.lastMessage || '';
+            
+            // Disable cancel button during critical installation steps
+            if (state.progress > 40 && state.progress < 90) {
+                cancelButton.disabled = true;
+            } else {
+                cancelButton.disabled = false;
+            }
+        }
+
+        // Check installation state on load to handle when window opens after process already started
+        async function checkInstallationStateOnLoad() {
+            try {
+                const state = await window.driverAPI.getInstallationState();
+                
+                if (state.inProgress) {
+                    showView(installingView);
+                    updateProgressUI(state);
+                    startInstallation(); // This will connect to already running installation
+                } else if (state.completed) {
+                    showView(completeView);
+                    updateDeviceStatus(completeDeviceStatusIcon, completeDeviceStatusText);
+                } else if (state.error) {
+                    errorMessage.textContent = state.error.message || 'Unknown error occurred';
+                    showView(errorView);
+                }
+            } catch (err) {
+                console.error('Error checking installation state:', err);
+            }
+        }
+
+        // Run on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            checkInstallationStateOnLoad();
+        });
+    </script>
+</body>
+</html>

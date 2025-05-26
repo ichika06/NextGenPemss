@@ -1,0 +1,103 @@
+{
+  "name": "event-management",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "electron/main.js",
+  "description": "NextGen-pemss Event Management System",
+  "author": {
+    "name": "NextGen-pemss Team",
+    "email": "nfcproject2025@gmail.com",
+    "url": "https://next-gen-pemss.netlify.app/"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "build": {
+    "appId": "com.nextgen-pemss.event-management",
+    "productName": "NextGen-pemss",
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "dist",
+      "output": "release"
+    },
+    "win": {
+      "target": "nsis",
+      "requestedExecutionLevel": "requireAdministrator"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": "AppImage"
+    },
+    "extraResources": [
+      {
+        "from": "drivers/",
+        "to": "drivers/",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "runAfterFinish": true,
+      "license": "LICENSE",
+      "allowElevation": true,
+      "perMachine": true,
+      "include": "installer.nsh"
+    }
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/material": "^7.0.2",
+    "@tailwindcss/vite": "^4.1.3",
+    "browser-image-compression": "^2.0.2",
+    "date-fns": "^4.1.0",
+    "dom-to-image": "^2.6.0",
+    "firebase": "^11.6.1",
+    "firestore-admin": "^1.3.0",
+    "html2canvas": "^1.4.1",
+    "html5-qrcode": "^2.3.8",
+    "jspdf": "^3.0.1",
+    "lightningcss": "^1.29.3",
+    "lucide-react": "^0.485.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-qr-code": "^2.0.15",
+    "react-router-dom": "^7.4.1",
+    "react-toastify": "^11.0.5",
+    "serialport": "^13.0.0",
+    "sudo-prompt": "^9.2.1",
+    "sweetalert2": "^11.19.1",
+    "tailwindcss": "^4.1.3",
+    "uuid": "^11.1.0",
+    "web-serial-polyfill": "^1.0.15",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.21.0",
+    "@netlify/functions": "^3.0.4",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "eslint": "^9.21.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^15.15.0",
+    "vite": "^6.2.0",
+    "wait-on": "^8.0.3"
+  }
+}

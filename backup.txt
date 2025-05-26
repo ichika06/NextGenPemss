@@ -1,0 +1,649 @@
+import { useState, useEffect } from "react";
+import { X, Cpu, UserPlus, Usb, AlertCircle, Download, Save, FileText } from "lucide-react";
+import {
+  Button,
+  Typography,
+  Box,
+  Input,
+  FormControl,
+  InputLabel
+} from '@mui/material';
+import "web-serial-polyfill";
+
+// USB VendorID:ProductID to friendly name mapping
+const USB_NAME_MAP = {
+  '10c4:ea60': 'Silicon Labs CP210x',
+  '0403:6001': 'FTDI FT232',
+  '2341:0043': 'Arduino Uno',
+  // Add more known mappings here
+};
+
+// Get friendly device name for a serial port
+const getFriendlyPortName = (port, index) => {
+  try {
+    const info = port.getInfo();
+    const id = `${info.usbVendorId?.toString(16)}:${info.usbProductId?.toString(16)}`;
+    const name = USB_NAME_MAP[id] || 'Unknown Device';
+    return `${name} (PEMSS)`;
+  } catch {
+    return `Unknown Port ${index + 1}`;
+  }
+};
+
+// Check if port is Silicon Labs CP210x
+const isSiliconLabsDevice = (port) => {
+  try {
+    const info = port.getInfo();
+    const id = `${info.usbVendorId?.toString(16)}:${info.usbProductId?.toString(16)}`;
+    return id === '10c4:ea60'; // Silicon Labs CP210x
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Component for hardware USB NFC scanning, reading and writing
+ * @param {Object} props Component props
+ * @param {string} props.eventId The ID of the event
+ * @param {Function} props.onClose Function to close the modal
+ * @param {Function} props.onSuccess Function to call when registration is successful
+ * @returns {JSX.Element} Hardware USB component
+ */
+export default function HardwareUSB({
+  eventId,
+  onClose,
+  onSuccess,
+}) {
+  const [isConnected, setIsConnected] = useState(false);
+  const [registrationCount, setRegistrationCount] = useState(0);
+  const [lastRegisteredName, setLastRegisteredName] = useState("");
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [error, setError] = useState(null);
+  const [availablePorts, setAvailablePorts] = useState([]);
+  const [port, setPort] = useState(null);
+  const [writer, setWriter] = useState(null);
+  const [writeText, setWriteText] = useState("");
+  const [status, setStatus] = useState("Idle...");
+  const [readResult, setReadResult] = useState("");
+  const [showDriverInstructions, setShowDriverInstructions] = useState(false);
+  const [mode, setMode] = useState("read"); // read, write
+  const [siliconLabsDeviceFound, setSiliconLabsDeviceFound] = useState(false);
+
+  // Connect to the Silicon Labs USB device
+  const connectToSiliconLabsDevice = async () => {
+    setIsConnecting(true);
+    setError(null);
+    
+    try {
+      // Try to automatically find Silicon Labs device
+      let targetPort = null;
+      
+      // First check already available ports
+      for (const availablePort of availablePorts) {
+        if (isSiliconLabsDevice(availablePort)) {
+          targetPort = availablePort;
+          break;
+        }
+      }
+      
+      // If Silicon Labs device not found, request a port
+      if (!targetPort) {
+        try {
+          setStatus("Requesting serial port...");
+          
+          // Request user to select a port (browser will filter by available ports)
+          const port = await navigator.serial.requestPort({
+            filters: [
+              // Silicon Labs CP210x
+              { usbVendorId: 0x10c4, usbProductId: 0xea60 }
+            ]
+          });
+          
+          targetPort = port;
+        } catch (err) {
+          // User cancelled or no device found
+          console.error("Port selection cancelled or failed:", err);
+          setError("No Silicon Labs device found or selection cancelled.");
+          setIsConnecting(false);
+          return;
+        }
+      }
+      
+      // Connect to the selected port
+      if (targetPort) {
+        setStatus("Connecting to Silicon Labs device...");
+        await targetPort.open({ baudRate: 115200 });
+        const writableStream = targetPort.writable.getWriter();
+        
+        setWriter(writableStream);
+        setPort(targetPort);
+        setStatus(`Connected to Silicon Labs device`);
+        setIsConnected(true);
+        setSiliconLabsDeviceFound(true);
+      } else {
+        setError("No Silicon Labs CP210x device found. Please connect your ESP32 and try again.");
+      }
+    } catch (error) {
+      setStatus("Connection failed");
+      setError("Connection failed. Make sure the device is properly connected and drivers are installed.");
+      console.error("Connection failed:", error);
+    } finally {
+      setIsConnecting(false);
+      setIsRegistering(false);
+    }
+  };
+
+  // Disconnect from the USB device
+  const disconnectDevice = async () => {
+    if (writer) {
+      writer.releaseLock();
+    }
+    if (port) {
+      await port.close();
+    }
+    setPort(null);
+    setWriter(null);
+    setStatus("Disconnected");
+    setIsConnected(false);
+  };
+
+  // Send data to the USB device
+  const sendToDevice = async (data) => {
+    if (!writer) return;
+    await writer.write(new TextEncoder().encode(data + "\n"));
+  };
+
+  // Handle writing NFC data
+  const handleWrite = async () => {
+    if (!writeText) {
+      setError("Please enter text to write");
+      return;
+    }
+
+    setStatus("Waiting for NFC tag...");
+    setIsRegistering(true);
+    await sendToDevice(`WRITE:${writeText}`);
+
+    const reader = port.readable.getReader();
+    let receivedText = "";
+
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        receivedText += new TextDecoder().decode(value);
+
+        if (receivedText.includes("Write successful!")) {
+          setStatus("Write successful!");
+          break;
+        } else if (receivedText.includes("No NFC detected")) {
+          setStatus("No NFC detected. Try again.");
+          break;
+        }
+      }
+    } catch (error) {
+      console.error("Write failed:", error);
+      setError("Write failed. Please try again.");
+    } finally {
+      reader.releaseLock();
+      setIsRegistering(false);
+    }
+  };
+
+  // Handle reading NFC data
+  const handleRead = async () => {
+    if (!port) {
+      setError("No device connected.");
+      return;
+    }
+
+    setStatus("Waiting for NFC tag...");
+    setIsRegistering(true);
+    await sendToDevice("READ");
+
+    const reader = port.readable.getReader();
+    let receivedText = "";
+    let timeoutId = null;
+    let responseComplete = false;
+
+    try {
+      // Function to determine if response is complete
+      const isResponseComplete = (text) => {
+        return text.includes("Read successful:") || 
+               text.includes("No NFC detected") || 
+               text.includes("Read failed!");
+      };
+
+      // Set timeout to ensure we don't wait forever
+      const responseTimeout = new Promise((resolve) => {
+        timeoutId = setTimeout(() => {
+          resolve({ done: true, timeout: true });
+        }, 10000); // 10 second timeout
+      });
+
+      while (!responseComplete) {
+        // Race between reading and timeout
+        const readPromise = reader.read();
+        const result = await Promise.race([readPromise, responseTimeout]);
+        
+        // Check if we timed out
+        if (result.timeout) {
+          setStatus("Read timed out. Please try again.");
+          break;
+        }
+
+        const { value, done } = result;
+        if (done) break;
+
+        // Decode and append the new data
+        const newText = new TextDecoder().decode(value);
+        receivedText += newText;
+        
+        // Update status with partial data for feedback
+        if (newText.trim()) {
+          setStatus("Receiving data...");
+        }
+
+        // Check if we have a complete response
+        if (isResponseComplete(receivedText)) {
+          responseComplete = true;
+          
+          // Process based on the type of response
+          if (receivedText.includes("Read successful:")) {
+            // Extract data starting after "Read successful:"
+            const successIndex = receivedText.indexOf('Read successful:');
+            if (successIndex !== -1) {
+              // Wait a bit to ensure all data is captured, especially important for longer NFC data
+              await new Promise(resolve => setTimeout(resolve, 500));
+              
+              // Read any remaining data
+              const finalResult = await reader.read();
+              if (!finalResult.done) {
+                receivedText += new TextDecoder().decode(finalResult.value);
+              }
+              
+              let extractedData = receivedText.substring(successIndex + 'Read successful:'.length).trim();
+              
+              // Remove "#Ten" prefix if present
+              if (extractedData.startsWith("#Ten")) {
+                extractedData = extractedData.substring(4); // Remove the first 4 characters (#Ten)
+              }
+              
+              setReadResult(extractedData);
+              setStatus("Read successful!");
+
+              // Registration data
+              setLastRegisteredName(extractedData);
+              setRegistrationCount((prev) => prev + 1);
+
+              // Call the onSuccess callback if provided
+              if (onSuccess) {
+                onSuccess();
+              }
+            } else {
+              setStatus("NFC tag read, but no data found");
+            }
+          } else if (receivedText.includes("No NFC detected")) {
+            setStatus("No NFC detected. Try again.");
+          } else if (receivedText.includes("Read failed!")) {
+            setStatus("Read failed!");
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Read failed:", error);
+      setStatus("Read failed. Please try again.");
+      setError("Read failed. Please try again.");
+    } finally {
+      // Clear timeout if it's still active
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      reader.releaseLock();
+      setIsRegistering(false);
+    }
+  };
+
+  // Simulate a NFC tag read (for demo purposes)
+  const simulateRegistration = () => {
+    const demoData = [
+      "TenlaF-User123456",
+      "TenlaF-VIP-Access",
+      "TenlaF-Staff-Admin",
+      "TenlaF-Guest-25"
+    ];
+    setIsRegistering(true);
+    setStatus("Simulating NFC tag scan...");
+
+    setTimeout(() => {
+      const data = demoData[Math.floor(Math.random() * demoData.length)];
+      setLastRegisteredName(data);
+      setReadResult(data);
+      setRegistrationCount((prev) => prev + 1);
+      setIsRegistering(false);
+      setStatus("Read successful!");
+
+      // Call the onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
+    }, 1000);
+  };
+
+  // Simulate write success (for demo purposes)
+  const simulateWrite = () => {
+    if (!writeText) {
+      setError("Please enter text to write");
+      return;
+    }
+
+    setIsRegistering(true);
+    setStatus("Simulating NFC tag write...");
+
+    setTimeout(() => {
+      setIsRegistering(false);
+      setStatus("Write successful!");
+    }, 1000);
+  };
+
+  // Fetch available ports and check for Silicon Labs devices
+  useEffect(() => {
+    const checkForSiliconLabsDevices = async () => {
+      try {
+        // Get available ports
+        const ports = await navigator.serial.getPorts();
+        setAvailablePorts(ports);
+        
+        // Check if any are Silicon Labs devices
+        for (const port of ports) {
+          if (isSiliconLabsDevice(port)) {
+            setSiliconLabsDeviceFound(true);
+            break;
+          }
+        }
+      } catch (error) {
+        console.error("Error checking ports:", error);
+      }
+    };
+
+    // Check if Web Serial API is available
+    if (navigator.serial) {
+      checkForSiliconLabsDevices();
+    } else {
+      setError("Web Serial API is not supported in this browser. Please use Chrome or Edge.");
+    }
+
+    const interval = setInterval(checkForSiliconLabsDevices, 5000); // refresh ports
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <h2 className="text-xl font-semibold text-gray-800">Hardware USB NFC Scanner</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 transition-colors"
+            aria-label="Close"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="px-6 py-6">
+          {showDriverInstructions ? (
+            // Driver installation instructions
+            <div className="text-center">
+              <div className="bg-blue-50 p-4 rounded-full mx-auto mb-4 w-20 h-20 flex items-center justify-center">
+                <Download className="h-10 w-10 text-blue-600" />
+              </div>
+
+              <h3 className="text-lg font-medium text-gray-800 mb-2">USB Driver Installation</h3>
+              <div className="text-left mb-6">
+                <p className="text-gray-600 mb-3">
+                  To use the NFC scanner with your computer, you need to install the appropriate USB drivers:
+                </p>
+                <ol className="list-decimal pl-5 text-gray-600 space-y-2">
+                  <li>Download the CP210x USB to UART Bridge VCP Drivers from Silicon Labs website</li>
+                  <li>Install the driver appropriate for your operating system (Windows, macOS, or Linux)</li>
+                  <li>Connect your NFC scanner to your computer using a USB cable</li>
+                  <li>Wait for the driver installation to complete</li>
+                  <li>Restart your browser if needed</li>
+                </ol>
+                <p className="text-gray-600 mt-3">
+                  After installing the drivers, click "Continue" to proceed with connecting your device.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDriverInstructions(false)}
+                  className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors"
+                >
+                  Continue
+                </button>
+              </div>
+            </div>
+          ) : !isConnected ? (
+            // Connection screen
+            <div className="text-center">
+              <div className="bg-green-50 p-4 rounded-full mx-auto mb-4 w-20 h-20 flex items-center justify-center">
+                <Usb className="h-10 w-10 text-green-600" />
+              </div>
+
+              <h3 className="text-lg font-medium text-gray-800 mb-2">Connect Your USB NFC Scanner</h3>
+              <p className="text-gray-600 mb-6">
+                Connect your ESP32 device with Silicon Labs CP210x chip via USB to begin reading and writing NFC tags.
+              </p>
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-4 text-left flex items-start">
+                  <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 mr-2 flex-shrink-0" />
+                  <p className="text-red-600 text-sm">{error}</p>
+                </div>
+              )}
+
+              {siliconLabsDeviceFound && (
+                <div className="bg-green-50 border border-green-200 rounded-md p-3 mb-4 text-left flex items-start">
+                  <Usb className="h-5 w-5 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
+                  <p className="text-green-600 text-sm">Silicon Labs device detected! Click "Connect Device" to continue.</p>
+                </div>
+              )}
+
+              <div className="flex gap-3 mb-4">
+                <button
+                  onClick={() => setShowDriverInstructions(true)}
+                  className="flex-1 py-2 px-4 border border-blue-600 text-blue-600 rounded-md font-medium hover:bg-blue-50 transition-colors"
+                >
+                  Install Drivers
+                </button>
+                <button
+                  onClick={connectToSiliconLabsDevice}
+                  disabled={isConnecting}
+                  className={`flex-1 py-2 px-4 rounded-md font-medium ${
+                    isConnecting
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700 text-white"
+                  }`}
+                  aria-busy={isConnecting}
+                >
+                  {isConnecting ? "Connecting..." : "Connect Device"}
+                </button>
+              </div>
+
+              <p className="text-gray-500 text-sm">
+                Your ESP32 device will be automatically detected using the Silicon Labs CP210x driver.
+              </p>
+            </div>
+          ) : (
+            // Connected state
+            <div>
+              <div className="flex items-center mb-4">
+                <div className="bg-green-100 p-2 rounded-full">
+                  <Usb className="h-5 w-5 text-green-600" />
+                </div>
+                <div className="ml-3">
+                  <div className="text-sm text-gray-500">Device Status</div>
+                  <div className="font-medium text-green-600">Connected via USB</div>
+                </div>
+                <div className="ml-auto flex gap-2">
+                  <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Ready</span>
+                  <button
+                    onClick={disconnectDevice}
+                    className="text-xs text-gray-500 hover:text-red-600"
+                    aria-label="Disconnect device"
+                  >
+                    Disconnect
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <div className="text-gray-600 text-sm">Status</div>
+                  <div className="font-medium">{status}</div>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <div className="text-gray-600 text-sm">Registrations</div>
+                  <div className="font-medium">{registrationCount}</div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <div className="text-gray-600 text-sm">Last Registered</div>
+                  <div className="font-medium">{lastRegisteredName || "No one yet"}</div>
+                </div>
+              </div>
+
+              {/* Mode Selection Tabs */}
+              <div className="flex mb-4 border-b border-gray-200">
+                <button
+                  onClick={() => setMode("read")}
+                  className={`px-4 py-2 font-medium text-sm ${mode === "read"
+                    ? "border-b-2 border-green-600 text-green-600"
+                    : "text-gray-500 hover:text-gray-700"}`}
+                >
+                  Read Mode
+                </button>
+                <button
+                  onClick={() => setMode("write")}
+                  className={`px-4 py-2 font-medium text-sm ${mode === "write"
+                    ? "border-b-2 border-green-600 text-green-600"
+                    : "text-gray-500 hover:text-gray-700"}`}
+                >
+                  Write Mode
+                </button>
+              </div>
+
+              {mode === "write" ? (
+                // Write Mode
+                <div>
+                  <div className="mb-4">
+                    <label htmlFor="write-text" className="block text-sm font-medium text-gray-700 mb-1">
+                      Text to Write
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        id="write-text"
+                        type="text"
+                        value={writeText}
+                        onChange={(e) => setWriteText(e.target.value)}
+                        placeholder="Enter text to write to NFC tag"
+                        className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      />
+                      <button
+                        onClick={port ? handleWrite : simulateWrite}
+                        disabled={isRegistering || !writeText}
+                        className={`px-4 py-2 rounded-md font-medium flex items-center justify-center ${
+                          isRegistering || !writeText
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "bg-blue-600 hover:bg-blue-700 text-white"
+                        }`}
+                      >
+                        <Save className="h-4 w-4 mr-1" />
+                        Write
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="text-center mb-4">
+                    <p className="text-gray-600 mb-1">Place your NFC tag near the scanner after clicking Write.</p>
+                    <p className="text-gray-500 text-sm">
+                      {port ? "Writing uses actual hardware." : "Using simulation mode (no actual hardware)."}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                // Read Mode
+                <div>
+                  <div className="text-center mb-4">
+                    <p className="text-gray-600 mb-1">Scan an NFC tag or card to register an attendee.</p>
+                    <p className="text-gray-500 text-sm">
+                      {readResult && `Extracted data: ${readResult}`}
+                    </p>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={port ? handleRead : simulateRegistration}
+                      disabled={isRegistering}
+                      className={`flex-1 py-3 px-4 rounded-md font-medium flex items-center justify-center gap-2 ${
+                        isRegistering
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : "bg-green-600 hover:bg-green-700 text-white"
+                      }`}
+                      aria-busy={isRegistering}
+                    >
+                      <FileText className="h-5 w-5" />
+                      <span>{isRegistering ? "Reading..." : port ? "Read NFC Tag" : "Simulate Read"}</span>
+                    </button>
+
+                    {port && (
+                      <button
+                        onClick={simulateRegistration}
+                        disabled={isRegistering}
+                        className={`flex-1 py-3 px-4 rounded-md font-medium flex items-center justify-center gap-2 ${
+                          isRegistering
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "bg-amber-600 hover:bg-amber-700 text-white"
+                        }`}
+                        aria-busy={isRegistering}
+                      >
+                        <UserPlus className="h-5 w-5" />
+                        <span>{isRegistering ? "Simulating..." : "Simulate"}</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {!port && (
+                <p className="text-xs text-amber-600 mt-3 text-center">
+                  Currently in demo mode. No actual hardware connection detected.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {readResult && (
+          <div className="mt-4 border rounded p-3 bg-gray-50">
+            <h4 className="font-medium text-gray-700 mb-1">Scan Result (Full Data):</h4>
+            <pre className="text-xs whitespace-pre-wrap overflow-auto max-h-32">
+              {readResult}
+            </pre>
+          </div>
+        )}
+
+        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+          <button
+            onClick={onClose}
+            className="w-full py-2 px-4 border border-gray-300 rounded-md text-gray-700 font-medium hover:bg-gray-100 transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
