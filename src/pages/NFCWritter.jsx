@@ -569,7 +569,7 @@ useEffect(() => {
               {nfcSupported && (
                 <button
                   onClick={hasPermission ? writeToNFC : requestPermission}
-                  disabled={isWriting || nfcStoppingInProgress || writeSuccess} // <-- add writeSuccess here
+                  disabled={isWriting || nfcStoppingInProgress}
                   className="w-full px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md disabled:bg-gray-400 flex items-center justify-center space-x-2 transition-colors"
                 >
                   {isWriting || nfcStoppingInProgress ? (
@@ -593,7 +593,7 @@ useEffect(() => {
               {!nfcSupported && (
                 <button
                   onClick={scannerConnected ? writeToNFC : connectToNFCScanner}
-                  disabled={isWriting || isConnecting || writeSuccess} // <-- add writeSuccess here
+                  disabled={isWriting || isConnecting}
                   className="w-full px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md disabled:bg-gray-400 flex items-center justify-center space-x-2 transition-colors"
                 >
                   {isWriting || isConnecting ? (

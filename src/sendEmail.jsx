@@ -1612,7 +1612,7 @@ const createAttendanceNotificationEmail = (data) => {
 
 const createEventRegistrationEmail = (data) => {
   const styles = getCommonStyles()
-  const schoolLogo = "https://imgur.com/QDQZ0IX.png" // Replace with your actual logo URL
+  const schoolLogo = "https://imgur.com/QDQZ0IX.png"
 
   // Format date and time for display
   const formattedDate = new Date(data.registeredAt).toLocaleDateString('en-US', {
@@ -1726,4 +1726,3 @@ const createEventRegistrationEmail = (data) => {
     subject: `Event Registration Confirmed - NextGen-Pemss`,
   }
 }
-
