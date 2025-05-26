@@ -924,16 +924,6 @@ export default class NFCScanner {
   processTagData(data) {
     let processedData = data.trim();
 
-    // Remove "(&NDEF:T:en:" prefix if present (for NDEF formatted tags)
-    if (processedData.startsWith("(&NDEF:T:en:")) {
-      processedData = processedData.substring("(&NDEF:T:en:".length);
-    }
-
-    // Remove "#Ten" prefix if present
-    if (processedData.startsWith("#Ten")) {
-      processedData = processedData.substring(4);
-    }
-
     return processedData;
   }
 
@@ -959,7 +949,7 @@ export default class NFCScanner {
         reject(new Error("Scan timed out. Please try again."));
       }, 10000);
 
-      // Create data handler
+      // Create data handler as an arrow function to preserve 'this'
       const dataHandler = (data) => {
         receivedText += data;
 
@@ -1139,7 +1129,7 @@ export default class NFCScanner {
       // Format: WRITE:NDEF:T:en:TEXT
       // Where T indicates text record, en is the language code, and TEXT is the content
       console.log(`Sending WRITE command with formatted NDEF Record 1 data: ${safeText}`);
-      await this.sendToDevice(`WRITE:NDEF:T:en:${safeText}`);
+      await this.sendToDevice(`WRITE:${safeText}`);
 
       // Handle differently based on environment
       if (this.isElectron) {
