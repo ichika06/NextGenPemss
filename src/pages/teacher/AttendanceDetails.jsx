@@ -4,26 +4,14 @@
  */
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { doc, getDoc, updateDoc, arrayRemove } from "firebase/firestore";
+import { doc, onSnapshot, updateDoc, arrayRemove } from "firebase/firestore";
 import { db } from "../../firebase/config";
 import { useAuth } from "../../contexts/AuthContext";
 import { toast } from "react-toastify";
-import {
-  ArrowLeft,
-  Clock,
-  User,
-  Building,
-  Calendar,
-  Users,
-  CheckCircle,
-  XCircle,
-  Download,
-  UserX,
-  ClipboardList,
-  Search,
-  RefreshCw,
-} from "lucide-react";
+import { ArrowLeft, Clock, User, Building, Calendar, Users, CheckCircle, XCircle, Download, UserX, ClipboardList, Search, RefreshCw, QrCode, Wifi } from 'lucide-react';
 import { LoadingAnimation } from "../../components/LoadingAnimation";
+import QRCode from "react-qr-code";
+import HardwareWiFi from "../../components/RegisterEvent/HardwareWifi";
 
 export default function AttendanceDetailsPage() {
   const { sessionId } = useParams();
@@ -37,6 +25,7 @@ export default function AttendanceDetailsPage() {
   const [showRemoveModal, setShowRemoveModal] = useState(false);
   const [removeStudentId, setRemoveStudentId] = useState(null);
   const [removeStudentName, setRemoveStudentName] = useState("");
+  const [showHardwareWifi, setShowHardwareWifi] = useState(false);
 
   // Stats
   const [stats, setStats] = useState({
@@ -48,10 +37,10 @@ export default function AttendanceDetailsPage() {
 
   // Fetch attendance session data
   // First, modify the fetchSessionData function to handle the student timestamp correctly
-  const fetchSessionData = async () => {
+  const fetchSessionData = () => {
     try {
       setLoading(true);
-
+  
       // Check if sessionId exists
       if (!sessionId) {
         toast.error("Invalid session ID");
@@ -59,82 +48,87 @@ export default function AttendanceDetailsPage() {
         setLoading(false);
         return;
       }
-
+  
       const sessionRef = doc(db, "attendance-sessions", sessionId);
-      const sessionDoc = await getDoc(sessionRef);
-
-      if (!sessionDoc.exists()) {
-        toast.error("Attendance session not found");
-        navigate(`/${currentUserData?.role || "teacher"}/manage-attendance`);
-        setLoading(false);
-        return;
-      }
-
-      const sessionData = {
-        id: sessionDoc.id,
-        ...sessionDoc.data(),
-      };
-
-      // Handle timestamp conversion safely
-      if (
-        sessionDoc.data().createdAt &&
-        typeof sessionDoc.data().createdAt.toDate === "function"
-      ) {
-        sessionData.createdAt = sessionDoc.data().createdAt.toDate();
-      } else if (sessionDoc.data().createdAt) {
-        sessionData.createdAt = new Date(sessionDoc.data().createdAt);
-      } else {
-        sessionData.createdAt = new Date();
-      }
-
-      // Handle expiresAt as string
-      if (sessionDoc.data().expiresAt) {
-        if (typeof sessionDoc.data().expiresAt.toDate === "function") {
-          sessionData.expiresAt = sessionDoc.data().expiresAt.toDate();
-        } else {
-          sessionData.expiresAt = new Date(sessionDoc.data().expiresAt);
+  
+      // Listen for real-time updates
+      const unsubscribe = onSnapshot(sessionRef, (sessionDoc) => {
+        if (!sessionDoc.exists()) {
+          toast.error("Attendance session not found");
+          navigate(`/${currentUserData?.role || "teacher"}/manage-attendance`);
+          setLoading(false);
+          return;
         }
-      } else {
-        sessionData.expiresAt = new Date();
-      }
-
-      // Check if current user is the teacher who created the session
-      if (currentUser && sessionData.teacherUID !== currentUser.uid) {
-        toast.error(
-          "You do not have permission to view this attendance session"
-        );
-        navigate(`/${currentUserData?.role || "teacher"}/manage-attendance`);
+  
+        const sessionData = {
+          id: sessionDoc.id,
+          ...sessionDoc.data(),
+        };
+  
+        // Handle timestamp conversion safely
+        if (
+          sessionDoc.data().createdAt &&
+          typeof sessionDoc.data().createdAt.toDate === "function"
+        ) {
+          sessionData.createdAt = sessionDoc.data().createdAt.toDate();
+        } else if (sessionDoc.data().createdAt) {
+          sessionData.createdAt = new Date(sessionDoc.data().createdAt);
+        } else {
+          sessionData.createdAt = new Date();
+        }
+  
+        // Handle expiresAt as string
+        if (sessionDoc.data().expiresAt) {
+          if (typeof sessionDoc.data().expiresAt.toDate === "function") {
+            sessionData.expiresAt = sessionDoc.data().expiresAt.toDate();
+          } else {
+            sessionData.expiresAt = new Date(sessionDoc.data().expiresAt);
+          }
+        } else {
+          sessionData.expiresAt = new Date();
+        }
+  
+        // Check if current user is the teacher who created the session
+        if (currentUser && sessionData.teacherUID !== currentUser.uid) {
+          toast.error(
+            "You do not have permission to view this attendance session"
+          );
+          navigate(`/${currentUserData?.role || "teacher"}/manage-attendance`);
+          setLoading(false);
+          return;
+        }
+  
+        // Ensure students array exists and map timestamp to checkInTime
+        if (!sessionData.students) {
+          sessionData.students = [];
+        } else {
+          sessionData.students = sessionData.students.map((student) => ({
+            ...student,
+            checkInTime: student.timestamp || student.checkInTime,
+          }));
+        }
+  
+        setSession(sessionData);
+        setFilteredStudents(sessionData.students);
+  
+        // Calculate session statistics
+        if (sessionData.students && sessionData.students.length > 0) {
+          calculateStats(sessionData);
+        } else {
+          resetStats();
+        }
+  
         setLoading(false);
-        return;
-      }
-
-      // Ensure students array exists and map timestamp to checkInTime
-      if (!sessionData.students) {
-        sessionData.students = [];
-      } else {
-        // Map the timestamp field to checkInTime for each student
-        sessionData.students = sessionData.students.map((student) => ({
-          ...student,
-          checkInTime: student.timestamp || student.checkInTime,
-        }));
-      }
-
-      setSession(sessionData);
-      setFilteredStudents(sessionData.students);
-
-      // Calculate session statistics
-      if (sessionData.students && sessionData.students.length > 0) {
-        calculateStats(sessionData);
-      } else {
-        resetStats();
-      }
+      });
+  
+      return unsubscribe; // This lets you stop listening when needed
     } catch (error) {
       console.error("Error fetching session data:", error);
       toast.error("Failed to fetch attendance session data");
-    } finally {
       setLoading(false);
     }
   };
+  
 
   // Calculate statistics from session data
   const calculateStats = (sessionData) => {
@@ -314,6 +308,21 @@ export default function AttendanceDetailsPage() {
     }
   };
 
+  const handleWirelessConnection = () => {
+    if (!isSessionActive(session)) {
+      toast.error("Cannot use hardware for expired attendance sessions");
+      return;
+    }
+    setShowHardwareWifi(true);
+    toast.info("Connecting to wireless hardware...");
+  };
+
+  const handleHardwareSuccess = (userData) => {
+    toast.success(`${userData.name || userData.email} registered successfully!`);
+    // Refresh the session data to show new registrations
+    fetchSessionData();
+  };
+
   // Export attendance data as CSV
   const exportAttendanceCSV = () => {
     if (!session || !session.students || session.students.length === 0) {
@@ -470,6 +479,28 @@ export default function AttendanceDetailsPage() {
                   </div>
                 </div>
               </div>
+
+              {/* QR Code Section */}
+              <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center border border-blue-200 bg-blue-50 px-4 py-3 rounded-lg">
+                <div className="flex items-center bg-blue-100 rounded-full p-2 mr-3 mb-2 sm:mb-0">
+                  <QrCode className="h-5 w-5 text-blue-700" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-blue-800">
+                    Student QR Code
+                  </div>
+                  <div className="text-sm text-blue-700 mb-2">
+                    Students can scan this code to check in
+                  </div>
+                  <div className="bg-white p-2 rounded-lg inline-block">
+                    <QRCode
+                      value={`${window.location.origin}/student-attendance?code=${session.attendanceCode}`}
+                      size={120}
+                      level="L"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -565,6 +596,16 @@ export default function AttendanceDetailsPage() {
                   <span className="hidden sm:inline">Refresh</span>
                   <span className="sm:hidden">Refresh</span>
                 </button>
+                {isSessionActive(session) && (
+                  <button
+                    onClick={handleWirelessConnection}
+                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white background-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
+                  >
+                    <Wifi className="h-4 w-4 mr-1" />
+                    <span className="hidden sm:inline">Hardware WiFi</span>
+                    <span className="sm:hidden">WiFi</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -640,7 +681,7 @@ export default function AttendanceDetailsPage() {
                               <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
                                 {student.profileImageUrl ? (
                                   <img
-                                    src={student.profileImageUrl}
+                                    src={student.profileImageUrl || "/placeholder.svg"}
                                     alt={`${
                                       student.name || "Student"
                                     }'s profile`}
@@ -759,6 +800,15 @@ export default function AttendanceDetailsPage() {
         </div>
       )}
 
+      {/* Hardware WiFi Modal */}
+      {showHardwareWifi && (
+        <HardwareWiFi
+          eventId={sessionId}
+          onSuccess={handleHardwareSuccess}
+          onClose={() => setShowHardwareWifi(false)}
+        />
+      )}
+
       {/* Remove Student Confirmation Modal */}
       {showRemoveModal && (
         <div className="fixed inset-0 z-10 overflow-y-auto">
@@ -777,7 +827,7 @@ export default function AttendanceDetailsPage() {
               &#8203;
             </span>
 
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full w-full mx-4">
+            <div className="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full w-full mx-4">
               <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
                   <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">

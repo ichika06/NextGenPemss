@@ -1,13 +1,5 @@
-"use client";
-
-/**
- * Component for creating an attendance session by a teacher.
- * This component allows the teacher to input details such as section, course, room, and expiration time for the attendance session.
- * Upon submission, the attendance session is created and stored in the Firestore database.
- * @returns JSX element containing the form for creating an attendance session.
- */
 import { useState } from "react";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase/config";
 import { useAuth } from "../../contexts/AuthContext";
 import { toast } from "react-toastify";
@@ -24,24 +16,80 @@ import {
   Users,
   CheckCircle,
   QrCode,
-  Smartphone,
+  Usb,
+  Wifi,
   Plus,
   ExternalLink,
   ChevronDown,
+  Microchip,
 } from "lucide-react";
 import { LoadingAnimation } from "../../components/LoadingAnimation";
 import { sendEmail, EmailTemplates } from "../../sendEmail";
 import useFirestoreChecker from "../../components/reuseChecker/FirestoreCheckerHook";
+import HardwareWiFi from "../../components/RegisterEvent/HardwareWifi";
+
+// IndexedDB utility functions
+const DB_NAME = 'AttendanceQRCodes';
+const DB_VERSION = 1;
+const STORE_NAME = 'qr_codes';
+
+const openDB = () => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+        store.createIndex('attendanceCode', 'attendanceCode', { unique: true });
+        store.createIndex('createdAt', 'createdAt', { unique: false });
+      }
+    };
+  });
+};
+
+const saveQRCodeToIndexedDB = async (attendanceData, qrCodeValue) => {
+  try {
+    const db = await openDB();
+    const transaction = db.transaction([STORE_NAME], 'readwrite');
+    const store = transaction.objectStore(STORE_NAME);
+
+    const qrCodeData = {
+      id: attendanceData.attendanceCode,
+      attendanceCode: attendanceData.attendanceCode,
+      qrCodeValue: qrCodeValue,
+      attendanceData: attendanceData,
+      createdAt: new Date().toISOString(),
+      expiresAt: attendanceData.expiresAt,
+      section: attendanceData.section,
+      course: attendanceData.course,
+      room: attendanceData.room,
+      teacherName: attendanceData.teacherName,
+    };
+
+    await store.put(qrCodeData);
+    console.log('QR Code saved to IndexedDB successfully');
+    return true;
+  } catch (error) {
+    console.error('Error saving QR Code to IndexedDB:', error);
+    return false;
+  }
+};
 
 export default function TeacherCreateAttendance() {
+  const [showHardwareWifi, setShowHardwareWifi] = useState(false);
   const { currentUser, currentUserData } = useAuth();
   const { loading: checkingFirestore, getStudentsBySection } = useFirestoreChecker();
   const [loading, setLoading] = useState(false);
   const [attendanceCreated, setAttendanceCreated] = useState(false);
   const [attendanceId, setAttendanceId] = useState("");
-  const [attendanceData, setAttendanceData] = useState(null); // State to store the attendance session data
-  const [expandedSection, setExpandedSection] = useState("teacher"); // For mobile accordion
+  const [attendanceData, setAttendanceData] = useState(null);
+  const [expandedSection, setExpandedSection] = useState("teacher");
   const [emailStatus, setEmailStatus] = useState("");
+  const [qrCodeValue, setQrCodeValue] = useState("");
 
   // Form fields
   const [section, setSection] = useState("");
@@ -98,22 +146,45 @@ export default function TeacherCreateAttendance() {
         students: [],
       };
 
-      // Save the attendance session to state
-      setAttendanceData(attendanceSession);
+      // Generate QR code value
+      const qrValue = `${window.location.origin}/student-attendance?code=${uniqueId}`;
+      setQrCodeValue(qrValue);
 
-      // Save to Firestore
+      // Save to Firestore first
       const docRef = await addDoc(
         collection(db, "attendance-sessions"),
         attendanceSession
       );
 
+      // Update the document with its own ID
+      await updateDoc(docRef, {
+        id: docRef.id
+      });
+
+      // Update attendance session data with the document ID
+      const updatedAttendanceSession = {
+        ...attendanceSession,
+        id: docRef.id
+      };
+
+      // Save the attendance session to state (with ID included)
+      setAttendanceData(updatedAttendanceSession);
+
+      // Save QR Code to IndexedDB for later use in manage attendance
+      const savedToIndexedDB = await saveQRCodeToIndexedDB(updatedAttendanceSession, qrValue);
+      if (savedToIndexedDB) {
+        toast.success("QR Code saved for future management!");
+      } else {
+        toast.warn("Attendance created but QR Code couldn't be saved locally");
+      }
+
       // Get all students from the same section
       const { students } = await getStudentsBySection(section);
-      
+
       // Send emails to all students in the section
       if (students && students.length > 0) {
         setEmailStatus(`Sending emails to ${students.length} students...`);
-        
+
         const emailPromises = students.map(async (student) => {
           const emailData = {
             email: student.email,
@@ -127,6 +198,8 @@ export default function TeacherCreateAttendance() {
             teacherName: teacherName,
             date: currentDate.toLocaleDateString(),
             expiresAt: expiresAt.toLocaleString(),
+            // Include document ID in email data if needed
+            attendanceId: docRef.id,
           };
 
           return sendEmail({
@@ -149,11 +222,34 @@ export default function TeacherCreateAttendance() {
       toast.success("Attendance session created successfully!");
     } catch (error) {
       console.error("Error creating attendance session:", error);
-      setError(`Failed to create attendance session: ${error.message}`);
       toast.error("Failed to create attendance session");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleUSBConnection = () => {
+    // Handle USB hardware connection
+    toast.info("Connecting to USB hardware...");
+    // Add your USB connection logic here
+    console.log("USB Hardware connection initiated");
+  };
+
+  const handleWirelessConnection = () => {
+    if (!attendanceId || !attendanceData) {
+      toast.error("Please create an attendance session first");
+      return;
+    }
+
+    // Show the hardware WiFi modal
+    setShowHardwareWifi(true);
+    toast.info("Connecting to wireless hardware...");
+  };
+
+  // Add this function to handle successful registrations
+  const handleHardwareSuccess = (userData) => {
+    toast.success(`${userData.name || userData.email} registered successfully!`);
+    // You can update the UI or state here if needed
   };
 
   return (
@@ -190,11 +286,10 @@ export default function TeacherCreateAttendance() {
                     </span>
                   </div>
                   <ChevronDown
-                    className={`h-4 w-4 text-gray-500 transition-transform ${
-                      expandedSection === "teacher"
+                    className={`h-4 w-4 text-gray-500 transition-transform ${expandedSection === "teacher"
                         ? "transform rotate-180"
                         : ""
-                    }`}
+                      }`}
                   />
                 </button>
 
@@ -291,11 +386,10 @@ export default function TeacherCreateAttendance() {
                     </span>
                   </div>
                   <ChevronDown
-                    className={`h-4 w-4 text-gray-500 transition-transform ${
-                      expandedSection === "attendance"
+                    className={`h-4 w-4 text-gray-500 transition-transform ${expandedSection === "attendance"
                         ? "transform rotate-180"
                         : ""
-                    }`}
+                      }`}
                   />
                 </button>
 
@@ -590,16 +684,19 @@ export default function TeacherCreateAttendance() {
               Attendance Created Successfully!
             </h2>
             <p className="text-primary-secondary text-xs sm:text-sm">
-              Students can use the QR code below or their NFC card to register
-              attendance
+              Students can use the QR code below or connect to hardware for registration
             </p>
+            {emailStatus && (
+              <p className="text-primary-secondary text-xs sm:text-sm mt-1">
+                {emailStatus}
+              </p>
+            )}
           </div>
 
           <div className="p-4 sm:p-6">
             <div className="flex flex-col items-center">
-              {/* QR Codes Section */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 w-full max-w-4xl mb-6 sm:mb-8">
-                {/* Student QR Code */}
+              {/* Student QR Code Section */}
+              <div className="w-full max-w-md mb-6 sm:mb-8">
                 <div className="flex flex-col items-center bg-white border border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
                   <div className="flex items-center mb-3 sm:mb-4 text-primary">
                     <QrCode className="h-4 w-4 sm:h-6 sm:w-6 mr-1.5 sm:mr-2" />
@@ -608,154 +705,165 @@ export default function TeacherCreateAttendance() {
                     </h3>
                   </div>
                   <div className="p-2 sm:p-4 bg-white border border-gray-200 rounded-lg mb-3 sm:mb-4 flex items-center justify-center">
-                    {attendanceData && (
+                    {qrCodeValue && (
                       <QRCode
-                        value={`${window.location.origin}/student-attendance?code=${attendanceData.attendanceCode}`}
-                        size={150}
+                        value={qrCodeValue}
+                        size={200}
                         level="L"
                         className="max-w-full h-auto"
                         style={{
                           width: "100%",
-                          maxWidth: "150px",
+                          maxWidth: "200px",
                           height: "auto",
                         }}
                       />
                     )}
                   </div>
-                  <p className="text-xs sm:text-sm text-gray-600 text-center">
+                  {/* <p className="text-xs sm:text-sm text-gray-600 text-center">
                     Students can scan this QR code to mark their attendance
                   </p>
-                </div>
-
-                {/* NFC Scanner QR Code */}
-                <div className="flex flex-col items-center bg-white border border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
-                  <div className="flex items-center mb-3 sm:mb-4 text-primary">
-                    <Smartphone className="h-4 w-4 sm:h-6 sm:w-6 mr-1.5 sm:mr-2" />
-                    <h3 className="font-semibold text-sm sm:text-lg text-primary">
-                      NFC Scanner QR Code
-                    </h3>
-                  </div>
-                  <div className="p-2 sm:p-4 bg-white border border-gray-200 rounded-lg mb-3 sm:mb-4 flex items-center justify-center">
-                    {attendanceData && (
-                      <QRCode
-                        value={`${window.location.origin}/scan-attendance?code=${attendanceData.attendanceCode}`}
-                        size={150}
-                        level="L"
-                        className="max-w-full h-auto"
-                        style={{
-                          width: "100%",
-                          maxWidth: "150px",
-                          height: "auto",
-                        }}
-                      />
-                    )}
-                  </div>
-                  <p className="text-xs sm:text-sm text-gray-600 text-center">
-                    Scan this QR code with your smartphone to open the NFC
-                    scanner
-                  </p>
+                  <div className="mt-3 sm:mt-4 w-full">
+                    <a
+                      href={qrCodeValue}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs sm:text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
+                    >
+                      <ExternalLink className="mr-1.5 h-3 w-3 sm:h-4 sm:w-4" />
+                      Open Attendance Link
+                    </a>
+                  </div> */}
                 </div>
               </div>
 
-              {/* Attendance Details */}
-              <div className="w-full max-w-4xl mb-6 sm:mb-8">
-                <div className="bg-gray-50 rounded-xl p-4 sm:p-6 border border-gray-200">
-                  <h3 className="font-semibold text-base sm:text-lg text-gray-800 mb-3 sm:mb-4 flex items-center">
-                    <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2 text-primary" />
-                    Attendance Details
+              {/* Hardware Connection Section */}
+              <div className="w-full max-w-md mb-6 sm:mb-8">
+                <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
+                  <div className="flex items-center mb-3 sm:mb-4 text-primary">
+                    <Microchip className="h-4 w-4 sm:h-6 sm:w-6 mr-1.5 sm:mr-2" />
+                    <h3 className="font-semibold text-primary text-sm sm:text-lg">
+                      Hardware Connection (RECOMMENDED)
+                    </h3>
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-600 text-center mb-4">
+                    Connect attendance hardware for automated student registration
+                  </p>
+
+                  <div className="space-y-3">
+                    {/* <button
+                      onClick={handleUSBConnection}
+                      className="w-full inline-flex items-center justify-center px-4 py-2.5 border border-gray-300 text-xs sm:text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
+                    >
+                      <Usb className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                      Connect USB Hardware
+                    </button> */}
+
+                    <button
+                      onClick={handleWirelessConnection}
+                      className="w-full inline-flex items-center justify-center px-4 py-2.5 border border-gray-300 text-xs sm:text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
+                    >
+                      <Wifi className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                      Connect Wireless Hardware
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                {showHardwareWifi && attendanceId && (
+                  <HardwareWiFi
+                    eventId={attendanceId}
+                    onClose={() => setShowHardwareWifi(false)}
+                    onSuccess={handleHardwareSuccess}
+                  />
+                )}
+              </div>
+
+              {/* Attendance Details Summary */}
+              <div className="w-full max-w-2xl">
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 sm:p-6">
+                  <h3 className="font-semibold text-gray-800 text-sm sm:text-lg mb-4 flex items-center">
+                    <BookOpen className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                    Attendance Session Details
                   </h3>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    <div className="flex items-start">
-                      <Users className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2 text-gray-500 mt-0.5" />
-                      <div>
-                        <p className="text-xs sm:text-sm text-gray-500">
-                          Section
-                        </p>
-                        <p className="text-sm sm:text-base font-medium">
-                          {section}
-                        </p>
-                      </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
+                    <div className="flex items-center">
+                      <Users className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
+                      <span className="text-gray-600">Section:</span>
+                      <span className="ml-2 font-medium text-gray-800">{attendanceData?.section}</span>
                     </div>
 
-                    <div className="flex items-start">
-                      <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2 text-gray-500 mt-0.5" />
-                      <div>
-                        <p className="text-xs sm:text-sm text-gray-500">
-                          Course
-                        </p>
-                        <p className="text-sm sm:text-base font-medium">
-                          {course}
-                        </p>
-                      </div>
+                    <div className="flex items-center">
+                      <BookOpen className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
+                      <span className="text-gray-600">Course:</span>
+                      <span className="ml-2 font-medium text-gray-800">{attendanceData?.course}</span>
                     </div>
 
-                    <div className="flex items-start">
-                      <MapPin className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2 text-gray-500 mt-0.5" />
-                      <div>
-                        <p className="text-xs sm:text-sm text-gray-500">Room</p>
-                        <p className="text-sm sm:text-base font-medium">
-                          {room}
-                        </p>
-                      </div>
+                    <div className="flex items-center">
+                      <MapPin className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
+                      <span className="text-gray-600">Room:</span>
+                      <span className="ml-2 font-medium text-gray-800">{attendanceData?.room}</span>
                     </div>
 
-                    <div className="flex items-start">
-                      <Clock className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2 text-gray-500 mt-0.5" />
-                      <div>
-                        <p className="text-xs sm:text-sm text-gray-500">
-                          Expires
-                        </p>
-                        <p className="text-sm sm:text-base font-medium">
-                          {new Date(
-                            new Date().getTime() + expireHours * 60 * 60 * 1000
-                          ).toLocaleString()}
-                        </p>
-                      </div>
+                    <div className="flex items-center">
+                      <User className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
+                      <span className="text-gray-600">Teacher:</span>
+                      <span className="ml-2 font-medium text-gray-800">{attendanceData?.teacherName}</span>
+                    </div>
+
+                    <div className="flex items-center">
+                      <Calendar className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
+                      <span className="text-gray-600">Date:</span>
+                      <span className="ml-2 font-medium text-gray-800">{attendanceData?.date}</span>
+                    </div>
+
+                    <div className="flex items-center">
+                      <Clock className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
+                      <span className="text-gray-600">Expires:</span>
+                      <span className="ml-2 font-medium text-gray-800">
+                        {attendanceData?.expiresAt && new Date(attendanceData.expiresAt).toLocaleString()}
+                      </span>
                     </div>
                   </div>
 
-                  <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200">
-                    <div className="flex items-center">
-                      <div className="bg-purple-100 text-primary text-xs sm:text-sm font-medium px-2 sm:px-3 py-0.5 sm:py-1 rounded-full flex items-center">
-                        <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full mr-1.5 sm:mr-2"></span>
-                        Active
-                      </div>
-                      <div className="ml-3 sm:ml-4 text-xs sm:text-sm text-gray-500">
-                        Attendance Code:{" "}
-                        <span className="font-mono font-medium">
-                          {attendanceData?.attendanceCode}
-                        </span>
-                      </div>
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <div className="flex items-center justify-between text-xs sm:text-sm">
+                      <span className="text-gray-600">Attendance Code:</span>
+                      <span className="font-mono font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded">
+                        {attendanceData?.attendanceCode}
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center w-full max-w-4xl">
+              <div className="w-full max-w-md mt-6 sm:mt-8 space-y-3">
                 <button
-                  className="btn-primary text-white font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors flex-1 flex items-center justify-center text-sm"
-                  onClick={() => setAttendanceCreated(false)}
+                  onClick={() => {
+                    setAttendanceCreated(false);
+                    setSection("");
+                    setCourse("");
+                    setRoom("");
+                    setExpireHours(1);
+                    setAttendanceData(null);
+                    setQrCodeValue("");
+                    setEmailStatus("");
+                  }}
+                  className="w-full inline-flex items-center justify-center px-4 py-2.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
                 >
-                  <Plus className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                  Create Another Attendance
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Another Session
                 </button>
 
-                <a
-                  href={
-                    attendanceData
-                      ? `/scan-attendance?code=${attendanceData.attendanceCode}`
-                      : "#"
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-primary text-white font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors flex-1 flex items-center justify-center text-sm"
+                <button
+                  onClick={() => window.location.href = '/teacher/manage-attendance'}
+                  className="w-full inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
                 >
-                  <Smartphone className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                  Open NFC Scanner
-                  <ExternalLink className="ml-1.5 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
-                </a>
+                  <Users className="mr-2 h-4 w-4" />
+                  Manage Attendance
+                </button>
               </div>
             </div>
           </div>

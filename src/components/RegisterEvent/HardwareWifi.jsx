@@ -12,6 +12,7 @@ import {
   getDoc,
   addDoc,
   increment,
+  arrayUnion,
 } from "firebase/firestore"
 import { db, storage } from "../../firebase/config"
 import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage"
@@ -56,7 +57,7 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
       try {
         const eventsRef = collection(db, "events")
         const eventQuery = query(eventsRef, where("id", "==", eventId))
-
+    
         const unsubscribe = onSnapshot(
           eventQuery,
           (snapshot) => {
@@ -65,10 +66,10 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
               setRegistrationCount(0)
               return
             }
-
+    
             const eventDoc = snapshot.docs[0]
             const eventData = eventDoc.data()
-
+    
             if (eventData && typeof eventData.attendees === "number") {
               setRegistrationCount(eventData.attendees)
               console.log("Attendee count updated:", eventData.attendees)
@@ -81,8 +82,39 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
             console.error("Error in attendee count listener:", error)
           },
         )
-
+    
+        // Setup attendance-sessions listener
+        const attendanceSessionsRef = collection(db, "attendance-sessions")
+        const attendanceQuery = query(attendanceSessionsRef, where("id", "==", eventId))
+    
+        const unsubscribeAttendance = onSnapshot(
+          attendanceQuery,
+          (snapshot) => {
+            if (snapshot.empty) {
+              console.log("No matching attendance session found")
+              return
+            }
+    
+            const attendanceDoc = snapshot.docs[0]
+            const attendanceData = attendanceDoc.data()
+    
+            if (attendanceData && typeof attendanceData.attendees === "number") {
+              // You might want to handle this differently based on your needs
+              // For now, I'm logging it - you can update state or combine with event attendees
+              console.log("Attendance session count updated:", attendanceData.attendees)
+            } else {
+              console.log("No attendees field found in attendance session or not a number")
+            }
+          },
+          (error) => {
+            console.error("Error in attendance session listener:", error)
+          },
+        )
+    
         unsubscribeEventRef.current = unsubscribe
+        // You'll need another ref for the attendance listener or combine them
+        unsubscribeAttendance.current = unsubscribeAttendance
+    
       } catch (error) {
         console.error("Error setting up attendee count listener:", error)
       }
@@ -510,110 +542,186 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
   // Enhanced user registration with full integration
   const registerUserForEvent = async (userData, eventId, deviceId) => {
     try {
-      // Get event details
-      const eventRef = doc(db, "events", eventId)
-      const eventSnap = await getDoc(eventRef)
+      // Try to get event by doc ID
+      const eventRef = doc(db, "events", eventId);
+      const eventSnap = await getDoc(eventRef);
 
-      if (!eventSnap.exists()) {
-        throw new Error("Event not found")
-      }
+      if (eventSnap.exists()) {
+        // --- Event registration logic ---
+        const eventData = eventSnap.data();
+        eventData.id = eventId;
 
-      const eventData = eventSnap.data()
-      eventData.id = eventId
+        if (!eventData.isLive) throw new Error("This event is not accessible yet");
 
-      if (!eventData.isLive) {
-        throw new Error("This event is not accessible yet")
-      }
+        // Check if user is already registered
+        const { isRegistered } = await checkUserEventRegistration(
+          userData.usersId || userData.studentId || userData.id,
+          eventId,
+        );
+        if (isRegistered) throw new Error("This user is already registered for this event");
 
-      // Check if user is already registered
-      const { isRegistered } = await checkUserEventRegistration(
-        userData.usersId || userData.studentId || userData.id,
-        eventId,
-      )
+        const now = new Date();
+        const registeredDate = now.toISOString().split("T")[0];
 
-      if (isRegistered) {
-        throw new Error("This user is already registered for this event")
-      }
+        await addDoc(collection(db, "eventAttendees"), {
+          eventId,
+          userId: userData.usersId || userData.studentId || userData.id,
+          course: userData.course,
+          userEmail: userData.email,
+          userImageProfile: userData.profileImage,
+          userName: userData.name || userData.displayName,
+          registeredAt: now.toISOString(),
+          status: userData.role,
+          registeredByUserId: currentUser.uid,
+          registeredByEmail: currentUser.email,
+          registrationMethod: "WiFi-NFC",
+          userDocId: userData.uid,
+        });
 
-      const now = new Date()
-      const registeredDate = now.toISOString().split("T")[0]
-
-      // Add user to attendees collection
-      await addDoc(collection(db, "eventAttendees"), {
-        eventId: eventId,
-        userId: userData.usersId || userData.studentId || userData.id,
-        course: userData.course,
-        userEmail: userData.email,
-        userImageProfile: userData.profileImage,
-        userName: userData.name || userData.displayName,
-        registeredAt: now.toISOString(),
-        status: userData.role,
-        registeredByUserId: currentUser.uid,
-        registeredByEmail: currentUser.email,
-        registrationMethod: "WiFi-NFC",
-        userDocId: userData.uid,
-      })
-
-      // Send confirmation email
-      const emailData = {
-        email: userData.email,
-        userName: userData.name || userData.displayName,
-        userId: userData.usersId || userData.studentId || userData.id,
-        course: userData.course,
-        userImageProfile: userData.profileImage,
-        eventId: eventId,
-        eventName: eventData.title,
-        registeredAt: now.toISOString(),
-        status: userData.role,
-        registeredByUserId: currentUser.uid,
-        registeredByEmail: currentUser.email,
-        registrationMethod: "WiFi-NFC",
-        userDocId: userData.uid,
-      }
-
-      await sendEmail({
-        template: EmailTemplates.EVENT_REGISTRATION,
-        data: emailData,
-        onError: (error) => {
-          console.error(`Failed to send confirmation email to ${userData.email}:`, error)
-        },
-      })
-
-      // Delete pre-registered user if exists
-      const deleteUser = async (userEventId) => {
-        console.log("userId Content: ", userEventId)
-        const result = await deletePreRegisteredUser(userEventId)
-
-        if (result.success) {
-          await updateDoc(doc(db, "events", eventId), {
-            preRegisteredCount: increment(-1),
-          })
-        } else {
-          console.error("Failed to delete user:", result.error)
+        // Send confirmation email
+        const emailData = {
+          email: userData.email,
+          userName: userData.name || userData.displayName,
+          userId: userData.usersId || userData.studentId || userData.id,
+          course: userData.course,
+          userImageProfile: userData.profileImage,
+          eventId: eventId,
+          eventName: eventData.title,
+          registeredAt: now.toISOString(),
+          status: userData.role,
+          registeredByUserId: currentUser.uid,
+          registeredByEmail: currentUser.email,
+          registrationMethod: "WiFi-NFC",
+          userDocId: userData.uid,
         }
+
+        await sendEmail({
+          template: EmailTemplates.EVENT_REGISTRATION,
+          data: emailData,
+          onError: (error) => {
+            console.error(`Failed to send confirmation email to ${userData.email}:`, error)
+          },
+        })
+
+        // Delete pre-registered user if exists
+        const deleteUser = async (userEventId) => {
+          const result = await deletePreRegisteredUser(userEventId)
+          if (result.success) {
+            await updateDoc(doc(db, "events", eventId), {
+              preRegisteredCount: increment(-1),
+            })
+          }
+        }
+        deleteUser(userData.uid + "_" + eventId)
+
+        // Increment attendee count
+        await updateDoc(doc(db, "events", eventId), {
+          attendees: increment(1),
+        })
+
+        // Update attendance sheet
+        await updateAttendanceSheet(userData, eventData, eventId, registeredDate, now.toISOString())
+
+        // Update UI state
+        setMatchFound(true)
+        setMatchedUser(userData)
+        setLastRegisteredName(userData.displayName || userData.name || userData.email)
+
+        // Auto-reset for continuous scan mode
+        if (continuousScan) {
+          setTimeout(() => {
+            setMatchFound(false)
+            setMatchedUser(null)
+          }, 2000)
+        }
+
+        // Add to scan results
+        setScanResults((prev) => [
+          {
+            timestamp: new Date(),
+            tagId: userData.uid,
+            user: userData,
+            device: deviceId,
+            success: true,
+          },
+          ...prev.slice(0, 9),
+        ])
+
+        // Only call onSuccess if NOT in continuous scan mode
+        if (onSuccess && !continuousScan) {
+          onSuccess(userData)
+        }
+
+        // Send acknowledgment to device
+        await sendCommandToDevice(deviceId, "ACK")
+
+        return { success: true, userData, eventData }
+      } else {
+        // --- Attendance session fallback ---
+        return await registerUserForAttendanceSession(userData, eventId, deviceId);
+      }
+    } catch (error) {
+      console.error("Error registering user for event/attendance:", error)
+      throw error
+    }
+  }
+
+  // New function to handle attendance session registration
+  const registerUserForAttendanceSession = async (userData, attendanceSessionIdOrCode, deviceId) => {
+    try {
+      // Query attendance-sessions by id field (not doc ID)
+      const attendanceSessionsRef = collection(db, "attendance-sessions");
+      const attendanceQuery = query(attendanceSessionsRef, where("id", "==", attendanceSessionIdOrCode));
+      const attendanceSnap = await getDocs(attendanceQuery);
+
+      if (attendanceSnap.empty) {
+        throw new Error("Attendance session not found");
       }
 
-      deleteUser(userData.uid + "_" + eventId)
+      const attendanceDoc = attendanceSnap.docs[0];
+      const attendanceData = attendanceDoc.data();
 
-      // Increment attendee count
-      await updateDoc(doc(db, "events", eventId), {
-        attendees: increment(1),
-      })
+      // Check if user is already in the students array
+      const existingStudent = attendanceData.students?.find(student =>
+        student.studentId === (userData.usersId || userData.studentId || userData.id) ||
+        student.userUID === userData.uid
+      );
 
-      // Update attendance sheet
-      await updateAttendanceSheet(userData, eventData, eventId, registeredDate, now.toISOString())
+      if (existingStudent) {
+        throw new Error("This user is already registered for this attendance session");
+      }
 
-      // Update UI state
-      setMatchFound(true)
-      setMatchedUser(userData)
-      setLastRegisteredName(userData.displayName || userData.name || userData.email)
+      const now = new Date();
+      const studentData = {
+        comment: "Checked in via QR scan",
+        course: userData.course || "BSCS",
+        email: userData.email,
+        isPresent: true,
+        name: userData.name || userData.displayName,
+        profileImageUrl: userData.profileImage || userData.profileImageUrl,
+        studentId: userData.usersId || userData.studentId || userData.id,
+        teacherName: attendanceData.teacherName || currentUser.displayName,
+        timestamp: now.toISOString(),
+        userUID: userData.uid
+      };
+
+      // Add student to students array in attendance session
+      const attendanceRef = doc(db, "attendance-sessions", attendanceDoc.id);
+      await updateDoc(attendanceRef, {
+        students: arrayUnion(studentData)
+      });
+
+      // UI updates
+      setMatchFound(true);
+      setMatchedUser(userData);
+      setLastRegisteredName(userData.displayName || userData.name || userData.email);
 
       // Auto-reset for continuous scan mode
       if (continuousScan) {
         setTimeout(() => {
-          setMatchFound(false)
-          setMatchedUser(null)
-        }, 2000) // 2 seconds, adjust as needed
+          setMatchFound(false);
+          setMatchedUser(null);
+        }, 2000);
       }
 
       // Add to scan results
@@ -626,19 +734,26 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
           success: true,
         },
         ...prev.slice(0, 9),
-      ])
+      ]);
 
+      // Only call onSuccess if NOT in continuous scan mode
       if (onSuccess && !continuousScan) {
-        onSuccess(userData)
+        onSuccess(userData);
       }
 
       // Send acknowledgment to device
-      await sendCommandToDevice(deviceId, "ACK")
+      await sendCommandToDevice(deviceId, "ACK");
 
-      return { success: true, userData, eventData }
+      return {
+        success: true,
+        userData,
+        attendanceData: { ...attendanceData, id: attendanceDoc.id },
+        type: 'attendance-session'
+      };
+
     } catch (error) {
-      console.error("Error registering user for event:", error)
-      throw error
+      console.error("Error registering user for attendance session:", error);
+      throw error;
     }
   }
 
@@ -713,29 +828,37 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
   const disconnectDevice = async () => {
     try {
       if (selectedDevice) {
-        // Send CLOSE command to stop scanning
-        await sendCommandToDevice(selectedDevice.id, "close")
+        // Send READ OFF command first
+        await sendCommandToDevice(selectedDevice.id, "READ OFF");
+        // Wait 150ms, then clear the command
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        await sendCommandToDevice(selectedDevice.id, "");
+
+        // Send CLOSE command to stop scanning (optional, if your device expects it)
+        await sendCommandToDevice(selectedDevice.id, "close");
+
         // Clear heartbeat and in-use
-        await clearDeviceInUse(selectedDevice.id)
+        await clearDeviceInUse(selectedDevice.id);
+
         // Stop heartbeat interval
         if (heartbeatIntervalRef.current) {
-          clearInterval(heartbeatIntervalRef.current)
-          heartbeatIntervalRef.current = null
+          clearInterval(heartbeatIntervalRef.current);
+          heartbeatIntervalRef.current = null;
         }
         // Clean up listener
         if (deviceListenersRef.current[selectedDevice.id]) {
-          off(ref(database, selectedDevice.id), "value", deviceListenersRef.current[selectedDevice.id])
-          delete deviceListenersRef.current[selectedDevice.id]
+          off(ref(database, selectedDevice.id), "value", deviceListenersRef.current[selectedDevice.id]);
+          delete deviceListenersRef.current[selectedDevice.id];
         }
       }
 
-      setSelectedDevice(null)
+      setSelectedDevice(null);
       if (scanIntervalRef.current) {
-        clearInterval(scanIntervalRef.current)
+        clearInterval(scanIntervalRef.current);
       }
     } catch (error) {
-      console.error("Error disconnecting device:", error)
-      setError("Failed to disconnect device: " + error.message)
+      console.error("Error disconnecting device:", error);
+      setError("Failed to disconnect device: " + error.message);
     }
   }
 
