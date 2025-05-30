@@ -83,32 +83,32 @@ export default function Login() {
   const carouselImages =
     publicEvents.length > 0
       ? publicEvents.map((event) => ({
-          src: event.image || vocalevent, // Use event image or fallback
-          alt: event.title || "Event",
-          title: event.title || "Upcoming Event",
-          description: event.description || "Join us for this exciting event",
-        }))
+        src: event.image || vocalevent, // Use event image or fallback
+        alt: event.title || "Event",
+        title: event.title || "Upcoming Event",
+        description: event.description || "Join us for this exciting event",
+      }))
       : [
-          {
-            src: vocalevent,
-            alt: "Vocal Event",
-            title: "Show your Talent",
-            description:
-              "Participate in our Vocal Event and showcase your skills",
-          },
-          {
-            src: promnight,
-            alt: "Prom Night",
-            title: "Prom Night",
-            description: "Join us for a night of fun and memories",
-          },
-          {
-            src: musicevent,
-            alt: "Music Event",
-            title: "Music Event",
-            description: "Experience the magic of live music performances",
-          },
-        ];
+        {
+          src: vocalevent,
+          alt: "Vocal Event",
+          title: "Show your Talent",
+          description:
+            "Participate in our Vocal Event and showcase your skills",
+        },
+        {
+          src: promnight,
+          alt: "Prom Night",
+          title: "Prom Night",
+          description: "Join us for a night of fun and memories",
+        },
+        {
+          src: musicevent,
+          alt: "Music Event",
+          title: "Music Event",
+          description: "Experience the magic of live music performances",
+        },
+      ];
 
   // Carousel navigation functions
   const nextSlide = () => {
@@ -132,69 +132,69 @@ export default function Login() {
   }, []);
 
   // Effect for handling redirection after authentication is complete
- // Effect for handling redirection after authentication is complete
-useEffect(() => {
-  // Stop NFC scanning if it's active and we're authenticated
-  if (nfcReading && authReady && currentUser && userRole) {
-    stopNfcReading();
-  }
+  // Effect for handling redirection after authentication is complete
+  useEffect(() => {
+    // Stop NFC scanning if it's active and we're authenticated
+    if (nfcReading && authReady && currentUser && userRole) {
+      stopNfcReading();
+    }
 
-  // Only attempt redirection when auth process has fully completed and we have a user
-  if (authReady && currentUser && userRole) {
-    const fetchUserSettings = async () => {
-      try {
-        // Query the settings collection to find the document with matching userId
-        const settingsQuery = query(
-          collection(db, "settings"),
-          where("userId", "==", currentUser.uid)
-        );
-        
-        const settingsSnapshot = await getDocs(settingsQuery);
-        
-        if (!settingsSnapshot.empty) {
-          // Get the first matching document
-          const settingsDoc = settingsSnapshot.docs[0];
-          const settingsData = settingsDoc.data();
-          
-          // Extract the defaultLandingPage from accountSettings
-          const defaultLandingPage = settingsData.accountSettings?.defaultLandingPage || "";
-          
-          // Navigate to the appropriate route with the default landing page
-          if (userRole === "admin") {
-            navigate(`/admin${defaultLandingPage ? `/${defaultLandingPage}` : ""}`);
-          } else if (userRole === "registrar") {
-            navigate(`/registrar${defaultLandingPage ? `/${defaultLandingPage}` : ""}`);
-          } else if (userRole === "teacher") {
-            navigate(`/teacher${defaultLandingPage ? `/${defaultLandingPage}` : ""}`);
-          } else if (userRole === "student") {
-            navigate(`/student${defaultLandingPage ? `/${defaultLandingPage}` : ""}`);
+    // Only attempt redirection when auth process has fully completed and we have a user
+    if (authReady && currentUser && userRole) {
+      const fetchUserSettings = async () => {
+        try {
+          // Query the settings collection to find the document with matching userId
+          const settingsQuery = query(
+            collection(db, "settings"),
+            where("userId", "==", currentUser.uid)
+          );
+
+          const settingsSnapshot = await getDocs(settingsQuery);
+
+          if (!settingsSnapshot.empty) {
+            // Get the first matching document
+            const settingsDoc = settingsSnapshot.docs[0];
+            const settingsData = settingsDoc.data();
+
+            // Extract the defaultLandingPage from accountSettings
+            const defaultLandingPage = settingsData.accountSettings?.defaultLandingPage || "";
+
+            // Navigate to the appropriate route with the default landing page
+            if (userRole === "admin") {
+              navigate(`/admin${defaultLandingPage ? `/${defaultLandingPage}` : ""}`);
+            } else if (userRole === "registrar") {
+              navigate(`/registrar${defaultLandingPage ? `/${defaultLandingPage}` : ""}`);
+            } else if (userRole === "teacher") {
+              navigate(`/teacher${defaultLandingPage ? `/${defaultLandingPage}` : ""}`);
+            } else if (userRole === "student") {
+              navigate(`/student${defaultLandingPage ? `/${defaultLandingPage}` : ""}`);
+            } else {
+              navigate("/login"); // Fallback
+            }
           } else {
-            navigate("/login"); // Fallback
+            // If no settings found, navigate to default routes
+            if (userRole === "admin") navigate("/admin");
+            else if (userRole === "registrar") navigate("/registrar");
+            else if (userRole === "teacher") navigate("/teacher");
+            else if (userRole === "student") navigate("/student");
+            else navigate("/login"); // Fallback
           }
-        } else {
-          // If no settings found, navigate to default routes
+        } catch (error) {
+          console.error("Error fetching user settings:", error);
+
+          // In case of error, fallback to default navigation
           if (userRole === "admin") navigate("/admin");
           else if (userRole === "registrar") navigate("/registrar");
           else if (userRole === "teacher") navigate("/teacher");
           else if (userRole === "student") navigate("/student");
           else navigate("/login"); // Fallback
         }
-      } catch (error) {
-        console.error("Error fetching user settings:", error);
-        
-        // In case of error, fallback to default navigation
-        if (userRole === "admin") navigate("/admin");
-        else if (userRole === "registrar") navigate("/registrar");
-        else if (userRole === "teacher") navigate("/teacher");
-        else if (userRole === "student") navigate("/student");
-        else navigate("/login"); // Fallback
-      }
-    };
+      };
 
-    // Execute the settings fetch
-    fetchUserSettings();
-  }
-}, [authReady, currentUser, userRole, navigate, nfcReading]);
+      // Execute the settings fetch
+      fetchUserSettings();
+    }
+  }, [authReady, currentUser, userRole, navigate, nfcReading]);
 
   // Handle form submission with email/password
   async function handleSubmit(e) {
@@ -236,71 +236,69 @@ useEffect(() => {
     processPendingLogin();
   }, [pendingLoginData, nfcStoppingInProgress, login]);
 
-  // Parse text decoder for NFC NDEF records
-  // Updated code to handle empty record types
-const decodeNfcText = (record) => {
-  try {
-    // Handle both text records and empty records
-    if (record) {
-      // For text records, use TextDecoder
-      if (record.recordType === "text") {
-        const textDecoder = new TextDecoder(record.encoding || "utf-8");
-        let decodedText = textDecoder.decode(record.data);
-        
-        // Process &NDEF:T:en: format
-        if (decodedText && decodedText.startsWith("(&NDEF:T:")) {
-          const parts = decodedText.split(":");
-          if (parts.length >= 4) {
-            return parts.slice(3).join(":");
+  const decodeNfcText = (record) => {
+    try {
+      // Handle both text records and empty records
+      if (record) {
+        // For text records, use TextDecoder
+        if (record.recordType === "text") {
+          const textDecoder = new TextDecoder(record.encoding || "utf-8");
+          let decodedText = textDecoder.decode(record.data);
+
+          // Process &NDEF:T:en: format
+          if (decodedText && decodedText.startsWith("(&NDEF:T:")) {
+            const parts = decodedText.split(":");
+            if (parts.length >= 4) {
+              return parts.slice(3).join(":");
+            }
           }
+
+          return decodedText;
         }
-        
-        return decodedText;
-      } 
-      // For empty records, try to interpret the raw data
-      else if (record.recordType === "empty" && record.data) {
-        // Try to decode as UTF-8 text first
-        try {
-          const textDecoder = new TextDecoder("utf-8");
-          let rawText = textDecoder.decode(record.data);
-          
-          // Check for &NDEF:T: format in the raw data
-          if (rawText.includes("(&NDEF:T:")) {
-            const startIdx = rawText.indexOf("(&NDEF:T:");
-            const parts = rawText.substring(startIdx).split(":");
-            if (parts.length >= 4) {
-              return parts.slice(3).join(":");
+        // For empty records, try to interpret the raw data
+        else if (record.recordType === "empty" && record.data) {
+          // Try to decode as UTF-8 text first
+          try {
+            const textDecoder = new TextDecoder("utf-8");
+            let rawText = textDecoder.decode(record.data);
+
+            // Check for &NDEF:T: format in the raw data
+            if (rawText.includes("(&NDEF:T:")) {
+              const startIdx = rawText.indexOf("(&NDEF:T:");
+              const parts = rawText.substring(startIdx).split(":");
+              if (parts.length >= 4) {
+                return parts.slice(3).join(":");
+              }
             }
-          }
-          
-          return rawText;
-        } catch (emptyRecordError) {
-          console.log("Could not decode empty record with TextDecoder, trying raw approach");
-          
-          // Raw byte-by-byte decoding attempt
-          let rawString = "";
-          for (let i = 0; i < record.data.length; i++) {
-            rawString += String.fromCharCode(record.data[i]);
-          }
-          
-          if (rawString.includes("(&NDEF:T:")) {
-            const startIdx = rawString.indexOf("(&NDEF:T:");
-            const parts = rawString.substring(startIdx).split(":");
-            if (parts.length >= 4) {
-              return parts.slice(3).join(":");
+
+            return rawText;
+          } catch (emptyRecordError) {
+            console.log("Could not decode empty record with TextDecoder, trying raw approach");
+
+            // Raw byte-by-byte decoding attempt
+            let rawString = "";
+            for (let i = 0; i < record.data.length; i++) {
+              rawString += String.fromCharCode(record.data[i]);
             }
+
+            if (rawString.includes("(&NDEF:T:")) {
+              const startIdx = rawString.indexOf("(&NDEF:T:");
+              const parts = rawString.substring(startIdx).split(":");
+              if (parts.length >= 4) {
+                return parts.slice(3).join(":");
+              }
+            }
+
+            return rawString;
           }
-          
-          return rawString;
         }
       }
+      return "";
+    } catch (error) {
+      console.error("Error decoding NFC data:", error);
+      return "";
     }
-    return "";
-  } catch (error) {
-    console.error("Error decoding NFC data:", error);
-    return "";
-  }
-};
+  };
 
   // Start NFC reading
   const startNfcReading = async () => {
@@ -331,21 +329,21 @@ const decodeNfcText = (record) => {
 
       ndef.addEventListener("reading", async ({ message }) => {
         console.log("NFC tag detected!", message);
-      
+
         try {
           // Extract user data from the NDEF records
           if (message && message.records) {
             let userId = null;
-      
+
             // Try to find a record with user data
             for (const record of message.records) {
               console.log("Record type:", record.recordType);
-              
+
               // Process both text and empty records
               if (record.recordType === "text" || record.recordType === "empty") {
                 const decodedText = decodeNfcText(record);
                 console.log("Decoded text from NFC:", decodedText);
-      
+
                 if (decodedText && decodedText.trim()) {
                   // Check if it's in NDEF format
                   if (decodedText.includes("(&NDEF:T:")) {
@@ -356,7 +354,7 @@ const decodeNfcText = (record) => {
                       break;
                     }
                   }
-      
+
                   try {
                     // Try to parse as JSON
                     const parsedData = JSON.parse(decodedText);
@@ -452,7 +450,7 @@ const decodeNfcText = (record) => {
       if (nfcReading) {
         setNfcStoppingInProgress(true);
         console.log("Stopping NFC reading...");
-        
+
         if (nfcController) {
           // Try to abort using the AbortController
           if (
@@ -484,7 +482,7 @@ const decodeNfcText = (record) => {
         // Clear states
         setNfcController(null);
         setNfcReading(false);
-        
+
         // Allow a small delay for resources to clean up properly
         setTimeout(() => {
           setNfcStoppingInProgress(false);
@@ -570,17 +568,16 @@ const decodeNfcText = (record) => {
           </div>
 
           {/* NFC Login Button */}
-          {/* {nfcSupported && (
+          {nfcSupported && (
             <div className="mb-6">
               <button
                 type="button"
                 onClick={nfcReading || nfcStoppingInProgress ? stopNfcReading : startNfcReading}
                 disabled={loading || nfcStoppingInProgress}
-                className={`w-full font-medium py-3 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-300 transition duration-150 ease-in-out flex items-center justify-center gap-2 ${
-                  nfcReading || nfcStoppingInProgress
+                className={`w-full font-medium py-3 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-300 transition duration-150 ease-in-out flex items-center justify-center gap-2 ${nfcReading || nfcStoppingInProgress
                     ? "bg-red-500 hover:bg-red-600 text-white"
                     : "bg-gradient-to-r from-blue-500 to-indigo-600 text-white"
-                }`}
+                  }`}
                 style={{ fontFamily: "var(--paragraph-font)" }}
               >
                 {nfcReading ? (
@@ -607,14 +604,14 @@ const decodeNfcText = (record) => {
                 {nfcReading
                   ? "Waiting for NFC card... Tap to cancel"
                   : nfcStoppingInProgress
-                  ? "Stopping NFC scanner..."
-                  : "Tap your NFC card to login instantly"}
+                    ? "Stopping NFC scanner..."
+                    : "Tap your NFC card to login instantly"}
               </p>
             </div>
-          )} */}
+          )}
 
           {/* Divider */}
-          {/* <div className="relative my-6">
+          <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-300"></div>
             </div>
@@ -626,7 +623,7 @@ const decodeNfcText = (record) => {
                 Or login with email
               </span>
             </div>
-          </div> */}
+          </div>
 
           {error && (
             <div
@@ -800,13 +797,12 @@ const decodeNfcText = (record) => {
             {carouselImages.map((image, index) => (
               <div
                 key={index}
-                className={`absolute top-0 left-0 w-full h-full transition-all duration-500 ease-in-out ${
-                  index === currentSlide
+                className={`absolute top-0 left-0 w-full h-full transition-all duration-500 ease-in-out ${index === currentSlide
                     ? "opacity-100 z-10 translate-x-0"
                     : index < currentSlide
-                    ? "opacity-0 z-0 -translate-x-full"
-                    : "opacity-0 z-0 translate-x-full"
-                }`}
+                      ? "opacity-0 z-0 -translate-x-full"
+                      : "opacity-0 z-0 translate-x-full"
+                  }`}
               >
                 <img
                   src={image.src || "/placeholder.svg"}
@@ -862,11 +858,10 @@ const decodeNfcText = (record) => {
                 <button
                   key={index}
                   onClick={() => setCurrentSlide(index)}
-                  className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full focus:outline-none transition-all duration-200 ${
-                    index === currentSlide
+                  className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full focus:outline-none transition-all duration-200 ${index === currentSlide
                       ? "bg-primary scale-125"
                       : "bg-gray-300 hover:bg-gray-400"
-                  }`}
+                    }`}
                   aria-label={`Go to slide ${index + 1}`}
                 />
               ))}

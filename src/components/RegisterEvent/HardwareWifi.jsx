@@ -45,6 +45,8 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
   const scanIntervalRef = useRef(null)
   const unsubscribeEventRef = useRef(null)
   const deviceListenersRef = useRef({})
+  const heartbeatIntervalRef = useRef(null)
+  const heartbeatCounterRef = useRef(0)
 
   // Set up real-time listener for attendee count when eventId is available
   useEffect(() => {
@@ -138,22 +140,41 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
   const discoverDevices = async () => {
     try {
       setError(null)
-      // Listen to the root of the database to get all ESP32 clients
       const devicesRef = ref(database)
       onValue(
         devicesRef,
-        (snapshot) => {
+        async (snapshot) => {
           const data = snapshot.val()
           if (!data) {
             setOnlineDevices([])
             return
           }
           const devices = []
-          // Iterate through all ESP32 clients
+          // Collect all userIds that are in use
+          const inUseUserIds = []
           Object.keys(data).forEach((deviceId) => {
             const deviceData = data[deviceId]
-            // Only add device if status is 'online'
             if (deviceData && deviceData.status === "online") {
+              const inUsedBy = deviceData["-last_inused"]?.In_used_by || null
+              if (inUsedBy) inUseUserIds.push(inUsedBy)
+            }
+          })
+          // Fetch user names from Firestore
+          let userNamesMap = {}
+          if (inUseUserIds.length > 0) {
+            const usersRef = collection(db, "users")
+            const q = query(usersRef, where("uid", "in", inUseUserIds))
+            const querySnapshot = await getDocs(q)
+            querySnapshot.forEach((doc) => {
+              const d = doc.data()
+              userNamesMap[d.uid] = d.displayName || d.name || d.email || d.uid
+            })
+          }
+          // Build device list with user names
+          Object.keys(data).forEach((deviceId) => {
+            const deviceData = data[deviceId]
+            if (deviceData && deviceData.status === "online") {
+              const inUsedBy = deviceData["-last_inused"]?.In_used_by || null
               devices.push({
                 id: deviceId,
                 name: deviceData.name || deviceId,
@@ -162,6 +183,8 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
                 lastSeen: deviceData.lastSeen ? new Date(deviceData.lastSeen) : new Date(),
                 location: deviceData.location || "",
                 command: deviceData.command || "",
+                inUsedBy,
+                inUsedByName: inUsedBy ? userNamesMap[inUsedBy] || inUsedBy : null,
               })
             }
           })
@@ -585,6 +608,14 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
       setMatchedUser(userData)
       setLastRegisteredName(userData.displayName || userData.name || userData.email)
 
+      // Auto-reset for continuous scan mode
+      if (continuousScan) {
+        setTimeout(() => {
+          setMatchFound(false)
+          setMatchedUser(null)
+        }, 2000) // 2 seconds, adjust as needed
+      }
+
       // Add to scan results
       setScanResults((prev) => [
         {
@@ -597,7 +628,7 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
         ...prev.slice(0, 9),
       ])
 
-      if (onSuccess) {
+      if (onSuccess && !continuousScan) {
         onSuccess(userData)
       }
 
@@ -641,9 +672,24 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
     try {
       setError(null)
       setSelectedDevice(device)
+      heartbeatCounterRef.current = 1
 
-      // Send READ command to the ESP32 to start scanning
-      await sendCommandToDevice(device.id, "READ")
+      // Set heartbeat and in-use immediately
+      await setDeviceInUse(device.id, currentUser.uid, heartbeatCounterRef.current)
+
+      // Start heartbeat interval (every 8 seconds)
+      if (heartbeatIntervalRef.current) clearInterval(heartbeatIntervalRef.current)
+      heartbeatIntervalRef.current = setInterval(() => {
+        heartbeatCounterRef.current += 1
+        setDeviceInUse(device.id, currentUser.uid, heartbeatCounterRef.current)
+      }, 8000)
+
+      // Send correct command based on continuousScan
+      if (continuousScan) {
+        await sendCommandToDevice(device.id, "READ ON")
+      } else {
+        await sendCommandToDevice(device.id, "READ")
+      }
 
       console.log(`Connected to ${device.name} (${device.id})`)
     } catch (error) {
@@ -652,13 +698,30 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
     }
   }
 
-  // Disconnect from device
+  // Stop heartbeat when device is disconnected or deselected
+  useEffect(() => {
+    if (!selectedDevice) {
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current)
+        heartbeatIntervalRef.current = null
+      }
+    }
+    // No dependency on continuousScan, only selectedDevice
+  }, [selectedDevice])
+
+  // Update disconnectDevice to clear heartbeat and in-use
   const disconnectDevice = async () => {
     try {
       if (selectedDevice) {
         // Send CLOSE command to stop scanning
         await sendCommandToDevice(selectedDevice.id, "close")
-
+        // Clear heartbeat and in-use
+        await clearDeviceInUse(selectedDevice.id)
+        // Stop heartbeat interval
+        if (heartbeatIntervalRef.current) {
+          clearInterval(heartbeatIntervalRef.current)
+          heartbeatIntervalRef.current = null
+        }
         // Clean up listener
         if (deviceListenersRef.current[selectedDevice.id]) {
           off(ref(database, selectedDevice.id), "value", deviceListenersRef.current[selectedDevice.id])
@@ -673,6 +736,32 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
     } catch (error) {
       console.error("Error disconnecting device:", error)
       setError("Failed to disconnect device: " + error.message)
+    }
+  }
+
+  // Helper to set heartbeat and in-use in RTDB
+  const setDeviceInUse = async (deviceId, userId, heartbeatValue) => {
+    try {
+      const inUseRef = ref(database, `${deviceId}/-last_inused`)
+      await set(inUseRef, {
+        In_used_by: userId,
+        heartbeat: heartbeatValue,
+      })
+    } catch (err) {
+      console.error("Failed to set device in use:", err)
+    }
+  }
+
+  // Helper to clear heartbeat and in-use in RTDB
+  const clearDeviceInUse = async (deviceId) => {
+    try {
+      const inUseRef = ref(database, `${deviceId}/-last_inused`)
+      await set(inUseRef, {
+        In_used_by: null,
+        heartbeat: null,
+      })
+    } catch (err) {
+      console.error("Failed to clear device in use:", err)
     }
   }
 
@@ -708,9 +797,9 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
           setError("Failed to send read ON command: " + err.message)
         }
       } else {
-        // Optionally, you may want to clear the command or send a stop command here
+        // When disabling continuous scan, clear the command
         try {
-          await sendCommandToDevice(selectedDevice.id, "")
+          await sendCommandToDevice(selectedDevice.id, "READ OFF")
         } catch (err) {
           setError("Failed to clear command: " + err.message)
         }
@@ -728,6 +817,13 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
       // Send close command to selected device
       if (selectedDevice) {
         await sendCommandToDevice(selectedDevice.id, "close")
+        // Clear heartbeat and in-use
+        await clearDeviceInUse(selectedDevice.id)
+        // Stop heartbeat interval
+        if (heartbeatIntervalRef.current) {
+          clearInterval(heartbeatIntervalRef.current)
+          heartbeatIntervalRef.current = null
+        }
       }
 
       // Clear intervals
@@ -766,13 +862,15 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
     }
   }
 
-  // Get signal strength color
-  const getSignalColor = (strength) => {
-    if (strength >= 80) return "text-green-600"
-    if (strength >= 60) return "text-yellow-600"
-    if (strength >= 40) return "text-orange-600"
-    return "text-red-600"
-  }
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current)
+        heartbeatIntervalRef.current = null
+      }
+    }
+  }, [])
 
   // Format time ago
   const formatTimeAgo = (date) => {
@@ -836,55 +934,63 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
                       </p>
                     </div>
                   ) : (
-                    onlineDevices.map((device) => (
-                      <div
-                        key={device.id}
-                        className={`border rounded-lg p-4 transition-colors ${
-                          device.status === "online"
-                            ? "border-green-200 bg-green-50 hover:bg-green-100 cursor-pointer"
-                            : "border-gray-200 bg-gray-50"
-                        }`}
-                        onClick={() => device.status === "online" && connectToDevice(device)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
+                    onlineDevices.map((device) => {
+                      const isInUse = !!device.inUsedBy
+                      return (
+                        <div
+                          key={device.id}
+                          className={`border rounded-lg p-4 transition-colors ${
+                            isInUse
+                              ? "border-yellow-200 bg-yellow-50 cursor-not-allowed opacity-70"
+                              : "border-green-200 bg-green-50 hover:bg-green-100 cursor-pointer"
+                          }`}
+                          onClick={
+                            !isInUse ? () => connectToDevice(device) : undefined
+                          }
+                          style={isInUse ? { pointerEvents: "none" } : {}}
+                        >
+                          <div className="flex items-center justify-between">
                             <div className="flex items-center">
-                              {device.status === "online" ? (
-                                <Wifi className="h-5 w-5 text-green-600 mr-3" />
-                              ) : (
-                                <WifiOff className="h-5 w-5 text-gray-400 mr-3" />
-                              )}
-                              <div>
-                                <h4 className="font-medium text-gray-800">{device.name}</h4>
-                                <p className="text-sm text-gray-600">{device.id}</p>
-                                {device.location && <p className="text-xs text-gray-500">{device.location}</p>}
-                                {device.command && <p className="text-xs text-blue-600">Command: {device.command}</p>}
+                              <div className="flex items-center">
+                                {isInUse ? (
+                                  <Wifi className="h-5 w-5 text-yellow-600 mr-3" />
+                                ) : (
+                                  <Wifi className="h-5 w-5 text-green-600 mr-3" />
+                                )}
+                                <div>
+                                  <h4 className={`font-medium ${isInUse ? "text-yellow-800" : "text-gray-800"}`}>{device.name}</h4>
+                                  <p className={`text-sm ${isInUse ? "text-yellow-700" : "text-gray-600"}`}>{device.id}</p>
+                                  {device.location && <p className="text-xs text-gray-500">{device.location}</p>}
+                                  {device.command && <p className="text-xs text-blue-600">Command: {device.command}</p>}
+                                  {isInUse && (
+                                    <p className="text-xs text-yellow-700 font-semibold mt-1">
+                                      In used by: {device.inUsedByName || device.inUsedBy}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="text-right">
+                              
+                              <div className="flex items-center text-xs text-gray-500">
+                                <Clock className="h-3 w-3 mr-1" />
+                                {formatTimeAgo(device.lastSeen)}
+                              </div>
+                              <div
+                                className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${
+                                  isInUse
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : "bg-green-100 text-green-800"
+                                }`}
+                              >
+                                {isInUse ? "in use" : device.status}
                               </div>
                             </div>
                           </div>
-
-                          <div className="text-right">
-                            <div className="flex items-center justify-end mb-1">
-                              <Signal className={`h-4 w-4 mr-1 ${getSignalColor(device.signalStrength)}`} />
-                              <span className={`text-sm font-medium ${getSignalColor(device.signalStrength)}`}>
-                                {device.signalStrength}%
-                              </span>
-                            </div>
-                            <div className="flex items-center text-xs text-gray-500">
-                              <Clock className="h-3 w-3 mr-1" />
-                              {formatTimeAgo(device.lastSeen)}
-                            </div>
-                            <div
-                              className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${
-                                device.status === "online" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
-                              }`}
-                            >
-                              {device.status}
-                            </div>
-                          </div>
                         </div>
-                      </div>
-                    ))
+                      )
+                    })
                   )}
                 </div>
               </div>

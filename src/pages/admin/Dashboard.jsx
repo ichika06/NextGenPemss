@@ -19,6 +19,7 @@ import AdminProfile from "../Profile"
 import FileManager from "../Filemanager"
 import AdminCreateEvent from "../CreateEvent";
 import AdminRegisterUsers from "../Register";
+import DeleteUserAccount from "../DeleteAccount"
 
 import SendNotifications from "../NotificationSendnotif";
 import PublicCalendar from "../PublicEventCalendar";
@@ -173,7 +174,7 @@ export default function AdminDashboard() {
           <Route path="/notifications" element={<AdminNotifications />} />
           <Route path="/profile" element={<AdminProfile />} />
           <Route path="/settings" element={<AdminSettings />} />
-
+          <Route path="/delete-users" element={<DeleteUserAccount />} />
           <Route path="/notification-send-notif" element={<SendNotifications />} />
           <Route path="/public-event-calendar" element={<PublicCalendar />} />
           <Route path="/showallusers" element={<ShowAllUser />} />

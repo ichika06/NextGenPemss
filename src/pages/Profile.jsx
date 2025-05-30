@@ -33,8 +33,7 @@ import {
 import { LoadingAnimation } from "../components/LoadingAnimation";
 
 export default function UserProfile() {
-  const { currentUser, updatePassword, updateEmail, reauthenticate } =
-    useAuth();
+  const { currentUser, updatePassword, updateEmail, reauthenticate } = useAuth();
   const [profile, setProfile] = useState({
     email: currentUser?.email || "",
     name: "",
@@ -180,37 +179,37 @@ export default function UserProfile() {
   };
 
   const changePassword = async (e) => {
-    e.preventDefault();
-    setMessage({ type: "", text: "" });
+  e.preventDefault();
+  setMessage({ type: "", text: "" });
 
-    if (newPassword !== confirmPassword) {
-      setMessage({ type: "error", text: "New passwords don't match" });
-      return;
+  if (newPassword !== confirmPassword) {
+    setMessage({ type: "error", text: "New passwords don't match" });
+    return;
+  }
+
+  try {
+    // Reauthenticate user first
+    await reauthenticate(oldPassword);
+    // Then update password
+    await updatePassword(newPassword);
+
+    setMessage({ type: "success", text: "Password changed successfully" });
+    setOldPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+  } catch (error) {
+    console.error("Error changing password:", error);
+    let errorMessage = "Failed to change password";
+
+    if (error.code === "auth/wrong-password") {
+      errorMessage = "Current password is incorrect";
+    } else if (error.code === "auth/weak-password") {
+      errorMessage = "New password is too weak";
     }
 
-    try {
-      // Reauthenticate user first
-      await reauthenticate(oldPassword);
-      // Then update password
-      await updatePassword(newPassword);
-
-      setMessage({ type: "success", text: "Password changed successfully" });
-      setOldPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-    } catch (error) {
-      console.error("Error changing password:", error);
-      let errorMessage = "Failed to change password";
-
-      if (error.code === "auth/wrong-password") {
-        errorMessage = "Current password is incorrect";
-      } else if (error.code === "auth/weak-password") {
-        errorMessage = "New password is too weak";
-      }
-
-      setMessage({ type: "error", text: errorMessage });
-    }
-  };
+    setMessage({ type: "error", text: errorMessage });
+  }
+};
 
   // Render fields specific to the user role
   const renderRoleSpecificFields = () => {

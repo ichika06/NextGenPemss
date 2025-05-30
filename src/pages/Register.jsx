@@ -6,7 +6,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import UserRegistrationHandler from "../components/reuseRegistration/UserRegistrationHandler";
-import NFCWriter from "../pages/NFCWritter"; 
+import NFCWriter from "../pages/NFCWritter";
 import {
   UserPlus,
   Mail,
@@ -23,6 +23,7 @@ import {
   Home,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import Default_profile from '../assets/Default_Profile.jpg';
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -58,13 +59,20 @@ export default function Register() {
     handleNfcComplete,
     handleNfcSkip
   } = UserRegistrationHandler();
-  
+
   const navigate = useNavigate();
 
   // Generate a strong password when the component mounts
   useEffect(() => {
     const newPassword = generateStrongPassword();
     setPassword(newPassword);
+  }, []);
+
+  // Initialize profile image URL with default profile when component mounts
+  useEffect(() => {
+    if (!profileImageURL) {
+      setProfileImageURL(Default_profile);
+    }
   }, []);
 
   // Function to handle file selection for profile image
@@ -74,6 +82,29 @@ export default function Register() {
       setProfileImage(file);
       const imageURL = URL.createObjectURL(file);
       setProfileImageURL(imageURL);
+    } else {
+      // If no file is selected or file is cleared, use default profile
+      setProfileImage(null);
+      setProfileImageURL(Default_profile);
+    }
+  };
+
+  // Initialize profile image URL with default profile when component mounts
+  useEffect(() => {
+    if (!profileImageURL) {
+      setProfileImageURL(Default_profile);
+    }
+  }, []);
+
+  // Function to convert default profile image to File object
+  const convertDefaultProfileToFile = async () => {
+    try {
+      const response = await fetch(Default_profile);
+      const blob = await response.blob();
+      return new File([blob], 'default_profile.jpg', { type: 'image/jpeg' });
+    } catch (error) {
+      console.error('Error converting default profile to file:', error);
+      return null;
     }
   };
 
@@ -100,7 +131,7 @@ export default function Register() {
     setPassword(newPassword);
     setName("");
     setProfileImage(null);
-    setProfileImageURL("");
+    setProfileImageURL(Default_profile);
     setStudentId("");
     setSection("");
     setCourse("");
@@ -117,23 +148,31 @@ export default function Register() {
   async function handleSubmit(e) {
     e.preventDefault();
 
+    // Handle profile image - use default if none selected
+    let finalProfileImage = profileImage;
+    let useDefaultProfile = false;
+
+    if (!profileImage) {
+      finalProfileImage = await convertDefaultProfileToFile();
+      useDefaultProfile = true;
+    }
+
     // Collect all user data
     const userData = {
       email,
-      password, // Use the password from the form
+      password,
       name,
       role,
-      profileImage,
+      profileImage: finalProfileImage,
+      useDefaultProfile: useDefaultProfile,
       addedby: currentUser.email,
-      generatedPassword: password, // Explicitly set the generatedPassword field
+      generatedPassword: password,
       ...getRoleSpecificData()
     };
 
     try {
-      // Use the registration handler to register the user
       await registerUser(userData);
     } catch (error) {
-      // Error handling is done inside registerUser
       console.error("Registration failed:", error);
     }
   }
@@ -358,8 +397,8 @@ export default function Register() {
             <p className="text-gray-600 mb-6 text-center">
               Please complete NFC setup for the new user
             </p>
-            <NFCWriter 
-              userId={newUserId} 
+            <NFCWriter
+              userId={newUserId}
               onComplete={() => handleNfcComplete(newUserId)}
               onSkip={() => handleNfcSkip(newUserId)}
             />
@@ -396,13 +435,13 @@ export default function Register() {
               <UserPlus className="h-8 w-8 text-indigo-600 mr-2" />
               <h1 className="text-2xl font-bold text-gray-800">Register New User</h1>
             </div>
-            
+
             {error && (
               <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700">
                 <p>{error}</p>
               </div>
             )}
-            
+
             <form onSubmit={handleSubmit}>
               <div className="mb-6">
                 <h2 className="text-lg font-semibold text-gray-700 mb-4">Basic Information</h2>
@@ -445,7 +484,7 @@ export default function Register() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="mb-6">
                 <h2 className="text-lg font-semibold text-gray-700 mb-4">Account Type</h2>
                 <div>
@@ -454,11 +493,10 @@ export default function Register() {
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div
-                      className={`border p-3 rounded-md cursor-pointer transition-all ${
-                        role === "student"
+                      className={`border p-3 rounded-md cursor-pointer transition-all ${role === "student"
                           ? "border-indigo-500 bg-indigo-50"
                           : "border-gray-300 hover:border-indigo-300"
-                      }`}
+                        }`}
                       onClick={() => setRole("student")}
                     >
                       <div className="flex flex-col items-center">
@@ -467,11 +505,10 @@ export default function Register() {
                       </div>
                     </div>
                     <div
-                      className={`border p-3 rounded-md cursor-pointer transition-all ${
-                        role === "teacher"
+                      className={`border p-3 rounded-md cursor-pointer transition-all ${role === "teacher"
                           ? "border-indigo-500 bg-indigo-50"
                           : "border-gray-300 hover:border-indigo-300"
-                      }`}
+                        }`}
                       onClick={() => setRole("teacher")}
                     >
                       <div className="flex flex-col items-center">
@@ -480,11 +517,10 @@ export default function Register() {
                       </div>
                     </div>
                     <div
-                      className={`border p-3 rounded-md cursor-pointer transition-all ${
-                        role === "registrar"
+                      className={`border p-3 rounded-md cursor-pointer transition-all ${role === "registrar"
                           ? "border-indigo-500 bg-indigo-50"
                           : "border-gray-300 hover:border-indigo-300"
-                      }`}
+                        }`}
                       onClick={() => setRole("registrar")}
                     >
                       <div className="flex flex-col items-center">
@@ -493,11 +529,10 @@ export default function Register() {
                       </div>
                     </div>
                     <div
-                      className={`border p-3 rounded-md cursor-pointer transition-all ${
-                        role === "admin"
+                      className={`border p-3 rounded-md cursor-pointer transition-all ${role === "admin"
                           ? "border-indigo-500 bg-indigo-50"
                           : "border-gray-300 hover:border-indigo-300"
-                      }`}
+                        }`}
                       onClick={() => setRole("admin")}
                     >
                       <div className="flex flex-col items-center">
@@ -508,14 +543,14 @@ export default function Register() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="mb-6">
                 <h2 className="text-lg font-semibold text-gray-700 mb-4">
                   Role-specific Information
                 </h2>
                 {renderRoleFields()}
               </div>
-              
+
               <div className="mb-6">
                 <h2 className="text-lg font-semibold text-gray-700 mb-4">
                   Security & Identity
@@ -545,7 +580,7 @@ export default function Register() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="mb-6">
                 <h2 className="text-lg font-semibold text-gray-700 mb-4">
                   Profile Image
@@ -579,7 +614,7 @@ export default function Register() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex justify-between mt-8">
                 <button
                   type="button"
@@ -591,9 +626,8 @@ export default function Register() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`px-8 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors flex items-center ${
-                    loading ? "opacity-70 cursor-not-allowed" : ""
-                  }`}
+                  className={`px-8 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors flex items-center ${loading ? "opacity-70 cursor-not-allowed" : ""
+                    }`}
                 >
                   {loading && (
                     <span className="mr-2 animate-spin">⟳</span>

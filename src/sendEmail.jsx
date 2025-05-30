@@ -351,7 +351,7 @@ const createStudentWelcomeEmail = (data) => {
         </ol>
         
         <div style="${styles.buttonContainer}">
-          <a href="https://next-gen-pemss.netlify.app/" style="${styles.button}">
+          <a href="https://nextgenpemss.me/" style="${styles.button}">
             Access Your Account
           </a>
         </div>
@@ -461,7 +461,7 @@ const createTeacherWelcomeEmail = (data) => {
         </ol>
         
         <div style="${styles.buttonContainer}">
-          <a href="https://next-gen-pemss.netlify.app/" style="${styles.button}">
+          <a href="https://nextgenpemss.me/" style="${styles.button}">
             Access Your Account
           </a>
         </div>
@@ -566,7 +566,7 @@ const createRegistrarWelcomeEmail = (data) => {
         </ol>
         
         <div style="${styles.buttonContainer}">
-          <a href="https://next-gen-pemss.netlify.app/" style="${styles.button}">
+          <a href="https://nextgenpemss.me/" style="${styles.button}">
             Access Your Account
           </a>
         </div>
@@ -671,7 +671,7 @@ const createAdminWelcomeEmail = (data) => {
         </ol>
         
         <div style="${styles.buttonContainer}">
-          <a href="https://next-gen-pemss.netlify.app/" style="${styles.button}">
+          <a href="https://nextgenpemss.me/" style="${styles.button}">
             Access Your Account
           </a>
         </div>
@@ -755,7 +755,7 @@ const createGenericWelcomeEmail = (data) => {
         </ol>
         
         <div style="${styles.buttonContainer}">
-          <a href="https://next-gen-pemss.netlify.app/" style="${styles.button}">
+          <a href="https://nextgenpemss.me/" style="${styles.button}">
             Access Your Account
           </a>
         </div>
@@ -877,7 +877,7 @@ const createGradeNotificationEmail = (data) => {
         </p>
         
         <div style="${styles.buttonContainer}">
-          <a href="https://next-gen-pemss.netlify.app/" style="${styles.button}">
+          <a href="https://nextgenpemss.me/" style="${styles.button}">
             View Your Grades
           </a>
         </div>
@@ -1047,7 +1047,7 @@ const createStudentUpdateEmail = (data) => {
         </p>
         
         <div style="${styles.buttonContainer}">
-          <a href="https://next-gen-pemss.netlify.app/" style="${styles.button}">
+          <a href="https://nextgenpemss.me/" style="${styles.button}">
             View Your Account
           </a>
         </div>
@@ -1136,7 +1136,7 @@ const createTeacherUpdateEmail = (data) => {
         </p>
         
         <div style="${styles.buttonContainer}">
-          <a href="https://next-gen-pemss.netlify.app/" style="${styles.button}">
+          <a href="https://nextgenpemss.me/" style="${styles.button}">
             View Your Account
           </a>
         </div>
@@ -1231,10 +1231,10 @@ const createEventInvitationEmail = (data) => {
         </p>
         
         <div style="${styles.buttonContainer}">
-          <a href="${data.rsvpYesLink || "https://next-gen-pemss.netlify.app/events/rsvp?response=yes&eventId=" + (data.eventId || "")}" style="${styles.button}">
+          <a href="${data.rsvpYesLink || "https://nextgenpemss.me/events/rsvp?response=yes&eventId=" + (data.eventId || "")}" style="${styles.button}">
             I'll Attend
           </a>
-          <a href="${data.rsvpNoLink || "https://next-gen-pemss.netlify.app/events/rsvp?response=no&eventId=" + (data.eventId || "")}" style="display: inline-block; background: #f8f9fa; color: #5f6368; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: 600; text-align: center; margin: 8px 0 8px 16px; border: 1px solid #e0e6ed;">
+          <a href="${data.rsvpNoLink || "https://nextgenpemss.me/events/rsvp?response=no&eventId=" + (data.eventId || "")}" style="display: inline-block; background: #f8f9fa; color: #5f6368; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: 600; text-align: center; margin: 8px 0 8px 16px; border: 1px solid #e0e6ed;">
             I Can't Attend
           </a>
         </div>
@@ -1331,7 +1331,7 @@ const createEventReminderEmail = (data) => {
         
         <!-- Calendar Link -->
         <div style="${styles.buttonContainer}">
-          <a href="${data.calendarLink || "https://next-gen-pemss.netlify.app/events/calendar?eventId=" + (data.eventId || "")}" style="${styles.button}">
+          <a href="${data.calendarLink || "https://nextgenpemss.me/events/calendar?eventId=" + (data.eventId || "")}" style="${styles.button}">
             Add to Calendar
           </a>
         </div>
@@ -1436,7 +1436,7 @@ const createEventCancellationEmail = (data) => {
         </p>
         
         <div style="${styles.buttonContainer}">
-          <a href="${data.updateRsvpLink || "https://next-gen-pemss.netlify.app/events/rsvp?eventId=" + (data.eventId || "")}" style="${styles.button}">
+          <a href="${data.updateRsvpLink || "https://nextgenpemss.me/events/rsvp?eventId=" + (data.eventId || "")}" style="${styles.button}">
             Update RSVP
           </a>
         </div>
@@ -1447,7 +1447,7 @@ const createEventCancellationEmail = (data) => {
         </p>
         
         <div style="${styles.buttonContainer}">
-          <a href="https://next-gen-pemss.netlify.app/events" style="${styles.button}">
+          <a href="https://nextgenpemss.me/events" style="${styles.button}">
             Browse Other Events
           </a>
         </div>
@@ -1583,7 +1583,7 @@ const createAttendanceNotificationEmail = (data) => {
         </ol>
         
         <div style="${styles.buttonContainer}">
-          <a href="https://next-gen-pemss.netlify.app/student/upcoming-attendance" style="${styles.button}">
+          <a href="https://nextgenpemss.me/student/upcoming-attendance" style="${styles.button}">
             View Attendance Dashboard
           </a>
         </div>
@@ -1700,7 +1700,7 @@ const createEventRegistrationEmail = (data) => {
         </div>
         
         <div style="${styles.buttonContainer}">
-          <a href="https://next-gen-pemss.netlify.app/events" style="${styles.button}">
+          <a href="https://nextgenpemss.me/events" style="${styles.button}">
             View Your Events
           </a>
         </div>

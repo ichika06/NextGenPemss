@@ -16,6 +16,7 @@
     }
   ],
   "hosting": {
+    "site": "nextgen-pemss",
     "public": "dist",
     "rewrites": [
       { "source": "**", "destination": "/index.html" }

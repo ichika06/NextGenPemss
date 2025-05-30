@@ -1,8 +1,3 @@
-/**
- * Context provider for managing authentication state and actions.
- * @param {{children}} children - The child components to be wrapped by the AuthProvider.
- * @returns The AuthContext Provider component.
- */
 import { createContext, useContext, useState, useEffect } from "react"
 import {
   getAuth,
@@ -10,9 +5,14 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  updatePassword as firebaseUpdatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  deleteUser
 } from "firebase/auth"
-import { doc, getDoc, setDoc, collection, addDoc, updateDoc, deleteDoc } from "firebase/firestore"
-import { db } from "../firebase/config"
+import { doc, getDoc, setDoc, collection, addDoc, updateDoc, deleteDoc, query, where, getDocs } from "firebase/firestore"
+import { ref, deleteObject, listAll } from "firebase/storage"
+import { db, storage } from "../firebase/config"
 
 const AuthContext = createContext(null)
 
@@ -134,6 +134,251 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // Reauthenticate user with current password
+  async function reauthenticate(currentPassword) {
+    if (!currentUser || !currentUser.email) {
+      throw new Error("No authenticated user or email not available")
+    }
+
+    try {
+      const credential = EmailAuthProvider.credential(currentUser.email, currentPassword)
+      await reauthenticateWithCredential(currentUser, credential)
+      return true
+    } catch (error) {
+      console.error("Error reauthenticating:", error)
+      throw error
+    }
+  }
+
+  // Update user password
+  async function updatePassword(newPassword) {
+    if (!currentUser) {
+      throw new Error("No authenticated user")
+    }
+
+    try {
+      await firebaseUpdatePassword(currentUser, newPassword)
+      return true
+    } catch (error) {
+      console.error("Error updating password:", error)
+      throw error
+    }
+  }
+
+  // Delete current user's own account
+  async function deleteAccount() {
+  if (!currentUser) {
+    throw new Error("No authenticated user")
+  }
+
+  const uid = currentUser.uid
+  const userEmail = currentUser.email
+
+  try {
+    // Step 1: Get user data before deletion for audit purposes
+    let userData = null
+    try {
+      const userDoc = await getDoc(doc(db, "users", uid))
+      if (userDoc.exists()) {
+        userData = userDoc.data()
+      }
+    } catch (error) {
+      console.warn("Could not retrieve user data for audit:", error)
+    }
+
+    // Step 2: Delete user's profile images and files from Firebase Storage
+    try {
+      const userStorageRef = ref(storage, `users/${uid}`)
+      const listResult = await listAll(userStorageRef)
+      
+      // Delete all files in user's storage folder
+      const deletePromises = listResult.items.map(itemRef => deleteObject(itemRef))
+      await Promise.all(deletePromises)
+      
+      // Delete subfolders (like profile folder)
+      const subfolderPromises = listResult.prefixes.map(async (folderRef) => {
+        const subListResult = await listAll(folderRef)
+        const subDeletePromises = subListResult.items.map(itemRef => deleteObject(itemRef))
+        return Promise.all(subDeletePromises)
+      })
+      await Promise.all(subfolderPromises)
+    } catch (storageError) {
+      console.warn("Error deleting storage files:", storageError)
+      // Continue with account deletion even if storage deletion fails
+    }
+
+    // Step 3: Create audit record before deletion (optional)
+    if (userData) {
+      try {
+        await addDoc(collection(db, "deletedAccounts"), {
+          originalUid: uid,
+          email: userEmail,
+          name: userData.name,
+          role: userData.role,
+          deletedBy: uid, // Self-deletion
+          deletedByEmail: userEmail,
+          deletedAt: new Date().toISOString(),
+          originalData: userData,
+          authAccountStatus: "deleted", // Both auth and Firestore will be deleted
+          deletionType: "self-deletion"
+        })
+      } catch (auditError) {
+        console.warn("Error creating audit record:", auditError)
+        // Continue with deletion even if audit logging fails
+      }
+    }
+
+    // Step 4: Delete user document from Firestore
+    await deleteDoc(doc(db, "users", uid))
+
+    // Step 5: Delete the authentication account
+    await deleteUser(currentUser)
+
+    // Step 6: Clear local state
+    setCurrentUser(null)
+    setCurrentUserData(null)
+    setUserRole(null)
+    setAuthReady(false)
+
+    console.log(`Account deleted successfully for ${userEmail}`)
+    return true
+  } catch (error) {
+    console.error("Error deleting account:", error)
+    
+    // Handle specific Firebase Auth errors
+    if (error.code === 'auth/requires-recent-login') {
+      throw new Error("For security reasons, please log out and log back in, then try deleting your account again.")
+    } else if (error.code === 'auth/user-token-expired') {
+      throw new Error("Your session has expired. Please log in again and try deleting your account.")
+    } else {
+      throw new Error(`Failed to delete account: ${error.message}`)
+    }
+  }
+}
+
+  // New function: Delete another user's account by ID (Admin function)
+  async function deleteUserById(userId) {
+  if (!currentUser) {
+    throw new Error("No authenticated user")
+  }
+
+  // Check if current user has admin permissions
+  if (!currentUserData || (currentUserData.role !== 'admin' && currentUserData.accessLevel !== 'super' && currentUserData.role !== 'registrar')) {
+    throw new Error("Insufficient permissions to delete user accounts")
+  }
+
+  try {
+    // First, get the user data to verify it exists
+    const userDoc = await getDoc(doc(db, "users", userId))
+    
+    if (!userDoc.exists()) {
+      throw new Error("User not found")
+    }
+
+    const userData = userDoc.data()
+    const userEmail = userData.email // Store the email for logging/tracking
+
+    // Step 1: Delete user's storage files
+    try {
+      const userStorageRef = ref(storage, `users/${userId}`)
+      const listResult = await listAll(userStorageRef)
+      
+      // Delete all files in user's storage folder
+      const deletePromises = listResult.items.map(itemRef => deleteObject(itemRef))
+      await Promise.all(deletePromises)
+      
+      // Delete subfolders
+      const subfolderPromises = listResult.prefixes.map(async (folderRef) => {
+        const subListResult = await listAll(folderRef)
+        const subDeletePromises = subListResult.items.map(itemRef => deleteObject(itemRef))
+        return Promise.all(subDeletePromises)
+      })
+      await Promise.all(subfolderPromises)
+    } catch (storageError) {
+      console.warn("Error deleting storage files:", storageError)
+      // Continue with account deletion even if storage deletion fails
+    }
+
+    // Step 2: Create a record of the deleted account for audit purposes
+    try {
+      await addDoc(collection(db, "deletedAccounts"), {
+        originalUid: userId,
+        email: userEmail,
+        name: userData.name,
+        role: userData.role,
+        deletedBy: currentUser.uid,
+        deletedByEmail: currentUserData.email,
+        deletedAt: new Date().toISOString(),
+        originalData: userData, // Store complete user data for audit
+        authAccountStatus: "orphaned", // Auth account still exists but Firestore doc deleted
+        note: "Firestore document deleted. Firebase Auth account may still exist and needs manual cleanup."
+      })
+    } catch (auditError) {
+      console.warn("Error creating audit record:", auditError)
+      // Continue with deletion even if audit logging fails
+    }
+
+    // Step 3: Delete user document from Firestore
+    await deleteDoc(doc(db, "users", userId))
+
+    // Note: We cannot delete the Firebase Auth account from here as we don't have access to that user's auth instance
+    // The user's auth account will remain but will be orphaned (no corresponding Firestore document)
+    
+    console.log(`User ${userData.name} (${userEmail}) deleted successfully`)
+    console.log(`Warning: Firebase Auth account for ${userEmail} still exists and may need manual cleanup`)
+    
+    return { 
+      success: true, 
+      deletedUser: {
+        name: userData.name,
+        email: userEmail,
+        role: userData.role,
+        uid: userId
+      },
+      warning: "Firebase Authentication account still exists. User won't be able to access the system but the auth account remains active."
+    }
+  } catch (error) {
+    console.error("Error deleting user by ID:", error)
+    throw error
+  }
+}
+
+  // Find user by different ID types (studentId, teacherId, employeeId, adminId)
+  async function findUserByIdField(idValue) {
+    if (!currentUser) {
+      throw new Error("No authenticated user")
+    }
+
+    if (!currentUserData || (currentUserData.role !== 'admin' && currentUserData.accessLevel !== 'super'  && currentUserData.role !== 'registrar')) {
+      throw new Error("Insufficient permissions to search users")
+    }
+
+    try {
+      const usersRef = collection(db, "users")
+      
+      // Try different ID fields based on the user's role pattern
+      const idFields = ['studentId', 'teacherId', 'employeeId', 'adminId', 'uid']
+      
+      for (const field of idFields) {
+        const q = query(usersRef, where(field, "==", idValue))
+        const querySnapshot = await getDocs(q)
+        
+        if (!querySnapshot.empty) {
+          const userDoc = querySnapshot.docs[0]
+          return {
+            uid: userDoc.id,
+            ...userDoc.data()
+          }
+        }
+      }
+      
+      return null
+    } catch (error) {
+      console.error("Error finding user by ID:", error)
+      throw error
+    }
+  }
+
   // Get current user data from Firestore
   async function getCurrentUserData() {
     if (!currentUser) return null
@@ -242,6 +487,11 @@ export function AuthProvider({ children }) {
     createAuthAccountWithoutSignIn,
     login,
     logout,
+    reauthenticate,
+    updatePassword,
+    deleteAccount,
+    deleteUserById,
+    findUserByIdField,
     getCurrentUserData,
     updateUserProfile
   }

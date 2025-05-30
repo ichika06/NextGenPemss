@@ -22,6 +22,7 @@ import {
   LayoutDashboard,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
 // Registrar sub-pages
 import RegistrarCreateEvent from "../CreateEvent";
@@ -37,7 +38,8 @@ import RegistrarProfile from "../Profile";
 import RegistrarSettings from "../Settings";
 import ShowAlluser from "../ShowAllusers";
 import CertificateBuilder from "../GenerateCertificateBuilder";
-import WifiConfig from "../WifiConfig"
+import WifiConfig from "../WifiConfig";
+import DeleteAccount from "../DeleteAccount";
 
 import SendNotifications from "../NotificationSendnotif";
 import PublicCalendar from "../PublicEventCalendar";
@@ -47,6 +49,7 @@ import NfcWriter from "../NFCWritter";
 import Query from "./QueryRegister";
 
 export default function RegistrarDashboard() {
+  const { currentUser, userRole, currentUserData } = useAuth();
   const [events, setEvents] = useState([]);
   const [stats, setStats] = useState({
     totalEvents: 0,
@@ -133,7 +136,7 @@ export default function RegistrarDashboard() {
         </div>
         <div className="mt-4 sm:mt-0">
           <Link
-            to="/registrar/create-event"
+            to={`/${userRole}/create-event`}
             className=" btn-primary inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
           >
             <PlusCircle className="h-4 w-4 mr-2" /> Create New Event
@@ -157,7 +160,7 @@ export default function RegistrarDashboard() {
           </div>
           <div className="mt-4 pt-4 border-t border-gray-100">
             <Link
-              to="/registrar/manage-events"
+              to={`/${userRole}/manage-events`}
               className="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center"
             >
               View all events <ArrowRight className="h-4 w-4 ml-1" />
@@ -179,7 +182,7 @@ export default function RegistrarDashboard() {
           </div>
           <div className="mt-4 pt-4 border-t border-gray-100">
             <Link
-              to="/registrar/manage-events"
+              to={`/${userRole}/manage-events`}
               className="text-sm text-amber-600 hover:text-amber-800 font-medium flex items-center"
             >
               View pending events <ArrowRight className="h-4 w-4 ml-1" />
@@ -215,7 +218,7 @@ export default function RegistrarDashboard() {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg font-semibold text-gray-800">Recent Events</h2>
           <Link
-            to="/registrar/manage-events"
+            to={`/${userRole}/manage-events`}
             className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
           >
             View all
@@ -244,7 +247,7 @@ export default function RegistrarDashboard() {
               started.
             </p>
             <Link
-              to="/registrar/create-event"
+              to={`/${userRole}/create-event`}
               className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
             >
               <PlusCircle className="h-4 w-4 mr-2" /> Create New Event
@@ -260,7 +263,7 @@ export default function RegistrarDashboard() {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Link
-            to="/registrar/add-user"
+            to={`/${userRole}/add-user`}
             className="flex flex-col items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <User className="h-8 w-8 text-indigo-500 mb-2" />
@@ -268,7 +271,7 @@ export default function RegistrarDashboard() {
           </Link>
 
           <Link
-            to="/registrar/file-manager"
+            to={`/${userRole}/file-manager`}
             className="flex flex-col items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <FolderOpen className="h-8 w-8 text-indigo-500 mb-2" />
@@ -278,7 +281,7 @@ export default function RegistrarDashboard() {
           </Link>
 
           <Link
-            to="/nfc-card-setup"
+            to={`/${userRole}/nfc-card-setup`}
             className="flex flex-col items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <Users className="h-8 w-8 text-indigo-500 mb-2" />
@@ -288,7 +291,7 @@ export default function RegistrarDashboard() {
           </Link>
 
           <Link
-            to="/registrar/manage-events"
+            to={`/${userRole}/manage-events`}
             className="flex flex-col items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <FileText className="h-8 w-8 text-indigo-500 mb-2" />
@@ -331,6 +334,7 @@ export default function RegistrarDashboard() {
           <Route path="/showallusers" element={<ShowAllUser />} />
           <Route path="/nfc-card-setup" element={<NfcWriter />} />
           <Route path="/wificonfig" element={<WifiConfig />} />
+          <Route path="/delete-users" element={<DeleteAccount />} />
         </Routes>
       </div>
     </div>

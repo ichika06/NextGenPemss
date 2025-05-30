@@ -7,10 +7,10 @@ import {
   query,
   where,
   doc,
-  onSnapshot
+  onSnapshot,
+  getDoc
 } from "firebase/firestore";
 import { db } from "../../firebase/config";
-import HardwareWiFi from './HardwareWifi';
 
 /**
  * Component for hardware USB NFC scanning, reading and writing
@@ -245,6 +245,30 @@ export default function HardwareUSB({
     }
   };
 
+  // Toggle continuous scanning
+  const toggleContinuousScan = async () => {
+    const newContinuousScan = !continuousScan;
+    setContinuousScan(newContinuousScan);
+
+    // If connected, send the appropriate command
+    if (isConnected && nfcScanner.current && typeof nfcScanner.current.sendCommandToDevice === "function") {
+      try {
+        if (newContinuousScan) {
+          await nfcScanner.current.sendCommandToDevice("READ ON");
+        } else {
+          await nfcScanner.current.sendCommandToDevice("READ OFF");
+        }
+      } catch (err) {
+        setError("Failed to send command: " + err.message);
+      }
+    }
+
+    // If turning it off, clear any pending scan timeouts
+    if (!newContinuousScan && scanTimeoutRef.current) {
+      clearTimeout(scanTimeoutRef.current);
+    }
+  };
+
   // Handle scanning NFC tag
   const handleScan = async () => {
     if (!isConnected) {
@@ -252,7 +276,18 @@ export default function HardwareUSB({
       return;
     }
 
-    // Clear any existing error temporarily for new scan
+    // If not in continuous mode, send the READ command before scanning
+    if (!continuousScan && nfcScanner.current && typeof nfcScanner.current.sendCommandToDevice === "function") {
+      try {
+        await nfcScanner.current.sendCommandToDevice("");
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        await nfcScanner.current.sendCommandToDevice("READ");
+      } catch (err) {
+        setError("Failed to send READ command: " + err.message);
+        return;
+      }
+    }
+
     setError(null);
     setIsScanning(true);
     setStatus("Waiting for NFC tag...");
@@ -270,8 +305,6 @@ export default function HardwareUSB({
     } catch (error) {
       setError(error.message);
       setStatus(`Scan failed: ${error.message}`);
-
-      // Even after error, we'll continue scanning due to the useEffect
     } finally {
       setIsScanning(false);
     }
@@ -311,13 +344,19 @@ export default function HardwareUSB({
     }
   };
 
-  // Toggle continuous scanning
-  const toggleContinuousScan = () => {
-    setContinuousScan(!continuousScan);
-
-    // If turning it off, clear any pending scan timeouts
-    if (continuousScan && scanTimeoutRef.current) {
-      clearTimeout(scanTimeoutRef.current);
+  // Fetch user's name from Firestore
+  const fetchUserName = async (userId) => {
+    try {
+      const userDocRef = doc(db, "users", userId);
+      const userDocSnap = await getDoc(userDocRef);
+      if (userDocSnap.exists()) {
+        const userData = userDocSnap.data();
+        return userData.name || userData.displayName || userData.email || userId;
+      }
+      return userId;
+    } catch (error) {
+      console.error("Failed to fetch user name:", error);
+      return userId;
     }
   };
 
@@ -335,25 +374,37 @@ export default function HardwareUSB({
       }
 
       // Register the user for the event
-      const result = await nfcScanner.current.registerUserForEvent(userData, eventId, currentUser);
+      await nfcScanner.current.registerUserForEvent(userData, eventId, currentUser);
+
+      // Fetch and display the user's name BEFORE deleting temporary data
+      console.log("userData for fetchUserName:", userData);
+      const userId = userData.uid || userData.id || userData.userId;
+      console.log("Fetching user name for userId:", userId);
+      const userName = await fetchUserName(userId);
+      setLastRegisteredName(userName !== userId ? userName : "Unknown User");
 
       // Update UI with success information
       setMatchFound(true);
       setMatchedUser(userData);
-      setLastRegisteredName(userData.name || userData.displayName || userData.email || userData.uid);
-      setStatus(`Successfully registered ${userData.name || userData.displayName || userData.email}!`);
+      setStatus(`Successfully registered ${userName}!`);
 
-      // Call the onSuccess callback if provided
-      if (onSuccess) {
+      // Only call onSuccess if NOT in continuous scan mode
+      if (onSuccess && !continuousScan) {
         onSuccess(userData);
+      }
+
+      // In continuous mode, auto-hide the success after a short delay
+      if (continuousScan) {
+        setTimeout(() => {
+          setMatchFound(false);
+          setMatchedUser(null);
+        }, 2000);
       }
 
       return true;
     } catch (error) {
       setError(error.message);
       setStatus(`Registration failed: ${error.message}`);
-
-      // We'll continue scanning despite error due to the useEffect
       return false;
     } finally {
       setIsSearching(false);
@@ -683,7 +734,7 @@ export default function HardwareUSB({
                     <p className="text-sm text-gray-600">
                       Total registrations: <span className="font-medium">{registrationCount}</span>
                     </p>
-                    {lastRegisteredName && (
+                    {lastRegisteredName && lastRegisteredName !== "No one yet" && (
                       <p className="text-xs text-gray-500 mt-1">
                         Last registered: {lastRegisteredName}
                       </p>

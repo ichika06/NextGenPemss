@@ -653,7 +653,7 @@ export default function EventDetailsDisplay() {
                           ) : (
                           <>
                             <User className="h-4 w-4 mr-1.5" />
-                            <span>Manual Registration</span>
+                            <span>WIFI Registration</span>
                           </>
                           )
                         ) : (

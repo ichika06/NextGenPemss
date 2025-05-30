@@ -1,11 +1,10 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { getAuth, onAuthStateChanged } from "firebase/auth"
 import { collection, query, where, getDocs } from "firebase/firestore"
 import { db } from "../firebase/config"
 import UserDetailsModal from "./showAllusersdetails"
 import { Search } from "lucide-react"
+import defaultProfile from '../assets/Default_Profile.jpg'
 
 export default function UserRegistrationManagement() {
   const [currentUser, setCurrentUser] = useState(null)
@@ -258,7 +257,7 @@ export default function UserRegistrationManagement() {
                     <div className="flex justify-center mb-4">
                       <div className="h-20 w-20 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200">
                         <img
-                          src={user.profileImage || "/placeholder.svg"}
+                          src={user.profileImage || defaultProfile}
                           alt={user.name}
                           className="h-full w-full object-cover"
                         />

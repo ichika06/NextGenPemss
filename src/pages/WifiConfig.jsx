@@ -1,6 +1,4 @@
-"use client"
-
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback, useMemo } from "react"
 import {
   Usb,
   Send,
@@ -20,6 +18,135 @@ import {
   Save,
   FileText,
 } from "lucide-react"
+import 'web-serial-polyfill';
+
+// --- SerialDeviceManager class ---
+class SerialDeviceManager {
+  constructor({
+    onStatus,
+    onDeviceInfo,
+    onResponse,
+    onConnect,
+    onDisconnect,
+    baudRate = 115200,
+    usbNameMap = {},
+    isSiliconLabsDeviceFn = null,
+    getFriendlyPortNameFn = null,
+  }) {
+    this.onStatus = onStatus;
+    this.onDeviceInfo = onDeviceInfo;
+    this.onResponse = onResponse;
+    this.onConnect = onConnect;
+    this.onDisconnect = onDisconnect;
+    this.baudRate = baudRate;
+    this.usbNameMap = usbNameMap;
+    this.isSiliconLabsDeviceFn = isSiliconLabsDeviceFn;
+    this.getFriendlyPortNameFn = getFriendlyPortNameFn;
+    this.port = null;
+    this.reader = null;
+    this.writer = null;
+    this.reading = false;
+  }
+
+  async connect(baudRate) {
+    if (!("serial" in navigator)) {
+      this.onResponse && this.onResponse("❌ Web Serial API not supported in this browser\n");
+      this.onStatus && this.onStatus("error");
+      return;
+    }
+    try {
+      this.onStatus && this.onStatus("connecting");
+      const port = await navigator.serial.requestPort();
+      if (this.isSiliconLabsDeviceFn && this.isSiliconLabsDeviceFn(port)) {
+        this.onResponse && this.onResponse("🔍 Silicon Labs CP210x device detected - ESP32 compatible\n");
+      }
+      await port.open({ baudRate: baudRate || this.baudRate });
+      this.port = port;
+      // Device info
+      const info = port.getInfo();
+      const friendlyName = this.getFriendlyPortNameFn ? this.getFriendlyPortNameFn(port) : "Unknown Device";
+      this.onDeviceInfo && this.onDeviceInfo({
+        vendorId: info.usbVendorId,
+        productId: info.usbProductId,
+        baudRate: baudRate || this.baudRate,
+        friendlyName,
+        isSiliconLabs: this.isSiliconLabsDeviceFn ? this.isSiliconLabsDeviceFn(port) : false,
+      });
+      // Set up streams
+      const textDecoder = new TextDecoderStream();
+      port.readable.pipeTo(textDecoder.writable);
+      this.reader = textDecoder.readable.getReader();
+      const textEncoder = new TextEncoderStream();
+      textEncoder.readable.pipeTo(port.writable);
+      this.writer = textEncoder.writable.getWriter();
+      this.onResponse && this.onResponse(`✅ Connected to ${friendlyName} at ${baudRate || this.baudRate} baud\n`);
+      if (this.isSiliconLabsDeviceFn && this.isSiliconLabsDeviceFn(port)) {
+        this.onResponse && this.onResponse("💡 Ready for ESP32 commands. Try 'AT+GMR' to check firmware version\n");
+      }
+      this.onStatus && this.onStatus("connected");
+      this.onConnect && this.onConnect();
+      this.readFromPort();
+    } catch (error) {
+      this.onResponse && this.onResponse(`❌ Connection failed: ${error.message}\n`);
+      if (error.message && error.message.includes("No port selected")) {
+        this.onResponse && this.onResponse("💡 Make sure to select a Silicon Labs CP210x device for ESP32 communication\n");
+      }
+      this.onStatus && this.onStatus("error");
+    }
+  }
+
+  async disconnect() {
+    try {
+      this.onStatus && this.onStatus("disconnecting");
+      if (this.reader) {
+        await this.reader.cancel();
+        this.reader = null;
+      }
+      if (this.writer) {
+        await this.writer.close();
+        this.writer = null;
+      }
+      if (this.port) {
+        await this.port.close();
+        this.port = null;
+      }
+      this.onDisconnect && this.onDisconnect();
+      this.onStatus && this.onStatus("disconnected");
+      this.onDeviceInfo && this.onDeviceInfo(null);
+      this.onResponse && this.onResponse("🔌 Disconnected from ESP32\n");
+    } catch (error) {
+      this.onResponse && this.onResponse(`❌ Disconnect error: ${error.message}\n`);
+      this.onStatus && this.onStatus("error");
+    }
+  }
+
+  async sendCommand(command) {
+    if (!command.trim() || !this.writer) return;
+    try {
+      await this.writer.write(command + "\n");
+      this.onResponse && this.onResponse(`> ${command}\n`);
+    } catch (error) {
+      this.onResponse && this.onResponse(`❌ Send error: ${error.message}\n`);
+    }
+  }
+
+  async readFromPort() {
+    this.reading = true;
+    try {
+      while (this.reader && this.reading) {
+        const { value, done } = await this.reader.read();
+        if (done) break;
+        if (value) this.onResponse && this.onResponse(value);
+      }
+    } catch (error) {
+      if (error.name !== "NetworkError") {
+        this.onResponse && this.onResponse(`❌ Read error: ${error.message}\n`);
+      }
+    }
+    this.reading = false;
+  }
+}
+// --- End SerialDeviceManager ---
 
 export default function WifiConfig() {
   const [isConnected, setIsConnected] = useState(false)
@@ -33,139 +160,100 @@ export default function WifiConfig() {
   const [commandHistory, setCommandHistory] = useState([])
   const [historyIndex, setHistoryIndex] = useState(-1)
 
-  const portRef = useRef(null)
-  const readerRef = useRef(null)
-  const writerRef = useRef(null)
+  // USB device mapping for identification
+  const USB_NAME_MAP = useMemo(() => ({
+    "10c4:ea60": "Silicon Labs CP210x (ESP32/Arduino)",
+    "0403:6001": "FTDI FT232 Device",
+    "2341:0043": "Arduino Device",
+    "1a86:7523": "CH340 Serial Device",
+    "0403:6015": "FTDI FT231X Device"
+  }), [])
+
+  // Helper functions for device identification
+  const getFriendlyPortName = useCallback((port) => {
+    try {
+      const info = port.getInfo()
+      const vendorId = info.usbVendorId?.toString(16).padStart(4, '0')
+      const productId = info.usbProductId?.toString(16).padStart(4, '0')
+      const id = `${vendorId}:${productId}`
+      return USB_NAME_MAP[id] || `Unknown Device (${vendorId}:${productId})`
+    } catch {
+      return "Unknown Device"
+    }
+  }, [USB_NAME_MAP])
+
+  const isSiliconLabsDevice = useCallback((port) => {
+    try {
+      const info = port.getInfo()
+      const vendorId = info.usbVendorId?.toString(16).padStart(4, '0')
+      const productId = info.usbProductId?.toString(16).padStart(4, '0')
+      return vendorId === "10c4" && productId === "ea60"
+    } catch {
+      return false
+    }
+  }, [])
+
+  // SerialDeviceManager instance
+  const serialManagerRef = useRef(null)
   const responseRef = useRef(null)
 
+  // Setup SerialDeviceManager on mount
   useEffect(() => {
-    // Check if Web Serial API is supported
-    if (!("serial" in navigator)) {
-      setResponse((prev) => prev + "❌ Web Serial API not supported in this browser\n")
+    serialManagerRef.current = new SerialDeviceManager({
+      onStatus: setConnectionStatus,
+      onDeviceInfo: setDeviceInfo,
+      onResponse: (msg) => setResponse((prev) => prev + msg),
+      onConnect: () => setIsConnected(true),
+      onDisconnect: () => setIsConnected(false),
+      baudRate,
+      usbNameMap: USB_NAME_MAP,
+      isSiliconLabsDeviceFn: isSiliconLabsDevice,
+      getFriendlyPortNameFn: getFriendlyPortName,
+    });
+    // Cleanup on unmount
+    return () => {
+      if (serialManagerRef.current) {
+        serialManagerRef.current.disconnect();
+      }
     }
+  }, [USB_NAME_MAP, baudRate, getFriendlyPortName, isSiliconLabsDevice]);
 
-    // Auto-scroll response area
+  // Update baudRate in SerialDeviceManager if changed
+  useEffect(() => {
+    if (serialManagerRef.current) {
+      serialManagerRef.current.baudRate = baudRate;
+    }
+  }, [baudRate]);
+
+  // Auto-scroll response area
+  useEffect(() => {
     if (responseRef.current) {
       responseRef.current.scrollTop = responseRef.current.scrollHeight
     }
-
-    // Cleanup on unmount
-    return () => {
-      if (portRef.current && portRef.current.readable) {
-        disconnect()
-      }
-    }
   }, [response])
 
+  // Connect/disconnect handlers
   const connect = async () => {
-    try {
-      setIsConnecting(true)
-      setConnectionStatus("connecting")
-
-      // Request a port and open the connection
-      const port = await navigator.serial.requestPort()
-      await port.open({ baudRate: baudRate })
-
-      portRef.current = port
-      setIsConnected(true)
-      setConnectionStatus("connected")
-
-      // Get device info if available
-      const info = port.getInfo()
-      setDeviceInfo({
-        vendorId: info.usbVendorId,
-        productId: info.usbProductId,
-        baudRate: baudRate,
-      })
-
-      // Set up the text decoder and encoder
-      const textDecoder = new TextDecoderStream()
-      const readableStreamClosed = port.readable.pipeTo(textDecoder.writable)
-      readerRef.current = textDecoder.readable.getReader()
-
-      const textEncoder = new TextEncoderStream()
-      const writableStreamClosed = textEncoder.readable.pipeTo(port.writable)
-      writerRef.current = textEncoder.writable.getWriter()
-
-      setResponse((prev) => prev + `✅ Connected to ESP32 at ${baudRate} baud\n`)
-      setResponse(
-        (prev) =>
-          prev + `📱 Device Info: VID:${info.usbVendorId?.toString(16)} PID:${info.usbProductId?.toString(16)}\n`,
-      )
-
-      // Start reading from the serial port
-      readFromPort()
-    } catch (error) {
-      setResponse((prev) => prev + `❌ Connection failed: ${error.message}\n`)
-      setConnectionStatus("error")
-    } finally {
-      setIsConnecting(false)
-    }
+    setIsConnecting(true);
+    await serialManagerRef.current.connect(baudRate);
+    setIsConnecting(false);
   }
-
   const disconnect = async () => {
-    try {
-      setConnectionStatus("disconnecting")
-
-      if (readerRef.current) {
-        await readerRef.current.cancel()
-        readerRef.current = null
-      }
-
-      if (writerRef.current) {
-        await writerRef.current.close()
-        writerRef.current = null
-      }
-
-      if (portRef.current) {
-        await portRef.current.close()
-        portRef.current = null
-      }
-
-      setIsConnected(false)
-      setConnectionStatus("disconnected")
-      setDeviceInfo(null)
-      setResponse((prev) => prev + "🔌 Disconnected from ESP32\n")
-    } catch (error) {
-      setResponse((prev) => prev + `❌ Disconnect error: ${error.message}\n`)
-      setConnectionStatus("error")
-    }
+    setIsConnecting(true);
+    await serialManagerRef.current.disconnect();
+    setIsConnecting(false);
   }
 
-  const readFromPort = async () => {
-    try {
-      while (readerRef.current) {
-        const { value, done } = await readerRef.current.read()
-        if (done) break
-
-        setResponse((prev) => prev + value)
-      }
-    } catch (error) {
-      if (error.name !== "NetworkError") {
-        setResponse((prev) => prev + `❌ Read error: ${error.message}\n`)
-      }
-    }
-  }
-
+  // Send command handler
   const sendCommand = async () => {
-    if (!command.trim() || !isConnected || !writerRef.current) return
-
-    try {
-      const commandToSend = command + "\n"
-      await writerRef.current.write(commandToSend)
-      setResponse((prev) => prev + `> ${command}\n`)
-
-      // Add to command history
-      setCommandHistory((prev) => {
-        const newHistory = [command, ...prev.filter((cmd) => cmd !== command)]
-        return newHistory.slice(0, 20) // Keep last 20 commands
-      })
-
-      setCommand("")
-      setHistoryIndex(-1)
-    } catch (error) {
-      setResponse((prev) => prev + `❌ Send error: ${error.message}\n`)
-    }
+    if (!command.trim() || !isConnected) return;
+    await serialManagerRef.current.sendCommand(command);
+    setCommandHistory((prev) => {
+      const newHistory = [command, ...prev.filter((cmd) => cmd !== command)]
+      return newHistory.slice(0, 20)
+    })
+    setCommand("")
+    setHistoryIndex(-1)
   }
 
   const clearResponse = () => {
@@ -299,12 +387,22 @@ export default function WifiConfig() {
                     <label className="block text-sm font-medium text-gray-700">Device Information</label>
                     <div className="bg-gray-50 rounded-lg p-3 space-y-2">
                       <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Device:</span>
+                        <span className="font-medium text-right flex-1 ml-2">{deviceInfo.friendlyName}</span>
+                      </div>
+                      {deviceInfo.isSiliconLabs && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-600">Status:</span>
+                          <span className="text-green-600 font-medium">✓ ESP32 Compatible</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-sm">
                         <span className="text-gray-600">Vendor ID:</span>
-                        <span className="font-mono">0x{deviceInfo.vendorId?.toString(16)}</span>
+                        <span className="font-mono">0x{deviceInfo.vendorId?.toString(16).padStart(4, '0')}</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-600">Product ID:</span>
-                        <span className="font-mono">0x{deviceInfo.productId?.toString(16)}</span>
+                        <span className="font-mono">0x{deviceInfo.productId?.toString(16).padStart(4, '0')}</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-600">Baud Rate:</span>
@@ -334,11 +432,10 @@ export default function WifiConfig() {
                 <button
                   onClick={isConnected ? disconnect : connect}
                   disabled={isConnecting || !("serial" in navigator)}
-                  className={`w-full px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
-                    isConnected
-                      ? "bg-red-500 hover:bg-red-600 text-white"
-                      : "bg-indigo-600 hover:bg-indigo-700 text-white disabled:bg-gray-400"
-                  }`}
+                  className={`w-full px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${isConnected
+                    ? "bg-red-500 hover:bg-red-600 text-white"
+                    : "bg-indigo-600 hover:bg-indigo-700 text-white disabled:bg-gray-400"
+                    }`}
                 >
                   <Power className="w-5 h-5" />
                   {isConnecting ? "Connecting..." : isConnected ? "Disconnect" : "Connect"}

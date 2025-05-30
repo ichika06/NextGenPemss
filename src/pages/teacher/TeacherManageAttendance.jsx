@@ -1,9 +1,4 @@
-/**
- * Component for managing attendance sessions created by a teacher.
- * This component allows the teacher to view, edit, and delete attendance sessions they have created.
- * It fetches attendance sessions from Firestore where the teacherUID matches the current user's UID.
- * @returns JSX element containing the interface for managing attendance sessions.
- */
+
 import { useState, useEffect } from "react";
 import {
   collection,

@@ -11,6 +11,7 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Calendar,
+  Trash,
   Users,
   Bell,
   User,
@@ -123,6 +124,11 @@ const SidebarNavigation = ({ role, accessLevel, unreadCount, setIsOpen, windowWi
               name: "Add User",
               path: `/${role}/add-user`,
               icon: <User className="h-4 w-4" />,
+            },
+            {
+              name: "Delete Users",
+              path: `/${role}/delete-users`,
+              icon: <Trash className="h-4 w-4" />,
             },
             {
               name: "All Users",
@@ -253,6 +259,11 @@ const SidebarNavigation = ({ role, accessLevel, unreadCount, setIsOpen, windowWi
               icon: <User className="h-4 w-4" />,
             },
             {
+              name: "Delete Users",
+              path: `/${role}/delete-users`,
+              icon: <Trash className="h-4 w-4" />,
+            },
+            {
               name: "All Users",
               path: `/${role}/showallusers`,
               icon: <User className="h-4 w-4" />,
@@ -331,11 +342,6 @@ const SidebarNavigation = ({ role, accessLevel, unreadCount, setIsOpen, windowWi
         //   path: `/${role}/settings`,
         //   icon: <Settings className="h-5 w-5" />,
         // },
-        {
-          name: "Wifi Config",
-          path: `/${role}/wificonfig`,
-          icon: <Settings className="h-5 w-5" />,
-        },
       ];
     }
 
