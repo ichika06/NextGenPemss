@@ -18,6 +18,10 @@ import {
   FileText,
   UserPlus,
   Lock,
+  MapPin,
+  Users,
+  Award,
+  Settings,
 } from "lucide-react"
 
 export default function UserDetailsModal({ user, isOpen, onClose }) {
@@ -35,21 +39,64 @@ export default function UserDetailsModal({ user, isOpen, onClose }) {
     }
   }
 
+  // Role-specific field configurations
+  const getRoleSpecificFields = () => {
+    switch (user.role) {
+      case 'student':
+        return {
+          academic: [
+            { key: 'studentId', label: 'Student ID', icon: FileText },
+            { key: 'course', label: 'Course', icon: BookOpen },
+            { key: 'section', label: 'Section', icon: Layers },
+            { key: 'branch', label: 'Branch', icon: Building },
+            { key: 'organization', label: 'Organization', icon: Users },
+          ]
+        }
+      case 'teacher':
+        return {
+          academic: [
+            { key: 'teacherId', label: 'Teacher ID', icon: FileText },
+            { key: 'department', label: 'Department', icon: Building },
+            { key: 'position', label: 'Position', icon: Award },
+          ]
+        }
+      case 'admin':
+        return {
+          academic: [
+            { key: 'adminId', label: 'Admin ID', icon: FileText },
+            { key: 'accessLevel', label: 'Access Level', icon: Shield },
+          ]
+        }
+      case 'registrar':
+        return {
+          academic: [
+            { key: 'employeeId', label: 'Employee ID', icon: FileText },
+            { key: 'department', label: 'Department', icon: Building },
+            { key: 'office', label: 'Office', icon: MapPin },
+          ]
+        }
+      default:
+        return { academic: [] }
+    }
+  }
+
+  const roleFields = getRoleSpecificFields()
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
       <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden border border-gray-100 animate-fadeIn">
         {/* Header with gradient background */}
-        <div className="background-primary text-white p-6 flex justify-between items-center">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <User className="h-6 w-6 text-primary" />
-            <h3 className="text-xl font-bold text-primary">User Details</h3>
+            <User className="h-6 w-6" />
+            <h3 className="text-xl font-bold">User Details</h3>
           </div>
           <button
             onClick={onClose}
             className="text-white hover:bg-white/20 rounded-full p-1.5 transition-colors"
             aria-label="Close"
           >
-            <X className="h-5 w-5 text-primary" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
@@ -67,7 +114,7 @@ export default function UserDetailsModal({ user, isOpen, onClose }) {
               <h4 className="text-2xl font-bold text-gray-800">{user.name}</h4>
               <div className="flex items-center justify-center sm:justify-start mt-1 text-blue-700">
                 <Shield className="h-4 w-4 mr-1.5" />
-                <p className="font-medium">{user.role || "No role assigned"}</p>
+                <p className="font-medium capitalize">{user.role || "No role assigned"}</p>
               </div>
               <div className="flex items-center justify-center sm:justify-start mt-2 text-gray-500">
                 <Mail className="h-4 w-4 mr-1.5" />
@@ -124,49 +171,34 @@ export default function UserDetailsModal({ user, isOpen, onClose }) {
               </div>
             </div>
 
-            {/* Academic Information */}
+            {/* Role-Specific Information */}
             <div className="bg-gray-50 rounded-xl p-5 border border-gray-100 hover:shadow-md transition-shadow">
               <div className="flex items-center mb-4 text-green-700">
                 <GraduationCap className="h-5 w-5 mr-2" />
-                <h5 className="font-semibold">Academic Information</h5>
+                <h5 className="font-semibold">
+                  {user.role === 'student' ? 'Academic Information' : 
+                   user.role === 'teacher' ? 'Professional Information' :
+                   user.role === 'admin' ? 'Administrative Information' :
+                   user.role === 'registrar' ? 'Office Information' : 'Role Information'}
+                </h5>
               </div>
               <div className="space-y-4">
-                <div className="flex items-start">
-                  <div className="bg-green-100 p-2 rounded-lg mr-3 text-green-700">
-                    <FileText className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <span className="block text-xs text-gray-500">Student ID</span>
-                    <span className="block text-sm font-medium">{user.studentId || "N/A"}</span>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <div className="bg-green-100 p-2 rounded-lg mr-3 text-green-700">
-                    <BookOpen className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <span className="block text-xs text-gray-500">Course</span>
-                    <span className="block text-sm font-medium">{user.course || "N/A"}</span>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <div className="bg-green-100 p-2 rounded-lg mr-3 text-green-700">
-                    <Building className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <span className="block text-xs text-gray-500">Department</span>
-                    <span className="block text-sm font-medium">{user.department || "N/A"}</span>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <div className="bg-green-100 p-2 rounded-lg mr-3 text-green-700">
-                    <Layers className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <span className="block text-xs text-gray-500">Section</span>
-                    <span className="block text-sm font-medium">{user.section || "N/A"}</span>
-                  </div>
-                </div>
+                {roleFields.academic.map((field) => {
+                  const IconComponent = field.icon
+                  return (
+                    <div key={field.key} className="flex items-start">
+                      <div className="bg-green-100 p-2 rounded-lg mr-3 text-green-700">
+                        <IconComponent className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <span className="block text-xs text-gray-500">{field.label}</span>
+                        <span className="block text-sm font-medium">
+                          {user[field.key] || "N/A"}
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             </div>
 
@@ -201,7 +233,7 @@ export default function UserDetailsModal({ user, isOpen, onClose }) {
                   </div>
                   <div>
                     <span className="block text-xs text-gray-500">Role</span>
-                    <span className="block text-sm font-medium">{user.role || "N/A"}</span>
+                    <span className="block text-sm font-medium capitalize">{user.role || "N/A"}</span>
                   </div>
                 </div>
                 {user.generatedPassword && (
@@ -212,7 +244,9 @@ export default function UserDetailsModal({ user, isOpen, onClose }) {
                     <div>
                       <span className="block text-xs text-gray-500">Generated Password</span>
                       <div className="flex items-center">
-                        <span className="block text-sm font-medium mr-2">{user.generatedPassword}</span>
+                        <span className="block text-sm font-medium mr-2 font-mono bg-gray-100 px-2 py-1 rounded">
+                          {user.generatedPassword}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -223,7 +257,7 @@ export default function UserDetailsModal({ user, isOpen, onClose }) {
             {/* System Settings */}
             <div className="bg-gray-50 rounded-xl p-5 border border-gray-100 hover:shadow-md transition-shadow">
               <div className="flex items-center mb-4 text-amber-700">
-                <UserCheck className="h-5 w-5 mr-2" />
+                <Settings className="h-5 w-5 mr-2" />
                 <h5 className="font-semibold">System Settings</h5>
               </div>
               <div className="space-y-4">
@@ -248,47 +282,38 @@ export default function UserDetailsModal({ user, isOpen, onClose }) {
                     </span>
                   </div>
                 </div>
-                <div className="flex items-start">
-                  <div className="bg-amber-100 p-2 rounded-lg mr-3 text-amber-700">
-                    <Bell className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <span className="block text-xs text-gray-500 mb-2">Notification Preferences</span>
-                    <div className="space-y-2 ml-1">
-                      <div className="flex items-center">
-                        {user.notifications?.email ? (
-                          <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                        ) : (
-                          <XCircle className="h-4 w-4 text-red-500 mr-2" />
-                        )}
-                        <span className="text-sm">Email notifications</span>
-                      </div>
+                {user.notifications && (
+                  <div className="flex items-start">
+                    <div className="bg-amber-100 p-2 rounded-lg mr-3 text-amber-700">
+                      <Bell className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <span className="block text-xs text-gray-500 mb-2">Notification Preferences</span>
+                      <div className="space-y-2 ml-1">
+                        <div className="flex items-center">
+                          {user.notifications?.email ? (
+                            <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-red-500 mr-2" />
+                          )}
+                          <span className="text-sm">Email notifications</span>
+                        </div>
 
-                      <div className="flex items-center">
-                        {user.notifications?.system ? (
-                          <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                        ) : (
-                          <XCircle className="h-4 w-4 text-red-500 mr-2" />
-                        )}
-                        <span className="text-sm">System notifications</span>
+                        <div className="flex items-center">
+                          {user.notifications?.system ? (
+                            <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-red-500 mr-2" />
+                          )}
+                          <span className="text-sm">System notifications</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Footer with gradient button */}
-        <div className="flex justify-end p-6 border-t border-gray-200 bg-gray-50">
-          <button
-            onClick={onClose}
-            className="-m-4 px-5 py-2.5 btn-primary focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all shadow-md flex items-center"
-          >
-            <X className="h-4 w-4 mr-2"/>
-            Close
-          </button>
         </div>
       </div>
     </div>

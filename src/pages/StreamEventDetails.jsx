@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect, useRef } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { doc, collection, query, where, getDocs, onSnapshot } from "firebase/firestore"
@@ -22,6 +20,7 @@ import {
 } from "lucide-react"
 import { LoadingAnimation } from "../components/LoadingAnimation"
 import { PreRegisteredUsersModal } from "./DeletePreregistered"
+import GoogleSheetsUploader from '../pages/GoogleSheetIntegration';
 
 export default function EventDetailsDisplay() {
   const { eventId } = useParams()
@@ -70,15 +69,9 @@ export default function EventDetailsDisplay() {
 
             setEvent(eventData)
 
-            // Check if event is live and public
-            if (!eventData.isLive && !eventData.isPublic) {
-              setVisibilityMessage("This event is not live and not public.")
-              setEventVisible(false)
-            } else if (!eventData.isLive) {
+            // Only check if event is live - removed isPublic check
+            if (!eventData.isLive) {
               setVisibilityMessage("This event is not currently live.")
-              setEventVisible(false)
-            } else if (!eventData.isPublic) {
-              setVisibilityMessage("This event is not public.")
               setEventVisible(false)
             } else {
               setEventVisible(true)
@@ -301,7 +294,7 @@ export default function EventDetailsDisplay() {
       ...attendee,
       type: "registered",
       name: attendee.userName,
-      email: attendee.userEmail,
+      email: attendee.email,
       profileImage: attendee.userImageProfile,
       registrationTime: attendee.registeredAt,
       registrationMethod: attendee.registrationMethod,
@@ -329,12 +322,20 @@ export default function EventDetailsDisplay() {
   // Total of all students (registered + pre-registered)
   const totalStudents = attendees.length + filteredPreRegisteredUsers.length
 
+  const backtolast = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      window.close();
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="space-y-8">
         {/* Back Button */}
         <button
-          onClick={() => navigate(-1)}
+          onClick={backtolast}
           className="inline-flex items-center px-4 py-2 bg-white border border-gray-300 shadow-2xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors mb-2.5"
         >
           <ArrowLeft className="h-5 w-5 mr-2" />
@@ -346,16 +347,23 @@ export default function EventDetailsDisplay() {
           <div className="background-primary px-6 py-4">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
               <h1 className="text-2xl md:text-3xl font-bold text-primary mb-2 sm:mb-0">{event.title}</h1>
-              <div
-                className={`px-4 py-1.5 rounded-full text-sm font-medium self-start sm:self-auto ${
-                  new Date(event.date) < new Date()
-                    ? "bg-red-100 text-red-800"
-                    : event.isLive
-                      ? "bg-green-100 text-green-800"
-                      : "bg-gray-100 text-gray-800"
-                }`}
-              >
-                {new Date(event.date) < new Date() ? "Expired Event" : event.isLive ? "Live Event" : "Upcoming Event"}
+              <div className="flex gap-2">
+                <div
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium self-start sm:self-auto ${new Date(event.date) < new Date()
+                      ? "bg-red-100 text-red-800"
+                      : event.isLive
+                        ? "bg-green-100 text-green-800"
+                        : "bg-gray-100 text-gray-800"
+                    }`}
+                >
+                  {new Date(event.date) < new Date() ? "Expired Event" : event.isLive ? "Live Event" : "Upcoming Event"}
+                </div>
+                {/* Add visibility indicator for private events */}
+                {!event.isPublic && (
+                  <div className="px-4 py-1.5 rounded-full text-sm font-medium bg-orange-100 text-orange-800 self-start sm:self-auto">
+                    Private Event
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -473,6 +481,14 @@ export default function EventDetailsDisplay() {
           </button>
         </div>
 
+        {/* Google Sheets Upload Section - ADD THIS */}
+        <div className="mt-8">
+          <GoogleSheetsUploader
+            attendeesData={mergedAttendeesList}
+            eventTitle={event.title}
+          />
+        </div>
+
         <PreRegisteredUsersModal
           eventId={eventId}
           expirationMinutes={5}
@@ -555,115 +571,110 @@ export default function EventDetailsDisplay() {
 
                     return (
                       <tr
-                      key={attendee.id}
-                      className={`transition duration-150 ${
-                        isRegistered ? "bg-white hover:bg-purple-50" : "bg-gray-50 hover:bg-indigo-50"
-                      }`}
+                        key={attendee.id}
+                        className={`transition duration-150 ${isRegistered ? "bg-white hover:bg-purple-50" : "bg-gray-50 hover:bg-indigo-50"
+                          }`}
                       >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                        {/* Status indicator dot */}
-                        <div
-                          className={`w-3 h-3 rounded-full mr-2 ${
-                          isRegistered
-                            ? "bg-white border-2 border-green-500"
-                            : "bg-gray-100 border-2 border-indigo-400"
-                          }`}
-                        ></div>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            {/* Status indicator dot */}
+                            <div
+                              className={`w-3 h-3 rounded-full mr-2 ${isRegistered
+                                  ? "bg-white border-2 border-green-500"
+                                  : "bg-gray-100 border-2 border-indigo-400"
+                                }`}
+                            ></div>
 
-                        <div
-                          className={`flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ${
-                          isRegistered ? "bg-purple-100" : "bg-indigo-100"
-                          }`}
-                        >
-                          {attendee.profileImage || attendee.NFCuserImageProfile ? (
-                          <img
-                            src={attendee.profileImage || attendee.NFCuserImageProfile || "/placeholder.svg"}
-                            alt={attendee.profileImage || attendee.NFCuserImageProfile}
-                            className="h-full w-full object-cover"
-                          />
-                          ) : (
-                          <span className={`font-medium ${isRegistered ? "text-primary" : "text-indigo-600"}`}>
-                            {attendee.name ? attendee.name.charAt(0).toUpperCase() : "?"}
-                          </span>
-                          )}
-                        </div>
-                        <div className="ml-4">
-                          <div
-                          className={`text-sm font-medium ${isRegistered ? "text-primary" : "text-gray-600"}`}
-                          >
-                          {attendee.name || attendee.userName || attendee.NFCuserName}
+                            <div
+                              className={`flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ${isRegistered ? "bg-purple-100" : "bg-indigo-100"
+                                }`}
+                            >
+                              {attendee.profileImage || attendee.NFCuserImageProfile ? (
+                                <img
+                                  src={attendee.profileImage || attendee.NFCuserImageProfile || "/placeholder.svg"}
+                                  alt={attendee.profileImage || attendee.NFCuserImageProfile}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <span className={`font-medium ${isRegistered ? "text-primary" : "text-indigo-600"}`}>
+                                  {attendee.name ? attendee.name.charAt(0).toUpperCase() : "?"}
+                                </span>
+                              )}
+                            </div>
+                            <div className="ml-4">
+                              <div
+                                className={`text-sm font-medium ${isRegistered ? "text-primary" : "text-gray-600"}`}
+                              >
+                                {attendee.name || attendee.userName || attendee.NFCuserName}
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                        </div>
-                      </td>
-                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${isRegistered ? "text-primary" : "text-gray-600"}`}>
-                        {attendee.email || attendee.NFCregisteredByEmail || attendee.userEmail }
-                      </td>
-                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${isRegistered ? "text-primary" : "text-gray-600"}`}>
-                        {attendee.studentId || attendee.NFCuserId || attendee.userId}
-                      </td>
-                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${isRegistered ? "text-primary" : "text-gray-600"}`}>
-                        {attendee.course || attendee.NFCcourse}
-                      </td>
-                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${isRegistered ? "text-primary" : "text-gray-600"}`}>{registrationDate}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                        className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          isRegistered
-                          ? attendee.NFCstatus === "student" || attendee.status === "student"
-                            ? "bg-green-100 text-green-800"
-                            : attendee.NFCstatus === "Pending"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-blue-100 text-blue-800"
-                          : "bg-indigo-100 text-indigo-800"
-                        }`}
-                        >
-                        {attendee.NFCstatus === "student" || attendee.status === "student"
-                          ? "Registered"
-                          : attendee.NFCstatus || attendee.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <div
-                        className={`flex items-center ${
-                          isRegistered
-                          ? attendee.NFCregistrationMethod === "NFC" || attendee.registrationMethod === "QR"
-                            ? "text-primary"
-                            : "text-primary-secondary"
-                          : "text-primary-secondary"
-                        }`}
-                        >
-                        {isRegistered ? (
-                          attendee.NFCregistrationMethod === "NFC" ? (
-                          <>
-                            <CheckCircle className="h-4 w-4 mr-1.5" />
-                            <span>NFC Registration</span>
-                          </>
-                          ) : attendee.registrationMethod === "QR" ? (
-                          <>
-                            <QrCode className="h-4 w-4 mr-1.5" />
-                            <span>QR Registration</span>
-                          </>
-                          ) : attendee.registrationMethod === "HW-NFC" ? (
-                          <>
-                            <Clipboard className="h-4 w-4 mr-1.5" />
-                            <span>HW Registration</span>
-                          </>
-                          ) : (
-                          <>
-                            <User className="h-4 w-4 mr-1.5" />
-                            <span>WIFI Registration</span>
-                          </>
-                          )
-                        ) : (
-                          <>
-                          <AlertTriangle className="h-4 w-4 mr-1.5" />
-                          <span>Pre-registration</span>
-                          </>
-                        )}
-                        </div>
-                      </td>
+                        </td>
+                        <td className={`px-6 py-4 whitespace-nowrap text-sm ${isRegistered ? "text-primary" : "text-gray-600"}`}>
+                          {attendee.email || attendee.NFCregisteredByEmail || attendee.userEmail}
+                        </td>
+                        <td className={`px-6 py-4 whitespace-nowrap text-sm ${isRegistered ? "text-primary" : "text-gray-600"}`}>
+                          {attendee.studentId || attendee.NFCuserId || attendee.userId}
+                        </td>
+                        <td className={`px-6 py-4 whitespace-nowrap text-sm ${isRegistered ? "text-primary" : "text-gray-600"}`}>
+                          {attendee.course || attendee.NFCcourse}
+                        </td>
+                        <td className={`px-6 py-4 whitespace-nowrap text-sm ${isRegistered ? "text-primary" : "text-gray-600"}`}>{registrationDate}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${isRegistered
+                                ? attendee.NFCstatus === "student" || attendee.status === "student"
+                                  ? "bg-green-100 text-green-800"
+                                  : attendee.NFCstatus === "Pending"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : "bg-blue-100 text-blue-800"
+                                : "bg-indigo-100 text-indigo-800"
+                              }`}
+                          >
+                            {attendee.NFCstatus === "student" || attendee.status === "student"
+                              ? "Registered"
+                              : attendee.NFCstatus || attendee.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <div
+                            className={`flex items-center ${isRegistered
+                                ? attendee.NFCregistrationMethod === "NFC" || attendee.registrationMethod === "QR"
+                                  ? "text-primary"
+                                  : "text-primary-secondary"
+                                : "text-primary-secondary"
+                              }`}
+                          >
+                            {isRegistered ? (
+                              attendee.NFCregistrationMethod === "NFC" ? (
+                                <>
+                                  <CheckCircle className="h-4 w-4 mr-1.5" />
+                                  <span>NFC Registration</span>
+                                </>
+                              ) : attendee.registrationMethod === "QR" ? (
+                                <>
+                                  <QrCode className="h-4 w-4 mr-1.5" />
+                                  <span>QR Registration</span>
+                                </>
+                              ) : attendee.registrationMethod === "HW-NFC" ? (
+                                <>
+                                  <Clipboard className="h-4 w-4 mr-1.5" />
+                                  <span>HW Registration</span>
+                                </>
+                              ) : (
+                                <>
+                                  <User className="h-4 w-4 mr-1.5" />
+                                  <span>WIFI Registration</span>
+                                </>
+                              )
+                            ) : (
+                              <>
+                                <AlertTriangle className="h-4 w-4 mr-1.5" />
+                                <span>Pre-registration</span>
+                              </>
+                            )}
+                          </div>
+                        </td>
                       </tr>
                     )
                   })}

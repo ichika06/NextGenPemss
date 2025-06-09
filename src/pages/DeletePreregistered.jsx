@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect, useMemo } from "react"
 import { collection, query, where, getDocs, deleteDoc, doc } from "firebase/firestore"
 import { db } from "../firebase/config"
@@ -500,7 +498,7 @@ export function PreRegisteredUsersModal({ eventId, expirationMinutes = 5, isOpen
   }
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 overflow-y-auto backdrop-blur-xs backdrop-grayscale-150 flex items-center justify-center p-4">
       <div className="relative bg-white rounded-xl shadow-xl max-w-6xl w-full max-h-[90vh] flex flex-col">
         {/* Modal Header */}
         <div className="bg-purple-600 px-6 py-4 rounded-t-xl flex justify-between items-center">

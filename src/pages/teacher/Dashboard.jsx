@@ -95,32 +95,6 @@ export default function TeacherDashboard() {
           <div className="text-center py-8 text-gray-500">No upcoming events found</div>
         )}
       </div>
-
-      {/* Events I'm Teaching */}
-      <div className="bg-white rounded-lg shadow p-6 mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">Events I'm Teaching</h2>
-        </div>
-
-        {loading ? (
-          <div className="flex items-center justify-center">
-            <LoadingAnimation
-              type="spinner"
-              size="md"
-              variant="info"
-              text="Loading registered event, please wait..."
-            />
-          </div>
-        ) : assignedEvents.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {assignedEvents.slice(0, 3).map((event) => (
-              <EventCard key={event.id} event={event} viewOnly={true} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8 text-gray-500">You haven't been assigned to teach any events yet</div>
-        )}
-      </div>
     </div>
   )
 

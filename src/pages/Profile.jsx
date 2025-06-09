@@ -1,8 +1,5 @@
-/**
- * Functional component for displaying and editing user profile information.
- * @returns JSX element containing user profile information and editing functionality.
- */
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import {
   collection,
@@ -29,17 +26,25 @@ import {
   CreditCard,
   GraduationCap,
   School,
+  MapPin,
+  UserCheck,
+  Camera,
+  Upload,
 } from "lucide-react";
 import { LoadingAnimation } from "../components/LoadingAnimation";
+import UserStorageService from "../components/reuseRegistration/UserStorageService"; // Import the storage service
 
 export default function UserProfile() {
-  const { currentUser, updatePassword, updateEmail, reauthenticate } = useAuth();
+  const { currentUser, updatePassword, updateEmail, reauthenticate } =
+    useAuth();
   const [profile, setProfile] = useState({
     email: currentUser?.email || "",
     name: "",
     phone: "",
     department: "",
     role: "",
+    profileImageUrl: "",
+    profileImagePath: "",
     notifications: {
       email: true,
       system: true,
@@ -48,6 +53,8 @@ export default function UserProfile() {
     studentId: "",
     section: "",
     course: "",
+    branch: "",
+    organization: "",
     teacherId: "",
     position: "",
     employeeId: "",
@@ -61,6 +68,48 @@ export default function UserProfile() {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [imageUploading, setImageUploading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const fileInputRef = useRef(null);
+
+  // Branch options
+  const branches = [
+    "ICCT Antipolo Branch",
+    "ICCT Binangonan Branch",
+    "ICCT San Mateo Branch",
+    "ICCT Cogeo Branch",
+    "ICCT Taytay Branch",
+    "ICCT Cainta Main Campus",
+    "ICCT Angono Branch",
+    "ICCT Sumulong Branch",
+  ];
+
+  // Organization options
+  const organizations = [
+    "Computer Explorer Society",
+    "CISCO Student Associatio",
+    "CBA Club",
+    "JPIA Chapter",
+    "Criminology Society",
+    "Educator's Society",
+    "English Club",
+    "Math Club",
+    "Engineering Students Society",
+    "IECEP Chapter",
+    "ICPEP Chapter",
+    "Masscom Society",
+    "Phychology Society",
+    "Societas Hotelianos",
+    "Lakbay",
+    "Medical Technology Society",
+    "TECH-VOC Student Organization",
+    "Taekwondo Club",
+    "Sibol Theatrical Dance Group",
+    "Yin Yang Dance Group",
+    "Blue Dragon Varsity Player",
+    "Rhythm and Voice Chorale",
+  ];
 
   useEffect(() => {
     async function fetchUserProfile() {
@@ -80,6 +129,8 @@ export default function UserProfile() {
             phone: userData.phone || "",
             department: userData.department || "",
             role: userData.role || "",
+            profileImageUrl: userData.profileImageUrl || "",
+            profileImagePath: userData.profileImagePath || "",
             notifications: userData.notifications || {
               email: true,
               system: true,
@@ -88,6 +139,8 @@ export default function UserProfile() {
             studentId: userData.studentId || "",
             section: userData.section || "",
             course: userData.course || "",
+            branch: userData.branch || "",
+            organization: userData.organization || "",
             teacherId: userData.teacherId || "",
             position: userData.position || "",
             employeeId: userData.employeeId || "",
@@ -127,6 +180,90 @@ export default function UserProfile() {
     }
   };
 
+  // Handle image file selection
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+      if (!validTypes.includes(file.type)) {
+        setMessage({ type: "error", text: "Please select a valid image file (JPEG, PNG, or GIF)" });
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      if (file.size > maxSize) {
+        setMessage({ type: "error", text: "Image size must be less than 5MB" });
+        return;
+      }
+
+      setSelectedImage(file);
+
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Upload profile image
+  const uploadProfileImage = async () => {
+    if (!selectedImage) return;
+
+    setImageUploading(true);
+    setMessage({ type: "", text: "" });
+
+    try {
+      const imageUploadResult = await UserStorageService.updateProfileImage(
+        currentUser.uid,
+        selectedImage,
+        profile.profileImagePath || null
+      );
+
+      if (imageUploadResult.success) {
+        // Update the profile state with new image URL and path
+        const updatedProfile = {
+          ...profile,
+          profileImageUrl: imageUploadResult.url,
+          profileImagePath: imageUploadResult.path,
+        };
+        setProfile(updatedProfile);
+
+        // Update Firestore with new image data
+        const userQuery = query(
+          collection(db, "users"),
+          where("email", "==", currentUser.email)
+        );
+        const snapshot = await getDocs(userQuery);
+
+        if (!snapshot.empty) {
+          const userDoc = snapshot.docs[0];
+          await updateDoc(doc(db, "users", userDoc.id), {
+            profileImageUrl: imageUploadResult.url,
+            profileImagePath: imageUploadResult.path,
+          });
+        }
+
+        setMessage({ type: "success", text: "Profile image updated successfully" });
+        setSelectedImage(null);
+        setImagePreview(null);
+
+        // Reset file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      }
+    } catch (error) {
+      console.error("Error uploading profile image:", error);
+      setMessage({ type: "error", text: "Failed to upload profile image" });
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
   const saveProfile = async (e) => {
     e.preventDefault();
     setMessage({ type: "", text: "" });
@@ -148,6 +285,8 @@ export default function UserProfile() {
           phone: profile.phone,
           department: profile.department,
           notifications: profile.notifications,
+          profileImageUrl: profile.profileImageUrl,
+          profileImagePath: profile.profileImagePath,
         };
 
         // Add role-specific fields
@@ -155,6 +294,8 @@ export default function UserProfile() {
           updateData.studentId = profile.studentId;
           updateData.section = profile.section;
           updateData.course = profile.course;
+          updateData.branch = profile.branch;
+          updateData.organization = profile.organization;
         } else if (profile.role === "teacher") {
           updateData.teacherId = profile.teacherId;
           updateData.department = profile.department;
@@ -179,37 +320,37 @@ export default function UserProfile() {
   };
 
   const changePassword = async (e) => {
-  e.preventDefault();
-  setMessage({ type: "", text: "" });
+    e.preventDefault();
+    setMessage({ type: "", text: "" });
 
-  if (newPassword !== confirmPassword) {
-    setMessage({ type: "error", text: "New passwords don't match" });
-    return;
-  }
-
-  try {
-    // Reauthenticate user first
-    await reauthenticate(oldPassword);
-    // Then update password
-    await updatePassword(newPassword);
-
-    setMessage({ type: "success", text: "Password changed successfully" });
-    setOldPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-  } catch (error) {
-    console.error("Error changing password:", error);
-    let errorMessage = "Failed to change password";
-
-    if (error.code === "auth/wrong-password") {
-      errorMessage = "Current password is incorrect";
-    } else if (error.code === "auth/weak-password") {
-      errorMessage = "New password is too weak";
+    if (newPassword !== confirmPassword) {
+      setMessage({ type: "error", text: "New passwords don't match" });
+      return;
     }
 
-    setMessage({ type: "error", text: errorMessage });
-  }
-};
+    try {
+      // Reauthenticate user first
+      await reauthenticate(oldPassword);
+      // Then update password
+      await updatePassword(newPassword);
+
+      setMessage({ type: "success", text: "Password changed successfully" });
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error) {
+      console.error("Error changing password:", error);
+      let errorMessage = "Failed to change password";
+
+      if (error.code === "auth/wrong-password") {
+        errorMessage = "Current password is incorrect";
+      } else if (error.code === "auth/weak-password") {
+        errorMessage = "New password is too weak";
+      }
+
+      setMessage({ type: "error", text: errorMessage });
+    }
+  };
 
   // Render fields specific to the user role
   const renderRoleSpecificFields = () => {
@@ -227,13 +368,8 @@ export default function UserProfile() {
                   type="text"
                   name="studentId"
                   value={profile.studentId}
-                  onChange={handleChange}
-                  disabled={!editing}
-                  className={`pl-10 w-full px-3 py-2 border rounded-md ${
-                    editing
-                      ? "border-gray-300 bg-white"
-                      : "border-gray-300 bg-gray-50 text-gray-600"
-                  }`}
+                  disabled
+                  className={`pl-10 w-full px-3 py-2 border rounded-md bg-gray-50 text-gray-600`}
                 />
               </div>
             </div>
@@ -249,11 +385,10 @@ export default function UserProfile() {
                   value={profile.section}
                   onChange={handleChange}
                   disabled={!editing}
-                  className={`pl-10 w-full px-3 py-2 border rounded-md ${
-                    editing
-                      ? "border-gray-300 bg-white"
-                      : "border-gray-300 bg-gray-50 text-gray-600"
-                  }`}
+                  className={`pl-10 w-full px-3 py-2 border rounded-md ${editing
+                    ? "border-gray-300 bg-white"
+                    : "border-gray-300 bg-gray-50 text-gray-600"
+                    }`}
                 />
               </div>
             </div>
@@ -269,12 +404,61 @@ export default function UserProfile() {
                   value={profile.course}
                   onChange={handleChange}
                   disabled={!editing}
-                  className={`pl-10 w-full px-3 py-2 border rounded-md ${
-                    editing
-                      ? "border-gray-300 bg-white"
-                      : "border-gray-300 bg-gray-50 text-gray-600"
-                  }`}
+                  className={`pl-10 w-full px-3 py-2 border rounded-md ${editing
+                    ? "border-gray-300 bg-white"
+                    : "border-gray-300 bg-gray-50 text-gray-600"
+                    }`}
                 />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Branch
+              </label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <select
+                  name="branch"
+                  value={profile.branch}
+                  onChange={handleChange}
+                  disabled={!editing}
+                  className={`pl-10 w-full px-3 py-2 border rounded-md ${editing
+                    ? "border-gray-300 bg-white"
+                    : "border-gray-300 bg-gray-50 text-gray-600"
+                    }`}
+                >
+                  <option value="">Select Branch</option>
+                  {branches.map((branch) => (
+                    <option key={branch} value={branch}>
+                      {branch}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Organization
+              </label>
+              <div className="relative">
+                <UserCheck className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <select
+                  name="organization"
+                  value={profile.organization}
+                  onChange={handleChange}
+                  disabled={!editing}
+                  className={`pl-10 w-full px-3 py-2 border rounded-md ${editing
+                    ? "border-gray-300 bg-white"
+                    : "border-gray-300 bg-gray-50 text-gray-600"
+                    }`}
+                >
+                  <option value="">Select Organization</option>
+                  {organizations.map((org) => (
+                    <option key={org} value={org}>
+                      {org}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>
@@ -294,11 +478,10 @@ export default function UserProfile() {
                   value={profile.teacherId}
                   onChange={handleChange}
                   disabled={!editing}
-                  className={`pl-10 w-full px-3 py-2 border rounded-md ${
-                    editing
-                      ? "border-gray-300 bg-white"
-                      : "border-gray-300 bg-gray-50 text-gray-600"
-                  }`}
+                  className={`pl-10 w-full px-3 py-2 border rounded-md ${editing
+                    ? "border-gray-300 bg-white"
+                    : "border-gray-300 bg-gray-50 text-gray-600"
+                    }`}
                 />
               </div>
             </div>
@@ -314,11 +497,10 @@ export default function UserProfile() {
                   value={profile.position}
                   onChange={handleChange}
                   disabled={!editing}
-                  className={`pl-10 w-full px-3 py-2 border rounded-md ${
-                    editing
-                      ? "border-gray-300 bg-white"
-                      : "border-gray-300 bg-gray-50 text-gray-600"
-                  }`}
+                  className={`pl-10 w-full px-3 py-2 border rounded-md ${editing
+                    ? "border-gray-300 bg-white"
+                    : "border-gray-300 bg-gray-50 text-gray-600"
+                    }`}
                 />
               </div>
             </div>
@@ -339,11 +521,10 @@ export default function UserProfile() {
                   value={profile.employeeId}
                   onChange={handleChange}
                   disabled={!editing}
-                  className={`pl-10 w-full px-3 py-2 border rounded-md ${
-                    editing
-                      ? "border-gray-300 bg-white"
-                      : "border-gray-300 bg-gray-50 text-gray-600"
-                  }`}
+                  className={`pl-10 w-full px-3 py-2 border rounded-md ${editing
+                    ? "border-gray-300 bg-white"
+                    : "border-gray-300 bg-gray-50 text-gray-600"
+                    }`}
                 />
               </div>
             </div>
@@ -359,11 +540,10 @@ export default function UserProfile() {
                   value={profile.office}
                   onChange={handleChange}
                   disabled={!editing}
-                  className={`pl-10 w-full px-3 py-2 border rounded-md ${
-                    editing
-                      ? "border-gray-300 bg-white"
-                      : "border-gray-300 bg-gray-50 text-gray-600"
-                  }`}
+                  className={`pl-10 w-full px-3 py-2 border rounded-md ${editing
+                    ? "border-gray-300 bg-white"
+                    : "border-gray-300 bg-gray-50 text-gray-600"
+                    }`}
                 />
               </div>
             </div>
@@ -384,11 +564,10 @@ export default function UserProfile() {
                   value={profile.adminId}
                   onChange={handleChange}
                   disabled={!editing}
-                  className={`pl-10 w-full px-3 py-2 border rounded-md ${
-                    editing
-                      ? "border-gray-300 bg-white"
-                      : "border-gray-300 bg-gray-50 text-gray-600"
-                  }`}
+                  className={`pl-10 w-full px-3 py-2 border rounded-md ${editing
+                    ? "border-gray-300 bg-white"
+                    : "border-gray-300 bg-gray-50 text-gray-600"
+                    }`}
                 />
               </div>
             </div>
@@ -404,11 +583,10 @@ export default function UserProfile() {
                   value={profile.accessLevel}
                   onChange={handleChange}
                   disabled={!editing}
-                  className={`pl-10 w-full px-3 py-2 border rounded-md ${
-                    editing
-                      ? "border-gray-300 bg-white"
-                      : "border-gray-300 bg-gray-50 text-gray-600"
-                  }`}
+                  className={`pl-10 w-full px-3 py-2 border rounded-md ${editing
+                    ? "border-gray-300 bg-white"
+                    : "border-gray-300 bg-gray-50 text-gray-600"
+                    }`}
                 />
               </div>
             </div>
@@ -456,11 +634,10 @@ export default function UserProfile() {
 
       {message.text && (
         <div
-          className={`mb-6 p-4 rounded-lg flex items-start ${
-            message.type === "error"
-              ? "bg-red-50 text-red-700"
-              : "bg-green-50 text-green-700"
-          }`}
+          className={`mb-6 p-4 rounded-lg flex items-start ${message.type === "error"
+            ? "bg-red-50 text-red-700"
+            : "bg-green-50 text-green-700"
+            }`}
         >
           {message.type === "error" ? (
             <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
@@ -508,6 +685,62 @@ export default function UserProfile() {
               </div>
 
               <form className="p-6 space-y-6">
+                {/* Profile Image Section */}
+                <div className="flex flex-col items-center text-center space-y-4 p-6 rounded-lg shadow-sm bg-white">
+                  <div className="relative w-32 h-32 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
+                    {imagePreview ? (
+                      <img
+                        src={imagePreview}
+                        alt="Image preview"
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : profile.profileImageUrl ? (
+                      <img
+                        src={profile.profileImageUrl}
+                        alt="Profile"
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      <User className="h-16 w-16 text-gray-400" />
+                    )}
+                  </div>
+                  <div className="flex flex-col space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={!editing}
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition"
+                    >
+                      <Camera className="h-5 w-5 mr-2" />
+                      Choose Image
+                    </button>
+                    {selectedImage && (
+                      <button
+                        type="button"
+                        onClick={uploadProfileImage}
+                        disabled={imageUploading}
+                        className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition"
+                      >
+                        {imageUploading ? (
+                          <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                        ) : (
+                          <Upload className="h-5 w-5 mr-2" />
+                        )}
+                        {imageUploading ? "Uploading..." : "Upload"}
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-500">JPG, PNG or GIF. Max size 5MB.</p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                  />
+                </div>
+
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -532,11 +765,10 @@ export default function UserProfile() {
                       value={profile.name}
                       onChange={handleChange}
                       disabled={!editing}
-                      className={`w-full px-3 py-2 border rounded-md ${
-                        editing
-                          ? "border-gray-300 bg-white"
-                          : "border-gray-300 bg-gray-50 text-gray-600"
-                      }`}
+                      className={`w-full px-3 py-2 border rounded-md ${editing
+                        ? "border-gray-300 bg-white"
+                        : "border-gray-300 bg-gray-50 text-gray-600"
+                        }`}
                     />
                   </div>
 
@@ -550,31 +782,31 @@ export default function UserProfile() {
                       value={profile.phone}
                       onChange={handleChange}
                       disabled={!editing}
-                      className={`w-full px-3 py-2 border rounded-md ${
-                        editing
-                          ? "border-gray-300 bg-white"
-                          : "border-gray-300 bg-gray-50 text-gray-600"
-                      }`}
+                      className={`w-full px-3 py-2 border rounded-md ${editing
+                        ? "border-gray-300 bg-white"
+                        : "border-gray-300 bg-gray-50 text-gray-600"
+                        }`}
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Department
-                    </label>
-                    <input
-                      type="text"
-                      name="department"
-                      value={profile.department}
-                      onChange={handleChange}
-                      disabled={!editing}
-                      className={`w-full px-3 py-2 border rounded-md ${
-                        editing
+                  {profile.role !== "student" && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Department
+                      </label>
+                      <input
+                        type="text"
+                        name="department"
+                        value={profile.department}
+                        onChange={handleChange}
+                        disabled={!editing}
+                        className={`w-full px-3 py-2 border rounded-md ${editing
                           ? "border-gray-300 bg-white"
                           : "border-gray-300 bg-gray-50 text-gray-600"
-                      }`}
-                    />
-                  </div>
+                          }`}
+                      />
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">

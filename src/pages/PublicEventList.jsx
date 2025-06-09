@@ -1,11 +1,3 @@
-/**
- * Component to display a list of public events.
- * - Fetches public events from Firestore and displays them.
- * - Allows filtering events by search term.
- * - Handles loading and error states.
- * @returns JSX element displaying the list of public events.
- */
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -39,7 +31,7 @@ export default function PublicEventsList() {
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredEvents, setFilteredEvents] = useState([]);
-  const { currentUser, userRole } = useAuth();
+  const { currentUser, userRole, currentUserData } = useAuth();
 
   // Function to determine the dashboard route based on user role
   const getDashboardRoute = () => {
@@ -58,11 +50,60 @@ export default function PublicEventsList() {
     }
   };
 
+  // Function to check if user can see the event
+  const canViewEvent = (event) => {
+    // If event is public, everyone can see it
+    if (event.isPublic) {
+      return true;
+    }
+
+    // If event is private and user is not logged in, they can't see it
+    if (!currentUser || !currentUserData) {
+      return false;
+    }
+
+    // If event is private, check if user's branch or organization match
+    const userBranch = currentUserData.branch;
+    const userOrganization = currentUserData.organization;
+    const eventBranch = event.branch;
+    const eventOrganization = event.organization;
+
+    // Show event if:
+    // 1. Event has no branch/organization restrictions (null/undefined/empty)
+    // 2. User's branch matches event's branch (if event has a branch)
+    // 3. User's organization matches event's organization (if event has an organization)
+    const noBranchRestriction = !eventBranch || eventBranch.trim() === "";
+    const noOrgRestriction = !eventOrganization || eventOrganization.trim() === "";
+    const branchMatches = eventBranch && userBranch === eventBranch;
+    const organizationMatches = eventOrganization && userOrganization === eventOrganization;
+
+    // If event has no restrictions, show it
+    if (noBranchRestriction && noOrgRestriction) {
+      return true;
+    }
+
+    // If event has branch restriction but no org restriction, check branch
+    if (!noBranchRestriction && noOrgRestriction) {
+      return branchMatches;
+    }
+
+    // If event has org restriction but no branch restriction, check org
+    if (noBranchRestriction && !noOrgRestriction) {
+      return organizationMatches;
+    }
+
+    // If event has both restrictions, at least one must match
+    if (!noBranchRestriction && !noOrgRestriction) {
+      return branchMatches || organizationMatches;
+    }
+
+    return false;
+  };
+
   useEffect(() => {
-    // Create a query to get only public events
+    // Get all events (both public and private) and filter them client-side
     const eventsQuery = query(
       collection(db, "events"),
-      where("isPublic", "==", true),
       orderBy("date", "desc")
     );
 
@@ -70,17 +111,20 @@ export default function PublicEventsList() {
     const unsubscribe = onSnapshot(
       eventsQuery,
       (querySnapshot) => {
-        const eventsData = querySnapshot.docs.map((doc) => ({
+        const allEventsData = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
 
-        setEvents(eventsData);
-        setFilteredEvents(eventsData);
+        // Filter events based on visibility rules
+        const visibleEvents = allEventsData.filter(canViewEvent);
+
+        setEvents(visibleEvents);
+        setFilteredEvents(visibleEvents);
         setLoading(false);
       },
       (error) => {
-        console.error("Error fetching public events:", error);
+        console.error("Error fetching events:", error);
         setError("Failed to load events");
         setLoading(false);
       }
@@ -88,7 +132,7 @@ export default function PublicEventsList() {
 
     // Clean up the listener when component unmounts
     return () => unsubscribe();
-  }, []);
+  }, [currentUser, currentUserData]);
 
   // Filter events based on search term
   useEffect(() => {
@@ -199,7 +243,7 @@ export default function PublicEventsList() {
           <div className="flex items-center space-x-3">
             <List className="h-6 w-6 text-indigo-600" />
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-              Public Events
+              Available Events
             </h1>
           </div>
           <div className="relative w-full md:w-auto">
@@ -222,8 +266,11 @@ export default function PublicEventsList() {
               key={event.id}
               className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-indigo-200 group"
               style={{
+                animationName: "fadeIn",
+                animationDuration: "0.5s",
+                animationTimingFunction: "ease",
+                animationFillMode: "forwards",
                 animationDelay: `${index * 50}ms`,
-                animation: "fadeIn 0.5s ease forwards",
               }}
             >
               {event.image ? (
@@ -240,9 +287,11 @@ export default function PublicEventsList() {
                         Live access
                       </div>
                     )}
-                    <div className="bg-green-600 px-2 py-1 rounded-full text-xs font-medium text-white text-center flex items-center gap-1">
+                    <div className={`px-2 py-1 rounded-full text-xs font-medium text-white text-center flex items-center gap-1 ${
+                      event.isPublic ? 'bg-green-600' : 'bg-blue-600'
+                    }`}>
                       <Globe className="h-4 w-4" />
-                      {event.isPublic ? "Public Event" : "Private Event"}
+                      {event.isPublic ? "Public Event" : "Organization Event"}
                     </div>
                   </div>
                 </div>
@@ -301,6 +350,22 @@ export default function PublicEventsList() {
                     <span className="truncate">{event.location}</span>
                   </div>
 
+                  {/* Show branch and organization info for private events */}
+                  {!event.isPublic && (
+                    <div className="space-y-1">
+                      {event.branch && (
+                        <div className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                          Branch: {event.branch}
+                        </div>
+                      )}
+                      {event.organization && (
+                        <div className="text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded">
+                          Organization: {event.organization}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <p className="text-sm text-gray-600 line-clamp-2 mt-2">
                     {event.description}
                   </p>
@@ -328,7 +393,7 @@ export default function PublicEventsList() {
               </p>
             ) : (
               <p className="text-gray-600 mb-6">
-                There are no public events available at the moment
+                There are no events available for you at the moment
               </p>
             )}
             {searchTerm && (

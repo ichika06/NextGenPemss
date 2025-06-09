@@ -342,7 +342,11 @@ export default function PublicEventView() {
   };
 
   const backtolast = () => {
-    navigate(-1);
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      window.close();
+    }
   };
 
   return (

@@ -157,7 +157,7 @@ export const fetchSavedAttendanceSessions = async (attendanceRecords) => {
   // Handle both new and old format
   const attendanceIds = Array.isArray(attendanceRecords) 
     ? attendanceRecords.map(record => typeof record === 'object' ? record.id : record)
-    : attendanceRecords;
+    : Array.isArray(attendanceRecords) ? attendanceRecords : [];
   
   if (!attendanceIds || attendanceIds.length === 0) {
     return {

@@ -28,9 +28,10 @@ import {
   Filter,
   X,
   CalendarCog,
-  Radio,
+  Pencil,
   Wifi,
   WifiOff,
+  ExternalLink,
 } from "lucide-react";
 import { LoadingAnimation } from "../components/LoadingAnimation";
 import CountdownDisplay from "../components/CountingDisplay";
@@ -325,6 +326,21 @@ export default function ManageEvent() {
     }
   };
 
+  // Handle viewing private event details
+  const handleViewPrivateEvent = (event) => {
+    // Open the event details in a new tab/window
+    const eventDetailsURL = `/stream-event-details/${event.id}`;
+    window.open(eventDetailsURL, '_blank');
+  };
+
+  const handleRegisterPrivateEvent = (event) => {
+    // Open the event details in a new tab/window
+    const eventDetailsURL = `/events/${event.id}`;
+    window.open(eventDetailsURL, '_blank');
+  };
+
+
+
   // Calculate event status
   const getEventStatus = (event) => {
     const eventDate = new Date(event.date);
@@ -407,8 +423,8 @@ export default function ManageEvent() {
               <button
                 onClick={() => setFilter("all")}
                 className={`px-3 py-1.5 rounded-lg flex items-center text-sm font-medium transition-colors ${filter === "all"
-                    ? "bg-indigo-100 text-indigo-700 border border-indigo-200"
-                    : "bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200"
+                  ? "bg-indigo-100 text-indigo-700 border border-indigo-200"
+                  : "bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200"
                   }`}
               >
                 <Filter className="h-4 w-4 mr-1.5" /> All Events
@@ -416,8 +432,8 @@ export default function ManageEvent() {
               <button
                 onClick={() => setFilter("public")}
                 className={`px-3 py-1.5 rounded-lg flex items-center text-sm font-medium transition-colors ${filter === "public"
-                    ? "bg-indigo-100 text-indigo-700 border border-indigo-200"
-                    : "bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200"
+                  ? "bg-indigo-100 text-indigo-700 border border-indigo-200"
+                  : "bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200"
                   }`}
               >
                 <Globe className="h-4 w-4 mr-1.5" /> Public
@@ -425,8 +441,8 @@ export default function ManageEvent() {
               <button
                 onClick={() => setFilter("private")}
                 className={`px-3 py-1.5 rounded-lg flex items-center text-sm font-medium transition-colors ${filter === "private"
-                    ? "bg-indigo-100 text-indigo-700 border border-indigo-200"
-                    : "bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200"
+                  ? "bg-indigo-100 text-indigo-700 border border-indigo-200"
+                  : "bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200"
                   }`}
               >
                 <Lock className="h-4 w-4 mr-1.5" /> Private
@@ -565,6 +581,29 @@ export default function ManageEvent() {
                         >
                           <Eye className="h-4 w-4 mr-1.5" /> View
                         </Link>
+
+                        {/* Show Private Event Details Button - only for private events */}
+                        {!event.isPublic && (
+                          <button
+                            onClick={() => handleViewPrivateEvent(event)}
+                            className="inline-flex items-center px-3 py-1.5 bg-purple-50 border border-purple-200 hover:bg-purple-100 rounded-lg text-sm text-purple-700 transition-colors"
+                            title="View private event details in new tab"
+                          >
+                            <ExternalLink className="h-4 w-4 mr-1.5" /> Stream
+                          </button>
+                        )}
+
+                        {!event.isPublic && (
+                          <button
+                            onClick={() => handleRegisterPrivateEvent(event)}
+                            className="inline-flex items-center px-3 py-1.5 bg-blue-50 border border-blue-200 hover:bg-blue-100 rounded-lg text-sm text-blue-700 transition-colors"
+                            title="View private event details in new tab"
+                          >
+                            <Pencil className="h-4 w-4 mr-1.5" /> Register
+                          </button>
+                        )}
+
+
                         <Link
                           to={`/${userRole}/edit-event/${event.id}`}
                           className="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg text-sm text-gray-700 transition-colors"
@@ -590,8 +629,8 @@ export default function ManageEvent() {
                         <button
                           onClick={() => toggleEventLiveStatus(event)}
                           className={`inline-flex items-center px-3 py-1.5 rounded-lg text-sm transition-colors ${event.isLive
-                              ? "bg-green-50 border border-green-200 hover:bg-green-100 text-green-700"
-                              : "bg-white border border-gray-300 hover:bg-gray-50 text-gray-700"
+                            ? "bg-green-50 border border-green-200 hover:bg-green-100 text-green-700"
+                            : "bg-white border border-gray-300 hover:bg-gray-50 text-gray-700"
                             }`}
                         >
                           {event.isLive ? (
@@ -627,7 +666,7 @@ export default function ManageEvent() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 backdrop-blur-xs backdrop-grayscale-150 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
             <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mx-auto mb-4">
               <AlertCircle className="h-6 w-6 text-red-600" />
@@ -656,7 +695,7 @@ export default function ManageEvent() {
                     <LoadingAnimation
                       type="spinner"
                       size="md"
-                      variant="primary"
+                      variant="info"
                       text="Deleting, please wait..."
                     />
                   </>

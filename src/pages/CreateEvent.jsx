@@ -17,6 +17,8 @@ import {
   CalendarPlus,
   Key,
   Radio,
+  Building,
+  Users2,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { v4 as uuidv4 } from "uuid";
@@ -36,7 +38,9 @@ export default function CreateEvent() {
     image: null,
     isPublic: true,
     isLive: true,
-    eventCode: uuidv4().substring(0, 8).toUpperCase(), // Generate a shorter unique code
+    eventCode: uuidv4().substring(0, 8).toUpperCase(),
+    branch: "",
+    organization: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -44,12 +48,41 @@ export default function CreateEvent() {
   const [imagePreview, setImagePreview] = useState(null);
   const [excelGenerated, setExcelGenerated] = useState(false);
 
+  // Branch options
+  const branches = [
+    "ICCT Antipolo Branch",
+    "ICCT Binangonan Branch",
+    "ICCT San Mateo Branch",
+    "ICCT Cogeo Branch",
+    "ICCT Taytay Branch",
+    "ICCT Cainta Main Campus",
+    "ICCT Angono Branch",
+    "ICCT Sumulong Branch",
+  ];
+
+  // Organization options
+  const organizations = [
+    "Computer Explorer Society", "CISCO Student Associatio", "CBA Club", "JPIA Chapter", "Criminology Society", "Educator's Society", "English Club", "Math Club", 
+    "Engineering Students Society", "IECEP Chapter", "ICPEP Chapter", "Masscom Society", "Phychology Society", "Societas Hotelianos", "Lakbay", 
+    "Medical Technology Society", "TECH-VOC Student Organization", "Taekwondo Club", "Sibol Theatrical Dance Group", "Yin Yang Dance Group","Blue Dragon Varsity Player",
+    "Rhythm and Voice Chorale"
+  ];
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+
+    // Reset branch and organization when switching to public
+    if (name === "isPublic" && checked) {
+      setFormData((prev) => ({
+        ...prev,
+        branch: "",
+        organization: "",
+      }));
+    }
   };
 
   const regenerateEventCode = () => {
@@ -101,8 +134,8 @@ export default function CreateEvent() {
       // Add the attendees worksheet to the workbook
       XLSX.utils.book_append_sheet(wb, attendeesWs, "Event Attendees");
 
-      // Create "Event Details" sheet
-      const detailsWs = XLSX.utils.aoa_to_sheet([
+      // Create "Event Details" sheet with branch and organization info
+      const detailsData = [
         ["Title", eventData.title || ""],
         ["Description", eventData.description || ""],
         ["Date", eventData.date || ""],
@@ -111,11 +144,19 @@ export default function CreateEvent() {
         ["Category", eventData.category || ""],
         ["Capacity", eventData.capacity ? eventData.capacity.toString() : ""],
         ["Event Code", eventData.eventCode || ""],
-        ["Live Event", eventData.isLive || "No"], // Added isLive to Excel export
+        ["Live Event", eventData.isLive || "Yes"],
         ["Created By", currentUser.email],
         ["Created At", new Date().toLocaleString()],
         ["Public Event", eventData.isPublic ? "Yes" : "No"],
-      ]);
+      ];
+
+      // Add branch and organization info for private events
+      if (!eventData.isPublic) {
+        detailsData.push(["Branch", eventData.branch || "All branches"]);
+        detailsData.push(["Organization", eventData.organization || "All organizations"]);
+      }
+
+      const detailsWs = XLSX.utils.aoa_to_sheet(detailsData);
 
       // Set column widths for details sheet
       const detailsColWidths = [
@@ -181,6 +222,12 @@ export default function CreateEvent() {
       return;
     }
 
+    // Updated validation for private events - only require either branch OR organization
+    if (!formData.isPublic && !formData.branch && !formData.organization) {
+      setError("Please select either a branch or an organization for private events");
+      return;
+    }
+
     try {
       setLoading(true);
       setError("");
@@ -216,7 +263,7 @@ export default function CreateEvent() {
         return `${hours12}:${minutes} ${period}`;
       };
 
-      // Create event document with permissions metadata
+      // Create event document with permissions metadata and branch/organization info
       const eventData = {
         id: eventId,
         title: formData.title,
@@ -228,13 +275,18 @@ export default function CreateEvent() {
         capacity: Number.parseInt(formData.capacity),
         attendees: 0,
         isPublic: formData.isPublic,
-        isLive: formData.isLive, // Added isLive field to database
+        isLive: formData.isLive,
         eventCode: formData.eventCode,
         registrarId: currentUser.uid,
         registrarEmail: currentUserData.email,
         registrarName: currentUserData.name,
         createdAt: new Date().toISOString(),
         image: imageUrl,
+        // Add branch and organization for private events (can be null for either)
+        ...((!formData.isPublic) && {
+          branch: formData.branch || null, // null means all branches
+          organization: formData.organization || null, // null means all organizations
+        })
       };
 
       // Add event to Firestore with the specified ID
@@ -244,14 +296,22 @@ export default function CreateEvent() {
       const excelUrl = await generateExcelFile(eventData);
 
       // Store event permissions in a separate collection for easier query and security
-      await setDoc(doc(db, "eventPermissions", eventId), {
+      const permissionData = {
         eventId: eventId,
         ownerId: currentUser.uid,
         isPublic: formData.isPublic,
         editors: [currentUser.uid], // Only creator can edit
         viewers: formData.isPublic ? ["*"] : [currentUser.uid], // Public events can be viewed by anyone
         createdAt: new Date().toISOString(),
-      });
+      };
+
+      // Add branch and organization restrictions for private events
+      if (!formData.isPublic) {
+        permissionData.branch = formData.branch || null;
+        permissionData.organization = formData.organization || null;
+      }
+
+      await setDoc(doc(db, "eventPermissions", eventId), permissionData);
 
       // Update event with Excel file URL
       await addDoc(collection(db, "eventDocuments"), {
@@ -272,6 +332,23 @@ export default function CreateEvent() {
       console.error(error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Helper function to get visibility description
+  const getVisibilityDescription = () => {
+    if (formData.isPublic) {
+      return "This event will be visible to everyone";
+    }
+    
+    if (formData.branch && formData.organization) {
+      return `${formData.organization} members in ${formData.branch}`;
+    } else if (formData.branch && !formData.organization) {
+      return `all members of ${formData.branch}`;
+    } else if (!formData.branch && formData.organization) {
+      return `all ${formData.organization} members across all branches`;
+    } else {
+      return "Please select either a branch or an organization";
     }
   };
 
@@ -531,22 +608,97 @@ export default function CreateEvent() {
             </div>
           </div>
 
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="isPublic"
-              name="isPublic"
-              checked={formData.isPublic}
-              onChange={handleChange}
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-            />
-            <label
-              htmlFor="isPublic"
-              className="ml-2 flex items-center text-sm text-gray-700"
-            >
-              <Globe className="h-4 w-4 mr-1 text-gray-500" />
-              Make this event public (visible to everyone)
-            </label>
+          {/* Event Visibility Section */}
+          <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+            <h3 className="text-lg font-medium text-gray-800 mb-4">Event Visibility</h3>
+            
+            <div className="flex items-center mb-4">
+              <input
+                type="checkbox"
+                id="isPublic"
+                name="isPublic"
+                checked={formData.isPublic}
+                onChange={handleChange}
+                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              />
+              <label
+                htmlFor="isPublic"
+                className="ml-2 flex items-center text-sm text-gray-700"
+              >
+                <Globe className="h-4 w-4 mr-1 text-gray-500" />
+                Make this event public (visible to everyone)
+              </label>
+            </div>
+
+            {/* Branch and Organization Selection for Private Events */}
+            {!formData.isPublic && (
+              <div className="space-y-4 pl-6 border-l-2 border-indigo-200">
+                <p className="text-sm text-gray-600 mb-3">
+                  Configure who can see this private event (select either branch, organization, or both):
+                </p>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Select Branch (Optional)
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Building className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <select
+                      name="branch"
+                      value={formData.branch}
+                      onChange={handleChange}
+                      className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="">All branches</option>
+                      {branches.map((branch) => (
+                        <option key={branch} value={branch}>
+                          {branch}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Leave empty to include all branches
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Select Organization (Optional)
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Users2 className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <select
+                      name="organization"
+                      value={formData.organization}
+                      onChange={handleChange}
+                      className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="">All organizations</option>
+                      {organizations.map((org) => (
+                        <option key={org} value={org}>
+                          {org}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Leave empty to include all organizations
+                  </p>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+                  <p className="text-sm text-blue-800">
+                    <strong>Visibility:</strong> This event will be visible to{' '}
+                    {getVisibilityDescription()}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           <div>

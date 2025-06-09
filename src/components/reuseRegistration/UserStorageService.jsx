@@ -108,6 +108,56 @@ import {
         throw error;
       }
     }
+
+    async updateProfileImage(uid, newFile, oldImagePath = null) {
+      if (!uid || !newFile) {
+        throw new Error("User ID and new file are required");
+      }
+      
+      try {
+        // If oldImagePath is provided, delete the old image first
+        if (oldImagePath) {
+          try {
+            const oldImageRef = ref(storage, oldImagePath);
+            await deleteObject(oldImageRef);
+            console.log("Old profile image deleted successfully");
+          } catch (deleteError) {
+            // Log the error but don't throw - we still want to upload the new image
+            console.warn("Failed to delete old profile image:", deleteError);
+          }
+        }
+        
+        const fileExtension = newFile.name.split('.').pop();
+        const imagePath = `users/${uid}/profile/profile-image.${fileExtension}`;
+        const storageRef = ref(storage, imagePath);
+        
+        // Add metadata to the file
+        const metadata = {
+          contentType: newFile.type,
+          customMetadata: {
+            uploadedAt: new Date().toISOString(),
+            originalFilename: newFile.name,
+            updatedAt: new Date().toISOString()
+          }
+        };
+        
+        // Upload the new file
+        const snapshot = await uploadBytes(storageRef, newFile, metadata);
+        
+        // Get the download URL
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        
+        return {
+          success: true,
+          path: imagePath,
+          url: downloadURL,
+          updated: true
+        };
+      } catch (error) {
+        console.error("Error updating profile image:", error);
+        throw error;
+      }
+    }
     
     // Upload a document to user's storage
     async uploadUserDocument(uid, file, folderName = "documents") {

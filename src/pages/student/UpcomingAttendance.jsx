@@ -43,7 +43,8 @@ export default function StudentAttendanceDisplay() {
   const [pastError, setPastError] = useState(null);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("present"); // "present" or "past"
+  const [activeTab, setActiveTab] = useState("present");
+  let previousAttendanceIds = new Set();
 
   // Search and filter for past records
   const [searchTerm, setSearchTerm] = useState("");
@@ -90,73 +91,122 @@ export default function StudentAttendanceDisplay() {
     setFilteredPastRecords(filtered);
   }, [searchTerm, pastAttendanceRecords, sectionFilter]);
 
-  async function fetchCurrentAttendanceRecords() {
-    if (!currentUserData || !currentUserData.section) {
-      setError("No section information available");
-      setIsLoading(false);
-      return;
-    }
-
+  // Optional: Function to initialize previous attendance IDs on component mount
+async function initializePreviousAttendanceIds() {
+  if (currentUserData?.uid) {
     try {
-      setIsLoading(true);
-
-      // Create query to get attendance records for the current user's section
-      const attendanceQuery = query(
-        collection(db, "attendance-sessions"),
-        where("section", "==", currentUserData.section)
-      );
-
-      // Real-time listener using onSnapshot
-      const unsubscribe = onSnapshot(attendanceQuery, (querySnapshot) => {
-        const records = querySnapshot.docs.map((doc) => {
-          const data = doc.data();
-
-          // Parse dates consistently
-          let formattedDate = data.date;
-
-          // If dateObject exists, use it for consistent date formatting
-          if (data.dateObject) {
-            formattedDate = new Date(data.dateObject).toLocaleDateString();
-          }
-
-          // Get timestamp for created time
-          const createdTimestamp =
-            data.createdAt?.toDate?.() ||
-            (data.createdAt ? new Date(data.createdAt) : null);
-
-          // Find student status in the students array
-          const studentStatus = findStudentStatus(data.students || []);
-
-          return {
-            id: doc.id,
-            ...data,
-            formattedDate,
-            createdTimestamp,
-            studentStatus,
-            // For sorting purposes
-            dateObjectForSort:
-              data.dateObject || data.date || new Date().toISOString(),
-          };
-        });
-
-        // Sort records by date (newest first)
-        records.sort((a, b) => {
-          return new Date(b.dateObjectForSort) - new Date(a.dateObjectForSort);
-        });
-
-        setAttendanceRecords(records);
-
-        setIsLoading(false);
-      });
-
-      // Handle unsubscribe if needed
-      return unsubscribe;
+      const savedSessions = await fetchSavedAttendanceSessions(currentUserData.uid);
+      if (savedSessions.success && savedSessions.sessions) {
+        previousAttendanceIds = new Set(savedSessions.sessions.map(session => session.id));
+        console.log("Initialized previous attendance IDs:", Array.from(previousAttendanceIds));
+      }
     } catch (error) {
-      console.error("Error fetching attendance records:", error);
-      setError("Failed to load attendance records");
-      setIsLoading(false);
+      console.error("Error initializing previous attendance IDs:", error);
     }
   }
+}
+
+// Enhanced version with better error handling and user feedback
+async function fetchCurrentAttendanceRecords() {
+  if (!currentUserData || !currentUserData.section) {
+    setError("No section information available");
+    setIsLoading(false);
+    return;
+  }
+
+  try {
+    setIsLoading(true);
+
+    // Initialize previous attendance IDs if not already done
+    if (previousAttendanceIds.size === 0) {
+      await initializePreviousAttendanceIds();
+    }
+
+    // Handle comma-separated sections
+    const sections = currentUserData.section.includes(',') 
+      ? currentUserData.section.split(',').map(section => section.trim())
+      : [currentUserData.section];
+
+    console.log('Fetching attendance for sections:', sections);
+
+    const attendanceQuery = query(
+      collection(db, "attendance-sessions"),
+      where("section", "in", sections)
+    );
+
+    const unsubscribe = onSnapshot(attendanceQuery, async (querySnapshot) => {
+      const records = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        let formattedDate = data.date;
+
+        if (data.dateObject) {
+          formattedDate = new Date(data.dateObject).toLocaleDateString();
+        }
+
+        const createdTimestamp =
+          data.createdAt?.toDate?.() ||
+          (data.createdAt ? new Date(data.createdAt) : null);
+
+        const studentStatus = findStudentStatus(data.students || []);
+
+        return {
+          id: doc.id,
+          ...data,
+          formattedDate,
+          createdTimestamp,
+          studentStatus,
+          dateObjectForSort:
+            data.dateObject || data.date || new Date().toISOString(),
+        };
+      });
+
+      records.sort((a, b) => {
+        return new Date(b.dateObjectForSort) - new Date(a.dateObjectForSort);
+      });
+
+      const currentAttendanceIds = records.map(record => record.id);
+      const currentAttendanceIdsSet = new Set(currentAttendanceIds);
+      const newAttendanceIds = currentAttendanceIds.filter(id => !previousAttendanceIds.has(id));
+
+      if (newAttendanceIds.length > 0 && currentUserData?.uid) {
+        console.log(`Auto-saving ${newAttendanceIds.length} new attendance record(s)`);
+        
+        // Show loading state for auto-save
+        // setAutoSaving?.(true);
+        
+        try {
+          const saveResult = await saveAttendanceRecords(
+            currentUserData.uid,
+            newAttendanceIds,
+            currentUserData.section
+          );
+
+          if (saveResult.success) {
+            console.log("✅ Auto-saved new attendance records successfully");
+          } else {
+            console.error("❌ Auto-save failed:", saveResult.error);
+            setError?.(`Auto-save failed: ${saveResult.error}`);
+          }
+        } catch (saveError) {
+          console.error("❌ Auto-save error:", saveError);
+          setError?.("Failed to automatically save new attendance records");
+        } finally {
+          // setAutoSaving?.(false);
+        }
+      }
+
+      previousAttendanceIds = currentAttendanceIdsSet;
+      setAttendanceRecords(records);
+      setIsLoading(false);
+    });
+
+    return unsubscribe;
+  } catch (error) {
+    console.error("Error fetching attendance records:", error);
+    setError("Failed to load attendance records");
+    setIsLoading(false);
+  }
+}
 
   async function fetchPastAttendanceRecords() {
     if (!currentUserData?.uid) {

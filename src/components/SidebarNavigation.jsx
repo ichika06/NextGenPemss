@@ -45,15 +45,21 @@ const SidebarNavigation = ({ role, accessLevel, unreadCount, setIsOpen, windowWi
   React.useEffect(() => {
     const currentPath = location.pathname;
     const navItems = getNavItems();
+    
+    // Reset activeGroup first
+    let foundGroup = null;
 
     // Find which group contains the current path
     navItems.forEach((item) => {
       if (item.isGroup && item.items) {
         if (item.items.some((subItem) => subItem.path === currentPath)) {
-          setActiveGroup(item.name);
+          foundGroup = item.name;
         }
       }
     });
+
+    // Only set activeGroup if we found a matching group, otherwise set to null
+    setActiveGroup(foundGroup);
   }, [location.pathname]);
 
   const isActive = (path) => {
@@ -62,6 +68,28 @@ const SidebarNavigation = ({ role, accessLevel, unreadCount, setIsOpen, windowWi
 
   const toggleGroup = (group) => {
     setActiveGroup(activeGroup === group ? null : group);
+  };
+
+  // Handle navigation item click
+  const handleNavItemClick = (item) => {
+    // Close sidebar on mobile
+    if (windowWidth < 1024) {
+      setIsOpen(false);
+    }
+    
+    // If clicking on a non-group item, close all groups
+    if (!item.isGroup) {
+      // Check if this item belongs to any group
+      const navItems = getNavItems();
+      const belongsToGroup = navItems.some(navItem => 
+        navItem.isGroup && navItem.items && navItem.items.some(subItem => subItem.path === item.path)
+      );
+      
+      // If the item doesn't belong to any group, close all dropdowns
+      if (!belongsToGroup) {
+        setActiveGroup(null);
+      }
+    }
   };
 
   // Define navigation items based on role
@@ -424,7 +452,7 @@ const SidebarNavigation = ({ role, accessLevel, unreadCount, setIsOpen, windowWi
                 <Link
                   key={subItem.path}
                   to={subItem.path}
-                  onClick={() => windowWidth < 1024 && setIsOpen(false)}
+                  onClick={() => handleNavItemClick(subItem)}
                   className={`flex items-center px-4 py-3 text-sm rounded-md ${isActive(subItem.path)
                     ? "bg-indigo-100 text-indigo-700 font-medium"
                     : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
@@ -446,7 +474,7 @@ const SidebarNavigation = ({ role, accessLevel, unreadCount, setIsOpen, windowWi
       <Link
         key={item.path}
         to={item.path}
-        onClick={() => windowWidth < 1024 && setIsOpen(false)}
+        onClick={() => handleNavItemClick(item)}
         className={`group flex items-center justify-between px-4 py-3 text-sm font-medium rounded-md transition-colors ${isActive(item.path) ? "bg-indigo-100 text-indigo-700" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
           }`}
       >
