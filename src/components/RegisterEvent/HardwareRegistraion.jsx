@@ -131,7 +131,7 @@ export default function HardwareNFCScanner({
           <HardwareUSB
             eventId={eventId}
             onClose={() => setShowUSBModal(false)}
-            onSuccess={handleUSBSuccess}
+            // onSuccess={handleUSBSuccess}
           />
         )}
 
@@ -159,20 +159,6 @@ export default function HardwareNFCScanner({
               <div className="mb-6">
                 <h4 className="text-sm font-medium text-gray-700 mb-3">Connection Method</h4>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  {/* Bluetooth Option - Commented out as in original */}
-                  {/* <div
-                    className={`cursor-pointer flex flex-col items-center justify-between rounded-md border-2 p-4 hover:bg-gray-50 
-                      ${connectionMethod === "bluetooth" ? "border-green-500" : "border-gray-200"}`}
-                    onClick={() => setConnectionMethod("bluetooth")}
-                    role="button"
-                    tabIndex={0}
-                    aria-label="Connect via Bluetooth"
-                  >
-                    <Bluetooth className="mb-2 h-6 w-6" />
-                    <span className="text-sm font-medium">Bluetooth</span>
-                  </div> */}
-
-                  {/* USB/Wired Option */}
                   <div
                     className={`cursor-pointer flex flex-col items-center justify-between rounded-md border-2 p-4 hover:bg-gray-50 
                       ${connectionMethod === "usb" ? "border-green-500" : "border-gray-200"}`}

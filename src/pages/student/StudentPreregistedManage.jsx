@@ -197,7 +197,7 @@ export default function StudentPreRegisteredEvents() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-18 py-18">
         <div className="flex flex-col items-center justify-center p-12 bg-white rounded-xl shadow-lg">
           <div className="relative w-16 h-16 mb-6">
             <div className="absolute inset-0 bg-purple-100 rounded-full animate-ping opacity-75"></div>
@@ -218,7 +218,7 @@ export default function StudentPreRegisteredEvents() {
 
   if (error) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-18 py-18">
         <div className="flex flex-col items-center justify-center p-8 bg-white rounded-xl shadow-lg">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
             <AlertCircle className="h-8 w-8 text-red-500" />
@@ -240,7 +240,7 @@ export default function StudentPreRegisteredEvents() {
 
   if (events.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-18 py-18">
         <div className="bg-white rounded-xl shadow-lg p-8 text-center">
           <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CalendarX className="h-10 w-10 text-purple-500" />
@@ -269,7 +269,7 @@ export default function StudentPreRegisteredEvents() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-18 py-18">
       <div className="mb-6">
         <button
           onClick={handleBack}

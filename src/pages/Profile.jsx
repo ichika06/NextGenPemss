@@ -32,7 +32,8 @@ import {
   Upload,
 } from "lucide-react";
 import { LoadingAnimation } from "../components/LoadingAnimation";
-import UserStorageService from "../components/reuseRegistration/UserStorageService"; // Import the storage service
+import UserStorageService from "../components/reuseRegistration/UserStorageService";
+import { useAlert } from "../components/AlertProvider";
 
 export default function UserProfile() {
   const { currentUser, updatePassword, updateEmail, reauthenticate } =
@@ -72,6 +73,7 @@ export default function UserProfile() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const fileInputRef = useRef(null);
+  const { showAlert } = useAlert();
 
   // Branch options
   const branches = [
@@ -187,14 +189,42 @@ export default function UserProfile() {
       // Validate file type
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
       if (!validTypes.includes(file.type)) {
-        setMessage({ type: "error", text: "Please select a valid image file (JPEG, PNG, or GIF)" });
+        // setMessage({ type: "error", text: "Please select a valid image file (JPEG, PNG, or GIF)" });
+        showAlert({
+          icon: "error",
+          header: "Upload image Profile",
+          description: "Please select a valid image file (JPEG, PNG, or GIF)",
+          variant: "error",
+          position: window.innerWidth < 768 ? "top-center" : "top-right",
+          animation: window.innerWidth < 768 ? "slide-down" : "slide-left",
+          duration: 3000,
+          headerColor: "#9c0505",
+          descriptionColor: "#9c0505",
+          borderColor: "#9c0505",
+          width: window.innerWidth < 768 ? "sm" : "md",
+          responsiveMode: window.innerWidth < 768 ? "inline" : "stack",
+        });
         return;
       }
 
       // Validate file size (max 5MB)
       const maxSize = 5 * 1024 * 1024; // 5MB in bytes
       if (file.size > maxSize) {
-        setMessage({ type: "error", text: "Image size must be less than 5MB" });
+        // setMessage({ type: "error", text: "Image size must be less than 5MB" });
+        showAlert({
+          icon: "error",
+          header: "Upload image Profile",
+          description: "Image size must be less than 5MB",
+          variant: "error",
+          position: window.innerWidth < 768 ? "top-center" : "top-right",
+          animation: window.innerWidth < 768 ? "slide-down" : "slide-left",
+          duration: 3000,
+          headerColor: "#9c0505",
+          descriptionColor: "#9c0505",
+          borderColor: "#9c0505",
+          width: window.innerWidth < 768 ? "sm" : "md",
+          responsiveMode: window.innerWidth < 768 ? "inline" : "stack",
+        });
         return;
       }
 
@@ -247,7 +277,21 @@ export default function UserProfile() {
           });
         }
 
-        setMessage({ type: "success", text: "Profile image updated successfully" });
+        // setMessage({ type: "success", text: "Profile image updated successfully" });
+        showAlert({
+          icon: "success",
+          header: "Upload image Profile",
+          description: "Profile image updated successfully!",
+          variant: "success",
+          position: window.innerWidth < 768 ? "top-center" : "top-right",
+          animation: window.innerWidth < 768 ? "slide-down" : "slide-left",
+          duration: 3000,
+          headerColor: "#086d3f",
+          descriptionColor: "#086d3f",
+          borderColor: "#086d3f",
+          width: window.innerWidth < 768 ? "sm" : "md",
+          responsiveMode: window.innerWidth < 768 ? "inline" : "stack",
+        });
         setSelectedImage(null);
         setImagePreview(null);
 
@@ -258,7 +302,21 @@ export default function UserProfile() {
       }
     } catch (error) {
       console.error("Error uploading profile image:", error);
-      setMessage({ type: "error", text: "Failed to upload profile image" });
+      // setMessage({ type: "error", text: "Failed to upload profile image" });
+      showAlert({
+          icon: "error",
+          header: "Upload image Profile",
+          description: "Failed to upload profile image!",
+          variant: "error",
+          position: window.innerWidth < 768 ? "top-center" : "top-right",
+          animation: window.innerWidth < 768 ? "slide-down" : "slide-left",
+          duration: 3000,
+          headerColor: "#9c0505",
+          descriptionColor: "#9c0505",
+          borderColor: "#9c0505",
+          width: window.innerWidth < 768 ? "sm" : "md",
+          responsiveMode: window.innerWidth < 768 ? "inline" : "stack",
+        });
     } finally {
       setImageUploading(false);
     }
@@ -309,13 +367,37 @@ export default function UserProfile() {
         }
 
         await updateDoc(doc(db, "users", userDoc.id), updateData);
-
-        setMessage({ type: "success", text: "Profile updated successfully" });
+        showAlert({
+          icon: "success",
+          header: "Edit Profile",
+          description: "Profile data saved successfully!",
+          variant: "success",
+          position: window.innerWidth < 768 ? "top-center" : "top-right",
+          animation: window.innerWidth < 768 ? "slide-down" : "slide-left",
+          duration: 3000,
+          headerColor: "#086d3f",
+          descriptionColor: "#086d3f",
+          borderColor: "#086d3f",
+          width: window.innerWidth < 768 ? "sm" : "md",
+          responsiveMode: window.innerWidth < 768 ? "inline" : "stack",
+        });
         setEditing(false);
       }
     } catch (error) {
-      console.error("Error updating profile:", error);
-      setMessage({ type: "error", text: "Failed to update profile" });
+      showAlert({
+          icon: "error",
+          header: "Edit Profile",
+          description: "Profile data not save!",
+          variant: "error",
+          position: window.innerWidth < 768 ? "top-center" : "top-right",
+          animation: window.innerWidth < 768 ? "slide-down" : "slide-left",
+          duration: 3000,
+          headerColor: "#9c0505",
+          descriptionColor: "#9c0505",
+          borderColor: "#9c0505",
+          width: window.innerWidth < 768 ? "sm" : "md",
+          responsiveMode: window.innerWidth < 768 ? "inline" : "stack",
+        });
     }
   };
 
@@ -324,7 +406,20 @@ export default function UserProfile() {
     setMessage({ type: "", text: "" });
 
     if (newPassword !== confirmPassword) {
-      setMessage({ type: "error", text: "New passwords don't match" });
+      showAlert({
+          icon: "error",
+          header: "Edit Profile",
+          description: "Changing password unsuccessfully, Confirm password didn't match!",
+          variant: "error",
+          position: window.innerWidth < 768 ? "top-center" : "top-right",
+          animation: window.innerWidth < 768 ? "slide-down" : "slide-left",
+          duration: 3000,
+          headerColor: "#9c0505",
+          descriptionColor: "#9c0505",
+          borderColor: "#9c0505",
+          width: window.innerWidth < 768 ? "sm" : "md",
+          responsiveMode: window.innerWidth < 768 ? "inline" : "stack",
+        });
       return;
     }
 
@@ -348,7 +443,20 @@ export default function UserProfile() {
         errorMessage = "New password is too weak";
       }
 
-      setMessage({ type: "error", text: errorMessage });
+      showAlert({
+          icon: "error",
+          header: "Edit Profile",
+          description: `${errorMessage}`,
+          variant: "error",
+          position: window.innerWidth < 768 ? "top-center" : "top-right",
+          animation: window.innerWidth < 768 ? "slide-down" : "slide-left",
+          duration: 3000,
+          headerColor: "#9c0505",
+          descriptionColor: "#9c0505",
+          borderColor: "#9c0505",
+          width: window.innerWidth < 768 ? "sm" : "md",
+          responsiveMode: window.innerWidth < 768 ? "inline" : "stack",
+        });
     }
   };
 
@@ -625,7 +733,7 @@ export default function UserProfile() {
         {!editing && (
           <button
             onClick={() => setEditing(true)}
-            className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 btn-primary rounded transition-colors text-sm font-medium"
+            className="mt-4 sm:mt-0 inline-flex sm:mr-11 items-center px-4 py-2 btn-primary rounded transition-colors text-sm font-medium"
           >
             <Edit className="h-4 w-4 mr-2" /> Edit Profile
           </button>

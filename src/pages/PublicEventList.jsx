@@ -7,6 +7,8 @@ import {
   where,
   orderBy,
   onSnapshot,
+  doc,
+  updateDoc,
 } from "firebase/firestore";
 import { db } from "../firebase/config";
 import {
@@ -50,8 +52,40 @@ export default function PublicEventsList() {
     }
   };
 
+  // Function to check if event has expired
+  const isEventExpired = (eventDate, eventTime) => {
+    const now = new Date();
+    const eventDateTime = new Date(`${eventDate} ${eventTime}`);
+    return now > eventDateTime;
+  };
+
+  // Function to update event status when expired
+  const updateEventStatus = async (eventId, isExpired) => {
+    if (isExpired) {
+      try {
+        const eventRef = doc(db, "events", eventId);
+        await updateDoc(eventRef, {
+          isPublic: false,
+          isLive: false,
+        });
+        console.log(`Event ${eventId} status updated - set to private and not live`);
+      } catch (error) {
+        console.error("Error updating event status:", error);
+      }
+    }
+  };
+
   // Function to check if user can see the event
   const canViewEvent = (event) => {
+    // Check if event is expired and update its status
+    const expired = isEventExpired(event.date, event.time);
+    if (expired && (event.isPublic || event.isLive)) {
+      updateEventStatus(event.id, true);
+      // Update local state immediately for better UX
+      event.isPublic = false;
+      event.isLive = false;
+    }
+
     // If event is public, everyone can see it
     if (event.isPublic) {
       return true;
@@ -98,6 +132,20 @@ export default function PublicEventsList() {
     }
 
     return false;
+  };
+
+  // Callback function for when countdown expires
+  const handleCountdownExpire = (eventId) => {
+    updateEventStatus(eventId, true);
+    
+    // Update local state to reflect the change
+    setEvents(prevEvents => 
+      prevEvents.map(event => 
+        event.id === eventId 
+          ? { ...event, isPublic: false, isLive: false }
+          : event
+      )
+    );
   };
 
   useEffect(() => {
@@ -291,7 +339,7 @@ export default function PublicEventsList() {
                       event.isPublic ? 'bg-green-600' : 'bg-blue-600'
                     }`}>
                       <Globe className="h-4 w-4" />
-                      {event.isPublic ? "Public Event" : "Organization Event"}
+                      {event.isPublic ? "Public Event" : "Not accessable by public"}
                     </div>
                   </div>
                 </div>
@@ -329,6 +377,7 @@ export default function PublicEventsList() {
                       showSeconds={true}
                       expiredText="Not Available"
                       detailsOnClick={false}
+                      onExpire={handleCountdownExpire}
                     />
                   </div>
                 </div>

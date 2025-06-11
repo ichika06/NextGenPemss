@@ -658,17 +658,7 @@ export default function EditEvent() {
 
   // Confirmation dialog for discarding changes
   const handleNavigateBack = () => {
-    // Check if there are unsaved changes in attendees or event details
-    const attendeesChanged =
-      JSON.stringify(worksheetData) !== JSON.stringify(editedData);
-    const detailsChanged =
-      JSON.stringify(originalEventDetails) !== JSON.stringify(eventDetails);
-
-    if (attendeesChanged || detailsChanged) {
-      setShowConfirmation(true);
-    } else {
-      navigate(getRoute(userRole));
-    }
+    navigate(-1)
   };
 
   // Get icon for event detail field

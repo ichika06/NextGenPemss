@@ -372,13 +372,13 @@ export default function PublicEventsCalendar() {
                           </span>
                         </div>
 
-                        <div className="flex items-start">
+                        {/* <div className="flex items-start">
                           <Code className="h-4 w-4 mr-2 text-purple-600 mt-1 flex-shrink-0" />
                           <span className="text-gray-700">
                             <span className="font-medium">Event Code:</span>{" "}
                             {event.eventCode}
                           </span>
-                        </div>
+                        </div> */}
 
                         <div className="flex items-start">
                           <User className="h-4 w-4 mr-2 text-purple-600 mt-1 flex-shrink-0" />

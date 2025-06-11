@@ -1,3 +1,5 @@
+"use client"
+
 import { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../../contexts/AuthContext"
@@ -9,7 +11,7 @@ import { db, storage } from "../../firebase/config"
 import { sendEmail, EmailTemplates } from "../../sendEmail"
 import { ChevronUp, ChevronDown, Trash2 } from "lucide-react"
 import certificateTemplates from "./certificate-templates"
-import Swal from 'sweetalert2'
+import Swal from "sweetalert2"
 
 // Import components
 import Toolbar from "./toolbar"
@@ -235,7 +237,6 @@ export default function CreativeCertificateBuilder() {
   const [selectedElement, setSelectedElement] = useState(null)
 
   // Import certificate templates
-
 
   const [templates, setTemplates] = useState(certificateTemplates)
 
@@ -665,7 +666,7 @@ export default function CreativeCertificateBuilder() {
           if (certificate && certificate.certificateUrl) {
             // Prepare email data
             const emailData = {
-              email: attendee.email,
+              email: attendee.userEmail,
               subject: `Certificate: ${selectedEvent.title}`,
               message: emailMessage || `Here is your certificate for ${selectedEvent.title}.`,
               certificateUrl: certificate.certificateUrl,
@@ -680,8 +681,6 @@ export default function CreativeCertificateBuilder() {
               template: EmailTemplates.CERTIFICATE_EMAIL,
               data: emailData,
             })
-
-            await new Promise((resolve) => setTimeout(resolve, 100))
           }
         } catch (error) {
           console.error(`Error processing attendee ${attendee.userName}:`, error)
@@ -806,109 +805,110 @@ export default function CreativeCertificateBuilder() {
   }
 
   // Save current design to Firestore
-const saveCurrentDesign = async (isPublic = false) => {
-  if (!currentUser?.email) return
+  const saveCurrentDesign = async (isPublic = false) => {
+    if (!currentUser?.email) return
 
-  setSaveStatus("saving")
+    setSaveStatus("saving")
 
-  try {
-    // First, upload backgroundImage to Firebase Storage if it exists and is large
-    let backgroundImageURL = backgroundImage
+    try {
+      // First, upload backgroundImage to Firebase Storage if it exists and is large
+      let backgroundImageURL = backgroundImage
 
-    if (backgroundImage && backgroundImage.length > 500000) {
-      // If it's a large data URL
-      // Convert data URL to blob
-      const response = await fetch(backgroundImage)
-      const blob = await response.blob()
+      if (backgroundImage && backgroundImage.length > 500000) {
+        // If it's a large data URL
+        // Convert data URL to blob
+        const response = await fetch(backgroundImage)
+        const blob = await response.blob()
 
-      // Create a reference to Firebase Storage
-      const storageRef = ref(storage, `certificate-backgrounds/${currentUser.email}/${currentDesignName}`)
+        // Create a reference to Firebase Storage
+        const storageRef = ref(storage, `certificate-backgrounds/${currentUser.email}/${currentDesignName}`)
 
-      // Upload the image
-      const uploadResult = await uploadBytes(storageRef, blob)
+        // Upload the image
+        const uploadResult = await uploadBytes(storageRef, blob)
 
-      // Get the download URL
-      backgroundImageURL = await getDownloadURL(uploadResult.ref)
+        // Get the download URL
+        backgroundImageURL = await getDownloadURL(uploadResult.ref)
+      }
+
+      const designData = {
+        name: currentDesignName,
+        elements: JSON.parse(JSON.stringify(elements)),
+        backgroundImage: backgroundImageURL,
+        backgroundColor,
+        borderStyle: JSON.parse(JSON.stringify(borderStyle)),
+        certificateSize: JSON.parse(JSON.stringify(certificateSize)),
+        backgroundProps: JSON.parse(JSON.stringify(backgroundProps)),
+        date: new Date(),
+        userEmail: currentUser.email,
+        userName: currentUserData.name || "Anonymous User",
+        isPublic: isPublic, // Add the privacy setting
+      }
+
+      const designsRef = collection(db, "certificateDesigns")
+      const q = query(designsRef, where("userEmail", "==", currentUser.email), where("name", "==", currentDesignName))
+      const querySnapshot = await getDocs(q)
+
+      if (!querySnapshot.empty) {
+        const existingDesign = querySnapshot.docs[0]
+        const designRef = doc(db, "certificateDesigns", existingDesign.id)
+        await updateDoc(designRef, designData)
+      } else {
+        await addDoc(designsRef, designData)
+      }
+
+      setSaveStatus("saved")
+      loadDesignsFromFirestore()
+
+      setTimeout(() => {
+        setSaveStatus("idle")
+      }, 3000)
+    } catch (error) {
+      console.error("Error saving design to Firestore:", error)
+      setSaveStatus("error")
+
+      setTimeout(() => {
+        setSaveStatus("idle")
+      }, 3000)
     }
-
-    const designData = {
-      name: currentDesignName,
-      elements: JSON.parse(JSON.stringify(elements)),
-      backgroundImage: backgroundImageURL,
-      backgroundColor,
-      borderStyle: JSON.parse(JSON.stringify(borderStyle)),
-      certificateSize: JSON.parse(JSON.stringify(certificateSize)),
-      backgroundProps: JSON.parse(JSON.stringify(backgroundProps)),
-      date: new Date(),
-      userEmail: currentUser.email,
-      userName: currentUserData.name || "Anonymous User",
-      isPublic: isPublic, // Add the privacy setting
-    }
-
-    const designsRef = collection(db, "certificateDesigns")
-    const q = query(designsRef, where("userEmail", "==", currentUser.email), where("name", "==", currentDesignName))
-    const querySnapshot = await getDocs(q)
-
-    if (!querySnapshot.empty) {
-      const existingDesign = querySnapshot.docs[0]
-      const designRef = doc(db, "certificateDesigns", existingDesign.id)
-      await updateDoc(designRef, designData)
-    } else {
-      await addDoc(designsRef, designData)
-    }
-
-    setSaveStatus("saved")
-    loadDesignsFromFirestore()
-
-    setTimeout(() => {
-      setSaveStatus("idle")
-    }, 3000)
-  } catch (error) {
-    console.error("Error saving design to Firestore:", error)
-    setSaveStatus("error")
-
-    setTimeout(() => {
-      setSaveStatus("idle")
-    }, 3000)
   }
-}
 
-// Add a new function to handle the save dialog using SweetAlert2
-const handleSaveDesign = () => {
-  // Show a SweetAlert2 confirmation dialog with privacy options
-  Swal.fire({
-    title: `Save "${currentDesignName}"`,
-    text: 'Choose your design privacy setting',
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#3085d6',
-    confirmButtonText: 'Save as Public',
-    cancelButtonText: 'Save as Private',
-    reverseButtons: true,
-    footer: '<span style="font-size: 0.8rem">Public designs can be used by all users. Private designs are only visible to you.</span>'
-  }).then((result) => {
-    if (result.isConfirmed) {
-      // Save as public
-      saveCurrentDesign(true);
-      Swal.fire({
-        icon: 'success',
-        title: 'Saved as public design!',
-        showConfirmButton: false,
-        timer: 1500
-      });
-    } else if (result.dismiss === Swal.DismissReason.cancel) {
-      // Save as private
-      saveCurrentDesign(false);
-      Swal.fire({
-        icon: 'success',
-        title: 'Saved as private design!',
-        showConfirmButton: false,
-        timer: 1500
-      });
-    }
-  });
-}
+  // Add a new function to handle the save dialog using SweetAlert2
+  const handleSaveDesign = () => {
+    // Show a SweetAlert2 confirmation dialog with privacy options
+    Swal.fire({
+      title: `Save "${currentDesignName}"`,
+      text: "Choose your design privacy setting",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Save as Public",
+      cancelButtonText: "Save as Private",
+      reverseButtons: true,
+      footer:
+        '<span style="font-size: 0.8rem">Public designs can be used by all users. Private designs are only visible to you.</span>',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Save as public
+        saveCurrentDesign(true)
+        Swal.fire({
+          icon: "success",
+          title: "Saved as public design!",
+          showConfirmButton: false,
+          timer: 1500,
+        })
+      } else if (result.dismiss === Swal.DismissReason.cancel) {
+        // Save as private
+        saveCurrentDesign(false)
+        Swal.fire({
+          icon: "success",
+          title: "Saved as private design!",
+          showConfirmButton: false,
+          timer: 1500,
+        })
+      }
+    })
+  }
 
   // Export as image
   const exportAsImage = async () => {
@@ -1218,7 +1218,7 @@ const handleSaveDesign = () => {
 
         // Prepare email data
         const emailData = {
-          email: recipientEmail,
+          email: recipientEmail || selectedAttendees[0]?.email || "",
           subject: `Certificate: ${currentDesignName}`,
           message: emailMessage || `Here is your certificate for ${selectedEvent?.title || "the event"}.`,
           certificateUrl: certificateUrl,
@@ -1230,6 +1230,8 @@ const handleSaveDesign = () => {
           },
           name: elements.find((el) => el.id === "recipient-name")?.content || "Recipient",
         }
+
+        console.log("Email data:", emailData)
 
         // Send email with certificate link
         await sendEmail({
@@ -1708,55 +1710,55 @@ const handleSaveDesign = () => {
 
   const deleteDesignFromFirestore = async (designId, designName) => {
     if (!currentUser?.email || !designId) return
-  
+
     // Find the design in the savedDesigns array
     const design = savedDesigns.find((d) => d.id === designId)
-  
+
     // Check if the user is the owner of the design
     if (!design || !design.isOwner) {
       Swal.fire({
-        icon: 'error',
-        title: 'Permission Denied',
-        text: 'You can only delete your own designs.',
+        icon: "error",
+        title: "Permission Denied",
+        text: "You can only delete your own designs.",
       })
       return
     }
-  
+
     // Show a SweetAlert2 confirmation dialog
     Swal.fire({
-      title: 'Are you sure?',
+      title: "Are you sure?",
       text: `Do you want to delete the design "${designName}"?`,
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel'
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
           const designRef = doc(db, "certificateDesigns", designId)
           await deleteDoc(designRef)
-          
+
           // Show success message
           Swal.fire({
-            icon: 'success',
-            title: 'Deleted!',
+            icon: "success",
+            title: "Deleted!",
             text: `Design "${designName}" has been deleted.`,
             showConfirmButton: false,
-            timer: 1500
+            timer: 1500,
           })
-          
+
           // Refresh the list of saved designs
           loadDesignsFromFirestore()
         } catch (error) {
           console.error("Error deleting design from Firestore:", error)
-          
+
           // Show error message
           Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Failed to delete the design. Please try again.',
+            icon: "error",
+            title: "Error",
+            text: "Failed to delete the design. Please try again.",
           })
         }
       }
@@ -1938,7 +1940,7 @@ const handleSaveDesign = () => {
               saveToHistory={saveToHistory}
             />
           )}
-          
+
           {/* Templates Tab */}
           {activeTab === "templates" && (
             <TemplatesSection

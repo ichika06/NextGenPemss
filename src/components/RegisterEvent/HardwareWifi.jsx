@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { X, Wifi, WifiOff, Search, RefreshCw, AlertCircle, UserPlus, Monitor, Signal, Clock } from "lucide-react"
+import { X, Wifi, WifiOff, Search, RefreshCw, AlertCircle, UserPlus, Monitor, Clock } from "lucide-react"
 import { useAuth } from "../../contexts/AuthContext"
 import {
   collection,
@@ -22,6 +22,8 @@ import * as XLSX from "xlsx"
 import { deletePreRegisteredUser } from "../../pages/DeletePreregistered"
 import { sendEmail, EmailTemplates } from "../../sendEmail"
 import EventAttendanceWorkbook from "../../components/EventAttendanceWorkbook"
+import StudentDetailsModal from "./StudentDetailsModal"
+import { useAlert } from "../AlertProvider";
 
 export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
   // State variables
@@ -42,12 +44,23 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
   const [continuousScan, setContinuousScan] = useState(true)
   const [isClosing, setIsClosing] = useState(false)
 
+  const [scanAnimation, setScanAnimation] = useState(false)
+  const [pulseAnimation, setPulseAnimation] = useState(false)
+  const [successAnimation, setSuccessAnimation] = useState(false)
+
+  const [showStudentModal, setShowStudentModal] = useState(false)
+  const [studentModalData, setStudentModalData] = useState(null)
+  const [eventModalData, setEventModalData] = useState(null)
+
   const refreshIntervalRef = useRef(null)
   const scanIntervalRef = useRef(null)
   const unsubscribeEventRef = useRef(null)
   const deviceListenersRef = useRef({})
   const heartbeatIntervalRef = useRef(null)
   const heartbeatCounterRef = useRef(0)
+  const scanTimeoutRef = useRef(null)
+  const processingScanRef = useRef(false)
+  const { showAlert } = useAlert();
 
   // Set up real-time listener for attendee count when eventId is available
   useEffect(() => {
@@ -57,7 +70,7 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
       try {
         const eventsRef = collection(db, "events")
         const eventQuery = query(eventsRef, where("id", "==", eventId))
-    
+
         const unsubscribe = onSnapshot(
           eventQuery,
           (snapshot) => {
@@ -66,10 +79,10 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
               setRegistrationCount(0)
               return
             }
-    
+
             const eventDoc = snapshot.docs[0]
             const eventData = eventDoc.data()
-    
+
             if (eventData && typeof eventData.attendees === "number") {
               setRegistrationCount(eventData.attendees)
               console.log("Attendee count updated:", eventData.attendees)
@@ -82,11 +95,11 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
             console.error("Error in attendee count listener:", error)
           },
         )
-    
+
         // Setup attendance-sessions listener
         const attendanceSessionsRef = collection(db, "attendance-sessions")
         const attendanceQuery = query(attendanceSessionsRef, where("id", "==", eventId))
-    
+
         const unsubscribeAttendance = onSnapshot(
           attendanceQuery,
           (snapshot) => {
@@ -94,13 +107,11 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
               console.log("No matching attendance session found")
               return
             }
-    
+
             const attendanceDoc = snapshot.docs[0]
             const attendanceData = attendanceDoc.data()
-    
+
             if (attendanceData && typeof attendanceData.attendees === "number") {
-              // You might want to handle this differently based on your needs
-              // For now, I'm logging it - you can update state or combine with event attendees
               console.log("Attendance session count updated:", attendanceData.attendees)
             } else {
               console.log("No attendees field found in attendance session or not a number")
@@ -110,11 +121,9 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
             console.error("Error in attendance session listener:", error)
           },
         )
-    
+
         unsubscribeEventRef.current = unsubscribe
-        // You'll need another ref for the attendance listener or combine them
         unsubscribeAttendance.current = unsubscribeAttendance
-    
       } catch (error) {
         console.error("Error setting up attendee count listener:", error)
       }
@@ -148,6 +157,9 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
       if (scanIntervalRef.current) {
         clearInterval(scanIntervalRef.current)
       }
+      if (scanTimeoutRef.current) {
+        clearTimeout(scanTimeoutRef.current)
+      }
       // Clean up device listeners
       Object.values(deviceListenersRef.current).forEach((unsubscribe) => {
         if (unsubscribe) unsubscribe()
@@ -164,6 +176,9 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
     return () => {
       if (scanIntervalRef.current) {
         clearInterval(scanIntervalRef.current)
+      }
+      if (scanTimeoutRef.current) {
+        clearTimeout(scanTimeoutRef.current)
       }
     }
   }, [selectedDevice, continuousScan])
@@ -192,7 +207,7 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
             }
           })
           // Fetch user names from Firestore
-          let userNamesMap = {}
+          const userNamesMap = {}
           if (inUseUserIds.length > 0) {
             const usersRef = collection(db, "users")
             const q = query(usersRef, where("uid", "in", inUseUserIds))
@@ -232,7 +247,7 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
     }
   }
 
-  // Set up real-time listener for specific device
+  // Set up real-time listener for specific device with improved continuous scanning
   const setupDeviceListener = (deviceId) => {
     try {
       // Listen to scanned_data/scan/data under the device node
@@ -242,7 +257,9 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
         (snapshot) => {
           const scanValue = snapshot.val()
           if (!scanValue) return
-          if (scanValue !== lastScannedTag) {
+
+          // Prevent duplicate processing of the same tag
+          if (scanValue !== lastScannedTag && !processingScanRef.current) {
             setLastScannedTag(scanValue)
             processScannedData(scanValue, deviceId)
           }
@@ -267,6 +284,23 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
       return scan.uid || scan.tagId || scan.data || scan.id || scan.scan_id || ""
     }
     return ""
+  }
+
+  // Process the tag data to remove any known prefixes (similar to HardwareScanner)
+  const processTagData = (data) => {
+    let processedData = data.trim()
+
+    // Remove "NDEF:T:en:" prefix if present (for NDEF formatted tags)
+    if (processedData.startsWith("NDEF:T:en:")) {
+      processedData = processedData.substring("NDEF:T:en:".length)
+    }
+
+    // Remove "#Ten" prefix if present
+    if (processedData.startsWith("#Ten")) {
+      processedData = processedData.substring(4)
+    }
+
+    return processedData
   }
 
   // Search Firestore for a matching tag
@@ -490,23 +524,70 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
     }
   }
 
-  // Process scanned NFC data with enhanced registration logic
+  // Process scanned NFC data with enhanced continuous scanning logic (similar to HardwareScanner)
   const processScannedData = async (scannedData, deviceId) => {
     if (!scannedData || !eventId) return
 
+    // Prevent concurrent processing
+    if (processingScanRef.current) {
+      console.log("Scan already in progress, skipping...")
+      return
+    }
+
+    // Check if we're already processing this scan
+    if (isScanning) {
+      console.log("Waiting for previous scan to complete...")
+      await new Promise((resolve) => {
+        const checkInterval = setInterval(() => {
+          if (!isScanning) {
+            clearInterval(checkInterval)
+            resolve()
+          }
+        }, 500) // Check every 500ms
+
+        // Safety timeout after 5 seconds
+        setTimeout(() => {
+          clearInterval(checkInterval)
+          setIsScanning(false) // Force reset scanning state
+          resolve()
+        }, 5000)
+      })
+    }
+
+    processingScanRef.current = true
     setIsScanning(true)
+    setScanAnimation(true) // Start scan animation
     setError(null)
     setScanCount((prev) => prev + 1)
 
     try {
-      const tagId = getTagIdFromScan(scannedData)
-      if (!tagId) return
+      const tagId = processTagData(getTagIdFromScan(scannedData))
+      if (!tagId) {
+        throw new Error("Invalid tag data received")
+      }
+
+      console.log(`Processing tag: ${tagId}`)
 
       // Search for user by NFC tag
       const { exists, userData } = await searchUserByNfcTag(tagId)
 
       if (!exists) {
-        throw new Error("No user found with this NFC card")
+        throw new Error(
+          showAlert({
+          icon: "error",
+          header: "NFC Scanned failed!",
+          description: "No user found with this NFC card",
+          variant: "error",
+          position: window.innerWidth < 768 ? "top-center" : "top-right",
+          animation: window.innerWidth < 768 ? "slide-down" : "slide-left",
+          duration: 3000,
+          headerColor: "#9c0505",
+          descriptionColor: "#9c0505",
+          borderColor: "#9c0505",
+          width: window.innerWidth < 768 ? "sm" : "md",
+          responsiveMode: window.innerWidth < 768 ? "inline" : "stack",
+        })
+        )
       }
 
       // Register user for the event
@@ -525,8 +606,13 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
         ...prev.slice(0, 9),
       ])
     } finally {
+      // Clear the command and scan data
       await sendCommandToDevice(deviceId, "")
-      setIsScanning(false)
+
+      // Stop scan animation
+      setScanAnimation(false)
+
+      // Clean up scan data after processing
       setTimeout(async () => {
         try {
           const scanDataRef = ref(database, `${deviceId}/scanned_data/scan/data`)
@@ -536,6 +622,9 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
           console.error("Failed to delete scan data:", err)
         }
       }, 1500)
+
+      processingScanRef.current = false
+      setIsScanning(false) // This will reset manual scanning state
     }
   }
 
@@ -543,25 +632,56 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
   const registerUserForEvent = async (userData, eventId, deviceId) => {
     try {
       // Try to get event by doc ID
-      const eventRef = doc(db, "events", eventId);
-      const eventSnap = await getDoc(eventRef);
+      const eventRef = doc(db, "events", eventId)
+      const eventSnap = await getDoc(eventRef)
 
       if (eventSnap.exists()) {
         // --- Event registration logic ---
-        const eventData = eventSnap.data();
-        eventData.id = eventId;
+        const eventData = eventSnap.data()
+        eventData.id = eventId
 
-        if (!eventData.isLive) throw new Error("This event is not accessible yet");
+        if (!eventData.isLive) throw new Error(
+          showAlert({
+          icon: "error",
+          header: "Event Registration",
+          description: "This event is not accessible yet",
+          variant: "error",
+          position: window.innerWidth < 768 ? "top-center" : "top-right",
+          animation: window.innerWidth < 768 ? "slide-down" : "slide-left",
+          duration: 3000,
+          headerColor: "#9c0505",
+          descriptionColor: "#9c0505",
+          borderColor: "#9c0505",
+          width: window.innerWidth < 768 ? "sm" : "md",
+          responsiveMode: window.innerWidth < 768 ? "inline" : "stack",
+        })
+        )
 
         // Check if user is already registered
         const { isRegistered } = await checkUserEventRegistration(
           userData.usersId || userData.studentId || userData.id,
           eventId,
-        );
-        if (isRegistered) throw new Error("This user is already registered for this event");
+        )
+        
+        if (isRegistered) throw new Error(  
+        showAlert({
+        icon: "info",
+        header: "Event Registration",
+        description: "This user is already registered for this event",
+        variant: "info",
+        position: window.innerWidth < 768 ? "top-center" : "top-right",
+        animation: window.innerWidth < 768 ? "slide-down" : "slide-left",
+        duration: 3000,
+        headerColor: "#0062e2",
+        descriptionColor: "#2076e7",
+        borderColor: "#2076e7",
+        width: window.innerWidth < 768 ? "sm" : "md",
+        responsiveMode: window.innerWidth < 768 ? "inline" : "stack",
+      })
+        )
 
-        const now = new Date();
-        const registeredDate = now.toISOString().split("T")[0];
+        const now = new Date()
+        const registeredDate = now.toISOString().split("T")[0]
 
         await addDoc(collection(db, "eventAttendees"), {
           eventId,
@@ -576,7 +696,7 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
           registeredByEmail: currentUser.email,
           registrationMethod: "WiFi-NFC",
           userDocId: userData.uid,
-        });
+        })
 
         // Send confirmation email
         const emailData = {
@@ -622,17 +742,29 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
         // Update attendance sheet
         await updateAttendanceSheet(userData, eventData, eventId, registeredDate, now.toISOString())
 
+        // Show student details modal
+        setStudentModalData(userData)
+        setEventModalData(eventData)
+        setShowStudentModal(true)
+
         // Update UI state
         setMatchFound(true)
         setMatchedUser(userData)
         setLastRegisteredName(userData.displayName || userData.name || userData.email)
+        setSuccessAnimation(true) // Trigger success animation
 
         // Auto-reset for continuous scan mode
         if (continuousScan) {
           setTimeout(() => {
             setMatchFound(false)
             setMatchedUser(null)
+            setSuccessAnimation(false) // Reset success animation
           }, 2000)
+        } else {
+          // Reset success animation after 3 seconds for single scan mode
+          setTimeout(() => {
+            setSuccessAnimation(false)
+          }, 3000)
         }
 
         // Add to scan results
@@ -658,104 +790,195 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
         return { success: true, userData, eventData }
       } else {
         // --- Attendance session fallback ---
-        return await registerUserForAttendanceSession(userData, eventId, deviceId);
+        return await registerUserForAttendanceSession(userData, eventId, deviceId)
       }
     } catch (error) {
       console.error("Error registering user for event/attendance:", error)
+      if (error.message.includes("Unsupported field value: undefined (found in field course")) {
+        throw new Error(
+          showAlert({
+          icon: "error",
+          header: "Attendance Registration",
+          description: "Access restricted to students only",
+          variant: "error",
+          position: window.innerWidth < 768 ? "top-center" : "top-right",
+          animation: window.innerWidth < 768 ? "slide-down" : "slide-left",
+          duration: 3000,
+          headerColor: "#9c0505",
+          descriptionColor: "#9c0505",
+          borderColor: "#9c0505",
+          width: window.innerWidth < 768 ? "sm" : "md",
+          responsiveMode: window.innerWidth < 768 ? "inline" : "stack",
+        })
+        )
+      }
       throw error
     }
   }
 
-  // New function to handle attendance session registration
-  const registerUserForAttendanceSession = async (userData, attendanceSessionIdOrCode, deviceId) => {
-    try {
-      // Query attendance-sessions by id field (not doc ID)
-      const attendanceSessionsRef = collection(db, "attendance-sessions");
-      const attendanceQuery = query(attendanceSessionsRef, where("id", "==", attendanceSessionIdOrCode));
-      const attendanceSnap = await getDocs(attendanceQuery);
-
-      if (attendanceSnap.empty) {
-        throw new Error("Attendance session not found");
-      }
-
-      const attendanceDoc = attendanceSnap.docs[0];
-      const attendanceData = attendanceDoc.data();
-
-      // Check if user is already in the students array
-      const existingStudent = attendanceData.students?.find(student =>
-        student.studentId === (userData.usersId || userData.studentId || userData.id) ||
-        student.userUID === userData.uid
-      );
-
-      if (existingStudent) {
-        throw new Error("This user is already registered for this attendance session");
-      }
-
-      const now = new Date();
-      const studentData = {
-        comment: "Checked in via QR scan",
-        course: userData.course || "BSCS",
-        email: userData.email,
-        isPresent: true,
-        name: userData.name || userData.displayName,
-        profileImageUrl: userData.profileImage || userData.profileImageUrl,
-        studentId: userData.usersId || userData.studentId || userData.id,
-        teacherName: attendanceData.teacherName || currentUser.displayName,
-        timestamp: now.toISOString(),
-        userUID: userData.uid
-      };
-
-      // Add student to students array in attendance session
-      const attendanceRef = doc(db, "attendance-sessions", attendanceDoc.id);
-      await updateDoc(attendanceRef, {
-        students: arrayUnion(studentData)
-      });
-
-      // UI updates
-      setMatchFound(true);
-      setMatchedUser(userData);
-      setLastRegisteredName(userData.displayName || userData.name || userData.email);
-
-      // Auto-reset for continuous scan mode
-      if (continuousScan) {
-        setTimeout(() => {
-          setMatchFound(false);
-          setMatchedUser(null);
-        }, 2000);
-      }
-
-      // Add to scan results
-      setScanResults((prev) => [
-        {
-          timestamp: new Date(),
-          tagId: userData.uid,
-          user: userData,
-          device: deviceId,
-          success: true,
-        },
-        ...prev.slice(0, 9),
-      ]);
-
-      // Only call onSuccess if NOT in continuous scan mode
-      if (onSuccess && !continuousScan) {
-        onSuccess(userData);
-      }
-
-      // Send acknowledgment to device
-      await sendCommandToDevice(deviceId, "ACK");
-
-      return {
-        success: true,
-        userData,
-        attendanceData: { ...attendanceData, id: attendanceDoc.id },
-        type: 'attendance-session'
-      };
-
-    } catch (error) {
-      console.error("Error registering user for attendance session:", error);
-      throw error;
+const registerUserForAttendanceSession = async (userData, attendanceSessionIdOrCode, deviceId) => {
+  try {
+    
+    // Check if user has student role
+    if (userData.role !== "student") {        
+      throw new Error(
+        showAlert({
+        icon: "error",
+        header: "Attendance Registration",
+        description: "Only users with 'student' role can register for attendance sessions",
+        variant: "error",
+        position: window.innerWidth < 768 ? "top-center" : "top-right",
+        animation: window.innerWidth < 768 ? "slide-down" : "slide-left",
+        duration: 3000,
+        headerColor: "#9c0505",
+        descriptionColor: "#9c0505",
+        borderColor: "#9c0505",
+        width: window.innerWidth < 768 ? "sm" : "md",
+        responsiveMode: window.innerWidth < 768 ? "inline" : "stack",
+      })
+      )
     }
+
+    // Query attendance-sessions by id field (not doc ID)
+    const attendanceSessionsRef = collection(db, "attendance-sessions")
+    const attendanceQuery = query(attendanceSessionsRef, where("id", "==", attendanceSessionIdOrCode))
+    const attendanceSnap = await getDocs(attendanceQuery)
+
+    if (attendanceSnap.empty) {
+      throw new Error(
+        showAlert({
+        icon: "error",
+        header: "Attendance Registration",
+        description: "Attendance session not found",
+        variant: "error",
+        position: window.innerWidth < 768 ? "top-center" : "top-right",
+        animation: window.innerWidth < 768 ? "slide-down" : "slide-left",
+        duration: 3000,
+        headerColor: "#9c0505",
+        descriptionColor: "#9c0505",
+        borderColor: "#9c0505",
+        width: window.innerWidth < 768 ? "sm" : "md",
+        responsiveMode: window.innerWidth < 768 ? "inline" : "stack",
+      })
+      )
+    }
+
+    const attendanceDoc = attendanceSnap.docs[0]
+    const attendanceData = attendanceDoc.data()
+
+    // Improved duplicate check - check multiple possible identifiers
+    const userIdentifiers = [
+      userData.usersId,
+      userData.studentId, 
+      userData.id,
+      userData.uid
+    ].filter(Boolean) // Remove any undefined/null values
+
+    const existingStudent = attendanceData.students?.find((student) => {
+      // Check if any of the user's identifiers match any of the student's identifiers
+      const studentIdentifiers = [
+        student.studentId,
+        student.userUID,
+        student.id,
+        student.usersId
+      ].filter(Boolean)
+
+      // Check for any overlap between user identifiers and student identifiers
+      return userIdentifiers.some(userId => 
+        studentIdentifiers.some(studentId => userId === studentId)
+      ) || 
+      // Also check email as a fallback identifier
+      (userData.email && student.email && userData.email.toLowerCase() === student.email.toLowerCase())
+    })
+
+    if (existingStudent) {
+      throw new Error(
+        showAlert({
+        icon: "info",
+        header: "Attendance Registration",
+        description: "This user is already registered for this attendance session",
+        variant: "info",
+        position: window.innerWidth < 768 ? "top-center" : "top-right",
+        animation: window.innerWidth < 768 ? "slide-down" : "slide-left",
+        duration: 3000,
+        headerColor: "#0062e2",
+        descriptionColor: "#2076e7",
+        borderColor: "#2076e7",
+        width: window.innerWidth < 768 ? "sm" : "md",
+        responsiveMode: window.innerWidth < 768 ? "inline" : "stack",
+      })
+      )
+    }
+
+    const now = new Date()
+    const studentData = {
+      comment: "Checked in via WiFi NFC scan",
+      course: userData.course || "BSCS",
+      email: userData.email,
+      isPresent: true,
+      name: userData.name || userData.displayName,
+      profileImageUrl: userData.profileImage || userData.profileImageUrl,
+      studentId: userData.usersId || userData.studentId || userData.id,
+      teacherName: attendanceData.teacherName || currentUser.displayName,
+      timestamp: now.toISOString(),
+      userUID: userData.uid,
+    }
+
+    // Add student to students array in attendance session
+    const attendanceRef = doc(db, "attendance-sessions", attendanceDoc.id)
+    await updateDoc(attendanceRef, {
+      students: arrayUnion(studentData),
+    })
+
+    // Show student details modal
+    setStudentModalData(userData)
+    setEventModalData({ title: "Attendance Session", name: "Attendance Session" })
+    setShowStudentModal(true)
+
+    // UI updates
+    setMatchFound(true)
+    setMatchedUser(userData)
+    setLastRegisteredName(userData.displayName || userData.name || userData.email)
+
+    // Auto-reset for continuous scan mode
+    if (continuousScan) {
+      setTimeout(() => {
+        setMatchFound(false)
+        setMatchedUser(null)
+      }, 2000)
+    }
+
+    // Add to scan results
+    setScanResults((prev) => [
+      {
+        timestamp: new Date(),
+        tagId: userData.uid,
+        user: userData,
+        device: deviceId,
+        success: true,
+      },
+      ...prev.slice(0, 9),
+    ])
+
+    // Only call onSuccess if NOT in continuous scan mode
+    if (onSuccess && !continuousScan) {
+      onSuccess(userData)
+    }
+
+    // Send acknowledgment to device
+    await sendCommandToDevice(deviceId, "ACK")
+
+    return {
+      success: true,
+      userData,
+      attendanceData: { ...attendanceData, id: attendanceDoc.id },
+      type: "attendance-session",
+    }
+  } catch (error) {
+    console.error("Error registering user for attendance session:", error)
+    throw error
   }
+}
 
   // Send command to ESP32 device
   const sendCommandToDevice = async (deviceId, command) => {
@@ -821,7 +1044,6 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
         heartbeatIntervalRef.current = null
       }
     }
-    // No dependency on continuousScan, only selectedDevice
   }, [selectedDevice])
 
   // Update disconnectDevice to clear heartbeat and in-use
@@ -829,36 +1051,40 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
     try {
       if (selectedDevice) {
         // Send READ OFF command first
-        await sendCommandToDevice(selectedDevice.id, "READ OFF");
+        await sendCommandToDevice(selectedDevice.id, "READ OFF")
         // Wait 150ms, then clear the command
-        await new Promise((resolve) => setTimeout(resolve, 150));
-        await sendCommandToDevice(selectedDevice.id, "");
+        await new Promise((resolve) => setTimeout(resolve, 150))
+        await sendCommandToDevice(selectedDevice.id, "")
 
-        // Send CLOSE command to stop scanning (optional, if your device expects it)
-        await sendCommandToDevice(selectedDevice.id, "close");
+        // Send CLOSE command to stop scanning
+        await sendCommandToDevice(selectedDevice.id, "close")
 
         // Clear heartbeat and in-use
-        await clearDeviceInUse(selectedDevice.id);
+        await clearDeviceInUse(selectedDevice.id)
 
         // Stop heartbeat interval
         if (heartbeatIntervalRef.current) {
-          clearInterval(heartbeatIntervalRef.current);
-          heartbeatIntervalRef.current = null;
+          clearInterval(heartbeatIntervalRef.current)
+          heartbeatIntervalRef.current = null
         }
         // Clean up listener
         if (deviceListenersRef.current[selectedDevice.id]) {
-          off(ref(database, selectedDevice.id), "value", deviceListenersRef.current[selectedDevice.id]);
-          delete deviceListenersRef.current[selectedDevice.id];
+          off(ref(database, selectedDevice.id), "value", deviceListenersRef.current[selectedDevice.id])
+          delete deviceListenersRef.current[selectedDevice.id]
         }
       }
 
-      setSelectedDevice(null);
+      setSelectedDevice(null)
       if (scanIntervalRef.current) {
-        clearInterval(scanIntervalRef.current);
+        clearInterval(scanIntervalRef.current)
       }
+      if (scanTimeoutRef.current) {
+        clearTimeout(scanTimeoutRef.current)
+      }
+      processingScanRef.current = false
     } catch (error) {
-      console.error("Error disconnecting device:", error);
-      setError("Failed to disconnect device: " + error.message);
+      console.error("Error disconnecting device:", error)
+      setError("Failed to disconnect device: " + error.message)
     }
   }
 
@@ -888,13 +1114,25 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
     }
   }
 
-  // Manual trigger scan
+  // Manual trigger scan with improved logic
   const handleScan = async () => {
     if (!selectedDevice) {
       setError("No device selected")
       return
     }
+
+    if (isScanning || processingScanRef.current) {
+      setError("Scan already in progress. Please wait.")
+      return
+    }
+
     try {
+      // Set scanning state and animation for manual scans
+      if (!continuousScan) {
+        setIsScanning(true)
+        setScanAnimation(true)
+      }
+
       // Clear the command first
       await sendCommandToDevice(selectedDevice.id, "")
       // Wait a short moment to ensure the command is cleared before sending READ
@@ -902,35 +1140,47 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
       // Send READ command to trigger a scan
       await sendCommandToDevice(selectedDevice.id, "READ")
       console.log("Scan triggered manually")
+
+      // Remove the timeout - let the scan continue until NFC is detected or error occurs
+      // The scanning state will be reset in processScannedData or on error
     } catch (error) {
       setError("Failed to trigger scan: " + error.message)
-    }
-  }
-
-  // Toggle continuous scanning
-  const toggleContinuousScan = async () => {
-    const newContinuousScan = !continuousScan
-    setContinuousScan(newContinuousScan)
-    if (selectedDevice) {
-      if (newContinuousScan) {
-        // When enabling continuous scan, send READ ON command
-        try {
-          await sendCommandToDevice(selectedDevice.id, "READ ON")
-        } catch (err) {
-          setError("Failed to send read ON command: " + err.message)
-        }
-      } else {
-        // When disabling continuous scan, clear the command
-        try {
-          await sendCommandToDevice(selectedDevice.id, "READ OFF")
-        } catch (err) {
-          setError("Failed to clear command: " + err.message)
-        }
+      // Reset scanning state on error
+      if (!continuousScan) {
+        setIsScanning(false)
+        setScanAnimation(false)
       }
     }
   }
 
-  // Handle modal close
+  // Toggle continuous scanning with improved state management
+  const toggleContinuousScan = async () => {
+    const newContinuousScan = !continuousScan
+    setContinuousScan(newContinuousScan)
+
+    if (selectedDevice) {
+      try {
+        if (newContinuousScan) {
+          // When enabling continuous scan, send READ ON command
+          await sendCommandToDevice(selectedDevice.id, "READ ON")
+          console.log("Continuous scanning enabled")
+        } else {
+          // When disabling continuous scan, send READ OFF command
+          await sendCommandToDevice(selectedDevice.id, "READ OFF")
+          // Wait a moment then clear the command
+          await new Promise((resolve) => setTimeout(resolve, 150))
+          await sendCommandToDevice(selectedDevice.id, "")
+          console.log("Continuous scanning disabled")
+        }
+      } catch (err) {
+        setError("Failed to toggle continuous scan: " + err.message)
+        // Revert the state if command failed
+        setContinuousScan(!newContinuousScan)
+      }
+    }
+  }
+
+  // Handle modal close with improved cleanup
   const handleClose = async () => {
     if (isClosing) return
 
@@ -949,12 +1199,15 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
         }
       }
 
-      // Clear intervals
+      // Clear all intervals and timeouts
       if (refreshIntervalRef.current) {
         clearInterval(refreshIntervalRef.current)
       }
       if (scanIntervalRef.current) {
         clearInterval(scanIntervalRef.current)
+      }
+      if (scanTimeoutRef.current) {
+        clearTimeout(scanTimeoutRef.current)
       }
 
       // Clean up all device listeners
@@ -975,6 +1228,7 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
       setSelectedDevice(null)
       setError(null)
       setOnlineDevices([])
+      processingScanRef.current = false
 
       onClose()
     } catch (error) {
@@ -992,6 +1246,11 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
         clearInterval(heartbeatIntervalRef.current)
         heartbeatIntervalRef.current = null
       }
+      if (scanTimeoutRef.current) {
+        clearTimeout(scanTimeoutRef.current)
+        scanTimeoutRef.current = null
+      }
+      processingScanRef.current = false
     }
   }, [])
 
@@ -1008,287 +1267,384 @@ export default function HardwareWiFi({ eventId, onClose, onSuccess }) {
     return `${Math.floor(hours / 24)}d ago`
   }
 
+  useEffect(() => {
+    if (selectedDevice && continuousScan && !isScanning) {
+      setPulseAnimation(true)
+      const pulseInterval = setInterval(() => {
+        setPulseAnimation((prev) => !prev)
+      }, 2000) // Pulse every 2 seconds
+
+      return () => clearInterval(pulseInterval)
+    } else {
+      setPulseAnimation(false)
+    }
+  }, [selectedDevice, continuousScan, isScanning])
+
+  // Add custom styles for animations
+  const customStyles = `
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slide-up {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes scale-in {
+      from { opacity: 0; transform: scale(0); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    
+    .animate-fade-in {
+      animation: fade-in 0.5s ease-out;
+    }
+    
+    .animate-slide-up {
+      animation: slide-up 0.6s ease-out;
+    }
+    
+    .animate-scale-in {
+      animation: scale-in 0.3s ease-out;
+    }
+  `
+
+  // Add the style tag before the main div
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 overflow-hidden max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">WiFi NFC Scanner</h2>
-          <button
-            onClick={handleClose}
-            disabled={isClosing}
-            className="text-gray-500 hover:text-gray-700 transition-colors"
-            aria-label="Close"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto">
-          <div className="px-6 py-6">
-            {!selectedDevice ? (
-              // Device selection screen
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-medium text-gray-800">Available ESP32 Devices</h3>
-                  <button
-                    onClick={refreshDevices}
-                    disabled={isRefreshing}
-                    className="flex items-center px-3 py-2 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md transition-colors"
-                  >
-                    <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
-                    Refresh
-                  </button>
-                </div>
-
-                {error && (
-                  <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-4 flex items-start">
-                    <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 mr-2 flex-shrink-0" />
-                    <p className="text-red-600 text-sm">{error}</p>
-                  </div>
-                )}
-
-                <div className="space-y-3">
-                  {onlineDevices.length === 0 ? (
-                    <div className="text-center py-8">
-                      <WifiOff className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500">No ESP32 devices found</p>
-                      <p className="text-sm text-gray-400 mt-1">
-                        Make sure your ESP32 NFC scanners are connected and active
-                      </p>
-                    </div>
-                  ) : (
-                    onlineDevices.map((device) => {
-                      const isInUse = !!device.inUsedBy
-                      return (
-                        <div
-                          key={device.id}
-                          className={`border rounded-lg p-4 transition-colors ${
-                            isInUse
-                              ? "border-yellow-200 bg-yellow-50 cursor-not-allowed opacity-70"
-                              : "border-green-200 bg-green-50 hover:bg-green-100 cursor-pointer"
-                          }`}
-                          onClick={
-                            !isInUse ? () => connectToDevice(device) : undefined
-                          }
-                          style={isInUse ? { pointerEvents: "none" } : {}}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                              <div className="flex items-center">
-                                {isInUse ? (
-                                  <Wifi className="h-5 w-5 text-yellow-600 mr-3" />
-                                ) : (
-                                  <Wifi className="h-5 w-5 text-green-600 mr-3" />
-                                )}
-                                <div>
-                                  <h4 className={`font-medium ${isInUse ? "text-yellow-800" : "text-gray-800"}`}>{device.name}</h4>
-                                  <p className={`text-sm ${isInUse ? "text-yellow-700" : "text-gray-600"}`}>{device.id}</p>
-                                  {device.location && <p className="text-xs text-gray-500">{device.location}</p>}
-                                  {device.command && <p className="text-xs text-blue-600">Command: {device.command}</p>}
-                                  {isInUse && (
-                                    <p className="text-xs text-yellow-700 font-semibold mt-1">
-                                      In used by: {device.inUsedByName || device.inUsedBy}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="text-right">
-                              
-                              <div className="flex items-center text-xs text-gray-500">
-                                <Clock className="h-3 w-3 mr-1" />
-                                {formatTimeAgo(device.lastSeen)}
-                              </div>
-                              <div
-                                className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${
-                                  isInUse
-                                    ? "bg-yellow-100 text-yellow-800"
-                                    : "bg-green-100 text-green-800"
-                                }`}
-                              >
-                                {isInUse ? "in use" : device.status}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    })
-                  )}
-                </div>
-              </div>
-            ) : (
-              // Scanner interface
-              <div>
-                {/* Connected device info */}
-                <div className="flex items-center justify-between mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="flex items-center">
-                    <Wifi className="h-5 w-5 text-green-600 mr-3" />
-                    <div>
-                      <h4 className="font-medium text-green-800">{selectedDevice.name}</h4>
-                      <p className="text-sm text-green-600">{selectedDevice.id}</p>
-                      {selectedDevice.command && (
-                        <p className="text-xs text-green-700">Status: {selectedDevice.command}</p>
-                      )}
-                    </div>
-                  </div>
-                  <button
-                    onClick={disconnectDevice}
-                    className="text-sm text-green-700 hover:text-red-600 transition-colors"
-                  >
-                    Disconnect
-                  </button>
-                </div>
-
-                {error && (
-                  <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-4 flex items-start">
-                    <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 mr-2 flex-shrink-0" />
-                    <p className="text-red-600 text-sm">{error}</p>
-                  </div>
-                )}
-
-                {/* Continuous scan toggle */}
-                <div className="flex items-center justify-center mb-6">
-                  <label className="inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={continuousScan}
-                      onChange={toggleContinuousScan}
-                      className="sr-only peer"
-                    />
-                    <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    <span className="ml-3 text-sm font-medium text-gray-700">Continuous Scanning</span>
-                  </label>
-                </div>
-
-                {/* Scan button */}
-                <div className="flex justify-center mb-6">
-                  <button
-                    onClick={handleScan}
-                    disabled={isScanning}
-                    className={`px-6 py-3 ${
-                      isScanning ? "bg-blue-300" : "bg-blue-600 hover:bg-blue-700"
-                    } text-white rounded-md font-medium transition-colors flex items-center`}
-                  >
-                    {isScanning ? (
-                      <>
-                        <RefreshCw className="animate-spin h-5 w-5 mr-2" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <Search className="h-5 w-5 mr-2" />
-                        {continuousScan ? "Trigger Scan Now" : "Scan NFC Tag"}
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                {/* Match result */}
-                {matchFound && matchedUser && (
-                  <div className="bg-green-50 border border-green-200 rounded-md p-4 text-center mb-6">
-                    <div className="mb-2">
-                      <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <UserPlus className="h-6 w-6 text-green-600" />
-                      </div>
-                      <h4 className="font-medium text-green-800">Registration Successful!</h4>
-                    </div>
-                    <p className="text-sm text-green-700 mb-2">
-                      {matchedUser.displayName || matchedUser.name || matchedUser.email} has been registered to the
-                      event.
-                    </p>
-                    <p className="text-xs text-green-600">Device: {selectedDevice.name}</p>
-                  </div>
-                )}
-
-                {/* Statistics */}
-                <div className="border-t border-gray-200 pt-4 text-center mb-6">
-                  <p className="text-sm text-gray-600">
-                    Total registrations: <span className="font-medium">{registrationCount}</span>
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Scans from this device: <span className="font-medium">{scanCount}</span>
-                  </p>
-                  {lastRegisteredName && (
-                    <p className="text-xs text-gray-500 mt-1">Last registered: {lastRegisteredName}</p>
-                  )}
-                </div>
-
-                {/* Recent scan results */}
-                {scanResults.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-3">Recent Scans</h4>
-                    <div className="space-y-2 max-h-48 overflow-y-auto">
-                      {scanResults.map((result, index) => (
-                        <div
-                          key={index}
-                          className={`p-3 rounded-md text-sm ${
-                            result.success ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"
-                          }`}
-                        >
-                          <div className="flex justify-between items-start">
-                            <div>
-                              {result.success ? (
-                                <p className="text-green-800 font-medium">
-                                  {result.user.displayName || result.user.name || result.user.email}
-                                </p>
-                              ) : (
-                                <p className="text-red-800 font-medium">Scan Failed</p>
-                              )}
-                              <p className="text-xs text-gray-500">
-                                {result.timestamp.toLocaleTimeString()} • {result.device}
-                              </p>
-                              <p className="text-xs text-gray-400">
-                                UID: {typeof result.tagId === "object" ? JSON.stringify(result.tagId) : result.tagId}
-                              </p>
-                            </div>
-                            <div
-                              className={`px-2 py-1 rounded-full text-xs ${
-                                result.success ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                              }`}
-                            >
-                              {result.success ? "Success" : "Failed"}
-                            </div>
-                          </div>
-                          {result.error && <p className="text-xs text-red-600 mt-1">{result.error}</p>}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
-          <div className="flex justify-between items-center">
-            <div className="text-xs text-gray-500 flex items-center">
-              <Monitor className="h-3 w-3 mr-1" />
-              <span>
-                {selectedDevice
-                  ? `Connected to ${selectedDevice.name}`
-                  : `${onlineDevices.filter((d) => d.status === "online").length} devices online`}
-              </span>
-            </div>
+    <>
+      <style>{customStyles}</style>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 overflow-hidden max-h-[90vh] flex flex-col">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-800">WiFi NFC Scanner</h2>
             <button
               onClick={handleClose}
               disabled={isClosing}
-              className={`px-4 py-2 ${isClosing ? "bg-gray-300" : "bg-gray-100 hover:bg-gray-200"} text-gray-700 rounded-md font-medium transition-colors text-sm flex items-center`}
+              className="text-gray-500 hover:text-gray-700 transition-colors"
+              aria-label="Close"
             >
-              {isClosing ? (
-                <>
-                  <RefreshCw className="animate-spin h-3 w-3 mr-1" />
-                  Closing...
-                </>
-              ) : (
-                "Close"
-              )}
+              <X className="h-5 w-5" />
             </button>
           </div>
+
+          <div className="flex-1 overflow-y-auto">
+            <div className="px-6 py-6">
+              {!selectedDevice ? (
+                // Device selection screen
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-medium text-gray-800">Available ESP32 Devices</h3>
+                    <button
+                      onClick={refreshDevices}
+                      disabled={isRefreshing}
+                      className="flex items-center px-3 py-2 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md transition-colors"
+                    >
+                      <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
+                      Refresh
+                    </button>
+                  </div>
+
+                  {error && (
+                    <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-4 flex items-start">
+                      <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 mr-2 flex-shrink-0" />
+                      <p className="text-red-600 text-sm">{error}</p>
+                    </div>
+                  )}
+
+                  <div className="space-y-3">
+                    {onlineDevices.length === 0 ? (
+                      <div className="text-center py-8">
+                        <WifiOff className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500">No ESP32 devices found</p>
+                        <p className="text-sm text-gray-400 mt-1">
+                          Make sure your ESP32 NFC scanners are connected and active
+                        </p>
+                      </div>
+                    ) : (
+                      onlineDevices.map((device) => {
+                        const isInUse = !!device.inUsedBy
+                        return (
+                          <div
+                            key={device.id}
+                            className={`border rounded-lg p-4 transition-colors ${isInUse
+                              ? "border-yellow-200 bg-yellow-50 cursor-not-allowed opacity-70"
+                              : "border-green-200 bg-green-50 hover:bg-green-100 cursor-pointer"
+                              }`}
+                            onClick={!isInUse ? () => connectToDevice(device) : undefined}
+                            style={isInUse ? { pointerEvents: "none" } : {}}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center">
+                                <div className="flex items-center">
+                                  {isInUse ? (
+                                    <Wifi className="h-5 w-5 text-yellow-600 mr-3" />
+                                  ) : (
+                                    <Wifi className="h-5 w-5 text-green-600 mr-3" />
+                                  )}
+                                  <div>
+                                    <h4 className={`font-medium ${isInUse ? "text-yellow-800" : "text-gray-800"}`}>
+                                      {device.name}
+                                    </h4>
+                                    <p className={`text-sm ${isInUse ? "text-yellow-700" : "text-gray-600"}`}>
+                                      {device.id}
+                                    </p>
+                                    {device.location && <p className="text-xs text-gray-500">{device.location}</p>}
+                                    {device.command && (
+                                      <p className="text-xs text-blue-600">Command: {device.command}</p>
+                                    )}
+                                    {isInUse && (
+                                      <p className="text-xs text-yellow-700 font-semibold mt-1">
+                                        In used by: {device.inUsedByName || device.inUsedBy}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="text-right">
+                                <div className="flex items-center text-xs text-gray-500">
+                                  <Clock className="h-3 w-3 mr-1" />
+                                  {formatTimeAgo(device.lastSeen)}
+                                </div>
+                                <div
+                                  className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${isInUse ? "bg-yellow-100 text-yellow-800" : "bg-green-100 text-green-800"
+                                    }`}
+                                >
+                                  {isInUse ? "in use" : device.status}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
+                </div>
+              ) : (
+                // Scanner interface
+                <div>
+                  {/* Connected device info */}
+                  <div className="flex items-center justify-between mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center">
+                      <Wifi className="h-5 w-5 text-green-600 mr-3" />
+                      <div>
+                        <h4 className="font-medium text-green-800">{selectedDevice.name}</h4>
+                        <p className="text-sm text-green-600">{selectedDevice.id}</p>
+                        {selectedDevice.command && (
+                          <p className="text-xs text-green-700">Status: {selectedDevice.command}</p>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      onClick={disconnectDevice}
+                      className="text-sm text-green-700 hover:text-red-600 transition-colors"
+                    >
+                      Disconnect
+                    </button>
+                  </div>
+
+                  {error && (
+                    <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-4 flex items-start">
+                      <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 mr-2 flex-shrink-0" />
+                      <p className="text-red-600 text-sm">{error}</p>
+                    </div>
+                  )}
+
+                  {/* Continuous scan toggle */}
+                  <div className="flex items-center justify-center mb-6">
+                    <label className="inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={continuousScan}
+                        onChange={toggleContinuousScan}
+                        className="sr-only peer"
+                      />
+                      <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                      <span className="ml-3 text-sm font-medium text-gray-700">Continuous Scanning</span>
+                    </label>
+                  </div>
+
+                  {/* Scan button with unified animations */}
+                  <div className="flex justify-center mb-6">
+                    <div className="relative">
+                      {/* Unified scanning ripple effect - shows for both manual scan and continuous scan */}
+                      {(scanAnimation || isScanning || processingScanRef.current || (continuousScan && pulseAnimation)) && (
+                        <div className="absolute inset-0 rounded-md">
+                          <div className="absolute inset-0 rounded-md bg-blue-400 animate-ping opacity-20"></div>
+                          <div className="absolute inset-0 rounded-md bg-blue-400 animate-pulse opacity-30"></div>
+                        </div>
+                      )}
+
+                      {/* Main scan button */}
+                      <button
+                        onClick={handleScan}
+                        disabled={isScanning || processingScanRef.current}
+                        className={`relative px-6 py-3 ${isScanning || processingScanRef.current ? "bg-blue-300" : continuousScan ? "bg-blue-300" : "bg-blue-600 hover:bg-blue-700"
+                          } text-white rounded-md font-medium transition-all duration-300 flex items-center transform ${scanAnimation || isScanning || processingScanRef.current || (continuousScan && pulseAnimation) ? "scale-105" : "scale-100"
+                          }`}
+                      >
+                        {isScanning || processingScanRef.current || (continuousScan && selectedDevice) ? (
+                          <>
+                            <div className="relative mr-2">
+                              <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            </div>
+                            <span className="animate-pulse">{continuousScan ? "Continuous Scanning..." : "Scanning..."}</span>
+                          </>
+                        ) : (
+                          <>
+                            <Search
+                              className={`h-5 w-5 mr-2 transition-transform duration-300 ${scanAnimation || (continuousScan && pulseAnimation) ? "scale-110" : "scale-100"
+                                }`}
+                            />
+                            {continuousScan ? "Trigger Scan Now" : "Scan NFC Tag"}
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Match result with animations */}
+                  {matchFound && matchedUser && (
+                    <div
+                      className={`bg-green-50 border border-green-200 rounded-md p-4 text-center mb-6 transition-all duration-500 transform ${successAnimation ? "scale-105 shadow-lg" : "scale-100"
+                        }`}
+                    >
+                      <div className="mb-2">
+                        <div
+                          className={`h-12 w-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2 transition-all duration-300 ${successAnimation ? "animate-bounce" : ""
+                            }`}
+                        >
+                          <UserPlus
+                            className={`h-6 w-6 text-green-600 transition-all duration-300 ${successAnimation ? "scale-125" : "scale-100"
+                              }`}
+                          />
+                        </div>
+                        <h4 className="font-medium text-green-800 animate-fade-in">Registration Successful!</h4>
+                      </div>
+                      <p className="text-sm text-green-700 mb-2 animate-slide-up">
+                        {matchedUser.displayName || matchedUser.name || matchedUser.email} has been registered to the
+                        event.
+                      </p>
+                      <p className="text-xs text-green-600 animate-slide-up" style={{ animationDelay: "0.1s" }}>
+                        Device: {selectedDevice.name}
+                      </p>
+
+                      {/* Success checkmark animation */}
+                      {successAnimation && (
+                        <div className="absolute top-2 right-2">
+                          <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center animate-scale-in">
+                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Statistics */}
+                  <div className="border-t border-gray-200 pt-4 text-center mb-6">
+                    <p className="text-sm text-gray-600">
+                      Total registrations: <span className="font-medium">{registrationCount}</span>
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Scans from this device: <span className="font-medium">{scanCount}</span>
+                    </p>
+                    {lastRegisteredName && (
+                      <p className="text-xs text-gray-500 mt-1">Last registered: {lastRegisteredName}</p>
+                    )}
+                  </div>
+
+                  {/* Recent scan results */}
+                  {scanResults.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-700 mb-3">Recent Scans</h4>
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {scanResults.map((result, index) => (
+                          <div
+                            key={index}
+                            className={`p-3 rounded-md text-sm ${result.success ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"
+                              }`}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div>
+                                {result.success ? (
+                                  <p className="text-green-800 font-medium">
+                                    {result.user.displayName || result.user.name || result.user.email}
+                                  </p>
+                                ) : (
+                                  <p className="text-red-800 font-medium">Scan Failed</p>
+                                )}
+                                <p className="text-xs text-gray-500">
+                                  {result.timestamp.toLocaleTimeString()} • {result.device}
+                                </p>
+                                <p className="text-xs text-gray-400">
+                                  UID: {typeof result.tagId === "object" ? JSON.stringify(result.tagId) : result.tagId}
+                                </p>
+                              </div>
+                              <div
+                                className={`px-2 py-1 rounded-full text-xs ${result.success ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                                  }`}
+                              >
+                                {result.success ? "Success" : "Failed"}
+                              </div>
+                            </div>
+                            {result.error && <p className="text-xs text-red-600 mt-1">{result.error}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+            <div className="flex justify-between items-center">
+              <div className="text-xs text-gray-500 flex items-center">
+                <Monitor className="h-3 w-3 mr-1" />
+                <span>
+                  {selectedDevice
+                    ? `Connected to ${selectedDevice.name}`
+                    : `${onlineDevices.filter((d) => d.status === "online").length} devices online`}
+                </span>
+              </div>
+              <button
+                onClick={handleClose}
+                disabled={isClosing}
+                className={`px-4 py-2 ${isClosing ? "bg-gray-300" : "bg-gray-100 hover:bg-gray-200"} text-gray-700 rounded-md font-medium transition-colors text-sm flex items-center`}
+              >
+                {isClosing ? (
+                  <>
+                    <RefreshCw className="animate-spin h-3 w-3 mr-1" />
+                    Closing...
+                  </>
+                ) : (
+                  "Close"
+                )}
+              </button>
+            </div>
+          </div>
+          {/* Student Details Modal */}
+          {showStudentModal && (
+            <StudentDetailsModal
+              isVisible={showStudentModal}
+              userData={studentModalData}
+              eventData={eventModalData}
+              registrationMethod="WiFi-NFC"
+              onClose={() => {
+                setShowStudentModal(false)
+                setStudentModalData(null)
+                setEventModalData(null)
+              }}
+              autoCloseDelay={2000}
+            />
+          )}
         </div>
       </div>
-    </div>
+    </>
   )
 }

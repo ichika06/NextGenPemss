@@ -102,7 +102,7 @@ export default function RegistrarNotifications() {
           <Bell className="h-6 w-6 text-indigo-600 mr-3" />
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Notifications</h1>
         </div>
-        <div className="mt-4 sm:mt-0 flex space-x-3">
+        <div className="mt-4 sm:mt-0 flex space-x-3 sm:mr-11">
           <button
             onClick={handleMarkAllAsRead}
             className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"

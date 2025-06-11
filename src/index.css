@@ -10,6 +10,8 @@
 :root {
   /* Custom color palette */
   --primary-dark: #005acd;
+  --primary-darks: #2076e7;
+  --primary-darkss:#0062e2;
   --primary: #0093cb;
   --primary-light: #6dd7fd;
   --primary-lightest: #bef0ff;
@@ -500,5 +502,4 @@ body {
 .button-hover-effect:hover {
   transform: translateY(-2px);
 }
-
 

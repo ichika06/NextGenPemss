@@ -1087,7 +1087,7 @@ export default function MessagingCenter() {
                     <div className="mt-4 sm:mt-0">
                         <button
                             onClick={() => setComposingMessage(true)}
-                            className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                            className="inline-flex items-center px-4 py-2 sm:mr-11 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
                         >
                             <Edit className="h-4 w-4 mr-2" /> Compose
                         </button>

@@ -245,9 +245,13 @@ const sendWelcomeEmail = async (userData) => {
         throw error;
       }
     } catch (error) {
-      setError(
-        "Failed to create an account: " + (error.message || "Unknown error")
-      );
+      if (error.code === 'auth/email-already-in-use') {
+        setError("The user is already registered");
+      } else {
+        setError(
+          "Failed to create an account: " + (error.message || "Unknown error")
+        );
+      }
       console.error(error);
       setRegistrationStep("form");
       throw error;

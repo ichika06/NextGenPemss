@@ -78,7 +78,7 @@ const StudentEventAttendance = () => {
   }, [currentUser]);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="container mx-auto px-4 py-18 max-w-7xl">
 
       <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
         <div className="border-b background-primary px-6 py-4">

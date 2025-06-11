@@ -270,12 +270,57 @@ export default function PublicEventView() {
     return userRole === "student";
   };
 
+  // const isExpired = () => {
+  //   if (!event || !event.date) return false;
+  //   const currentDate = new Date();
+  //   const eventDate = new Date(event.date);
+  //   return eventDate < currentDate;
+  // };
+
   const isExpired = () => {
-    if (!event || !event.date) return false;
+  if (!event || !event.date || !event.time) return false;
+  
+  try {
     const currentDate = new Date();
-    const eventDate = new Date(event.date);
-    return eventDate < currentDate;
-  };
+    
+    // Parse the event date
+    const [year, month, day] = event.date.split('-').map(Number);
+    
+    // Parse the event time (handle both 12-hour and 24-hour formats)
+    let eventHour, eventMinute;
+    const timeStr = event.time.toLowerCase().trim();
+    
+    if (timeStr.includes('pm') || timeStr.includes('am')) {
+      // 12-hour format
+      const [time, period] = timeStr.split(/\s*(am|pm)\s*/);
+      const [hourStr, minuteStr = '0'] = time.split(':');
+      
+      eventHour = parseInt(hourStr);
+      eventMinute = parseInt(minuteStr);
+      
+      // Convert to 24-hour format
+      if (period === 'pm' && eventHour !== 12) {
+        eventHour += 12;
+      } else if (period === 'am' && eventHour === 12) {
+        eventHour = 0;
+      }
+    } else {
+      // 24-hour format
+      const [hourStr, minuteStr = '0'] = timeStr.split(':');
+      eventHour = parseInt(hourStr);
+      eventMinute = parseInt(minuteStr);
+    }
+    
+    // Create event date object
+    const eventDateTime = new Date(year, month - 1, day, eventHour, eventMinute);
+    
+    // Compare current time with event date/time
+    return currentDate > eventDateTime;
+  } catch (error) {
+    console.error('Error checking if event is expired:', error);
+    return false;
+  }
+};
 
   const isLive = () => {
     return event.isLive === false;
@@ -705,7 +750,7 @@ export default function PublicEventView() {
 
           {/* StudentPreRegistration modal */}
           {showPreRegistration && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div className="fixed inset-0 backdrop-blur-xs backdrop-grayscale-150 z-50 flex items-center justify-center p-4">
               <div className="w-full max-w-md">
                 <StudentPreRegistration
                   eventId={eventId}

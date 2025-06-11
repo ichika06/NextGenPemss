@@ -359,7 +359,7 @@ export default function ManageEvent() {
 
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div className="flex flex-col sm:mr-11 sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <div className="flex items-center space-x-3">
             <CalendarCog className="h-6 w-6 text-indigo-600" />
@@ -368,7 +368,7 @@ export default function ManageEvent() {
             </h1>
           </div>
           <p className="text-gray-500 text-sm sm:text-base">
-            Create, edit, and manage your school events
+            View, Edit, and Manage your events
           </p>
         </div>
         <button

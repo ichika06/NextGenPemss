@@ -134,7 +134,7 @@ export default function RegistrarDashboard() {
             Registrar Dashboard
           </h1>
         </div>
-        <div className="mt-4 sm:mt-0">
+        <div className="mt-4 sm:mt-0 sm:mr-11">
           <Link
             to={`/${userRole}/create-event`}
             className=" btn-primary inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
@@ -163,7 +163,7 @@ export default function RegistrarDashboard() {
               to={`/${userRole}/manage-events`}
               className="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center"
             >
-              View all events <ArrowRight className="h-4 w-4 ml-1" />
+              Manage own events <ArrowRight className="h-4 w-4 ml-1" />
             </Link>
           </div>
         </div>
@@ -218,7 +218,7 @@ export default function RegistrarDashboard() {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg font-semibold text-gray-800">Recent Events</h2>
           <Link
-            to={`/${userRole}/manage-events`}
+            to={`/${userRole}/events`}
             className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
           >
             View all

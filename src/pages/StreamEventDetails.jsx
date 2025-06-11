@@ -195,6 +195,29 @@ export default function EventDetailsDisplay() {
     }
   }, [eventId])
 
+  // Helper function to check if event date has passed
+  const isEventExpired = (eventDate) => {
+    if (!eventDate) return false
+    
+    try {
+      // Create a date object for the event date
+      const eventDateObj = new Date(eventDate)
+      
+      // Get current date without time (start of today)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      
+      // Set event date to end of day to give full day
+      eventDateObj.setHours(23, 59, 59, 999)
+      
+      // Event is expired if event date is before today
+      return eventDateObj < today
+    } catch (e) {
+      console.error("Error checking event expiration:", e)
+      return false
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen p-4">
@@ -349,14 +372,15 @@ export default function EventDetailsDisplay() {
               <h1 className="text-2xl md:text-3xl font-bold text-primary mb-2 sm:mb-0">{event.title}</h1>
               <div className="flex gap-2">
                 <div
-                  className={`px-4 py-1.5 rounded-full text-sm font-medium self-start sm:self-auto ${new Date(event.date) < new Date()
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium self-start sm:self-auto ${
+                    isEventExpired(event.date)
                       ? "bg-red-100 text-red-800"
                       : event.isLive
                         ? "bg-green-100 text-green-800"
                         : "bg-gray-100 text-gray-800"
-                    }`}
+                  }`}
                 >
-                  {new Date(event.date) < new Date() ? "Expired Event" : event.isLive ? "Live Event" : "Upcoming Event"}
+                  {isEventExpired(event.date) ? "Expired Event" : event.isLive ? "Live Event" : "Upcoming Event"}
                 </div>
                 {/* Add visibility indicator for private events */}
                 {!event.isPublic && (

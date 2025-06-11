@@ -633,8 +633,10 @@ Use ↑/↓ arrows for command history`}
 
                 <div className="flex gap-3">
                   <a
-                    href="/drivers/CP210x_Windows_Drivers.zip"
+                    href="https://firebasestorage.googleapis.com/v0/b/nextgen-pemss.firebasestorage.app/o/drivers%2FPEMMS_Windows_Drivers.zip?alt=media&token=f91c0167-6402-4c80-a60b-a20dfa86ca29"
+                    target="_blank"
                     download
+                    rel="noopener noreferrer"
                     className="flex-1 inline-flex items-center justify-center py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                   >
                     <Download className="w-4 h-4 mr-2" />
