@@ -233,7 +233,7 @@ export default function Sidebar({ role, isOpen, setIsOpen }) {
 
       {/* Mobile sidebar backdrop */}
       <div
-        className={`lg:hidden fixed inset-0 bg-gray-800 bg-opacity-50 backdrop-blur-sm z-30 transition-opacity duration-300 ${
+        className={`lg:hidden fixed inset-0 bg-gray-800 bg-opacity-50 backdrop-blur-sm dark:backdrop-blur-none z-30 transition-opacity duration-300 ${
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={() => setIsOpen(false)}
