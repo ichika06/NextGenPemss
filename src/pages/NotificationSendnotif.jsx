@@ -25,8 +25,10 @@ import {
   FileText,
   ShieldCheck,
 } from "lucide-react"
+import { useToast } from "../contexts/ToastContext";
 
 export default function SendNotifications() {
+  const { showToast, hideToast } = useToast();
   const [title, setTitle] = useState("")
   const [message, setMessage] = useState("")
   const [notificationType, setNotificationType] = useState("info")
@@ -173,42 +175,44 @@ export default function SendNotifications() {
   }
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (previewMode) {
-      setPreviewMode(false)
-      return
+      setPreviewMode(false);
+      return;
     }
 
-    setLoading(true)
-    setError("")
+    setLoading(true);
+    setError("");
 
     try {
+      showToast("Sending notifications...", true);
+
       // Validate form
       if (!title.trim() || !message.trim()) {
-        throw new Error("Title and message are required.")
+        throw new Error("Title and message are required.");
       }
 
       // Check if at least one recipient is selected
-      const isAnyRoleSelected = Object.values(sendToRoles).some((value) => value)
+      const isAnyRoleSelected = Object.values(sendToRoles).some((value) => value);
       if (!isAnyRoleSelected && !sendToSpecificUser && !sendToSection) {
-        throw new Error("Please select at least one recipient.")
+        throw new Error("Please select at least one recipient.");
       }
 
       if (sendToSpecificUser && !selectedUser) {
-        throw new Error("Please select a specific user.")
+        throw new Error("Please select a specific user.");
       }
 
       if (sendToSection && !section.trim()) {
-        throw new Error("Please enter a section.")
+        throw new Error("Please enter a section.");
       }
 
       // Determine target users
-      let targetUsers = []
+      let targetUsers = [];
 
       // For specific user
       if (sendToSpecificUser && selectedUser) {
-        targetUsers.push(selectedUser.uid)
+        targetUsers.push(selectedUser.uid);
       }
 
       // For section
@@ -216,16 +220,16 @@ export default function SendNotifications() {
         const sectionQuery = query(
           collection(db, "users"),
           where("role", "==", "student"),
-          where("section", "==", section.trim()),
-        )
+          where("section", "==", section.trim())
+        );
 
-        const sectionSnapshot = await getDocs(sectionQuery)
+        const sectionSnapshot = await getDocs(sectionQuery);
         sectionSnapshot.forEach((doc) => {
-          targetUsers.push(doc.data().uid)
-        })
+          targetUsers.push(doc.data().uid);
+        });
 
         if (sectionSnapshot.empty) {
-          throw new Error(`No students found in section ${section}.`)
+          throw new Error(`No students found in section ${section}.`);
         }
       }
 
@@ -233,23 +237,23 @@ export default function SendNotifications() {
       if (isAnyRoleSelected) {
         const selectedRoles = Object.entries(sendToRoles)
           .filter(([_, isSelected]) => isSelected)
-          .map(([role]) => role)
+          .map(([role]) => role);
 
         for (const role of selectedRoles) {
-          const roleQuery = query(collection(db, "users"), where("role", "==", role))
+          const roleQuery = query(collection(db, "users"), where("role", "==", role));
 
-          const roleSnapshot = await getDocs(roleQuery)
+          const roleSnapshot = await getDocs(roleQuery);
           roleSnapshot.forEach((doc) => {
-            targetUsers.push(doc.data().uid)
-          })
+            targetUsers.push(doc.data().uid);
+          });
         }
       }
 
       // Remove duplicates
-      targetUsers = [...new Set(targetUsers)]
+      targetUsers = [...new Set(targetUsers)];
 
       if (targetUsers.length === 0) {
-        throw new Error("No users found matching your criteria.")
+        throw new Error("No users found matching your criteria.");
       }
 
       // Create notification object
@@ -259,28 +263,29 @@ export default function SendNotifications() {
         type: notificationType,
         timestamp: new Date(),
         read: false,
-      }
+      };
 
       // Add notification for each target user
       for (const uid of targetUsers) {
         await addDoc(collection(db, "notifications"), {
           ...notificationBase,
           recipientId: uid,
-        })
+        });
       }
 
-      setSuccess(true)
-      resetForm()
+      setSuccess(true);
+      resetForm();
+      showToast("Notifications sent successfully!", false);
 
-      // Reset success message after 3 seconds
       setTimeout(() => {
-        setSuccess(false)
-      }, 3000)
+        hideToast();
+      }, 3000);
     } catch (error) {
-      console.error("Error sending notifications:", error)
-      setError(error.message || "Error sending notifications. Please try again.")
+      console.error("Error sending notifications:", error);
+      setError(error.message || "Error sending notifications. Please try again.");
+      showToast(`Failed to send notifications: ${error.message}`, false);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 

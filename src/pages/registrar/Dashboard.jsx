@@ -146,7 +146,7 @@ export default function RegistrarDashboard() {
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 transition-all hover:shadow-md">
+        <div className="bg-white dark:bg-gray-200 rounded-xl shadow-sm border border-gray-100 p-6 transition-all hover:shadow-md">
           <div className="flex items-center">
             <div className="rounded-full bg-indigo-100 p-3 mr-4">
               <Calendar className="h-6 w-6 text-indigo-600" />
@@ -168,14 +168,14 @@ export default function RegistrarDashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 transition-all hover:shadow-md">
+        <div className="bg-white dark:bg-gray-200 rounded-xl shadow-sm border border-gray-100 p-6 transition-all hover:shadow-md">
           <div className="flex items-center">
             <div className="rounded-full bg-amber-100 p-3 mr-4">
               <Clock className="h-6 w-6 text-amber-600" />
             </div>
             <div>
               <p className="text-sm text-gray-600">Pending Events</p>
-              <p className="text-2xl font-bold text-gray-800">
+              <p className="text-2xl font-bold text-gray-800 ">
                 {stats.pendingEvents}
               </p>
             </div>
@@ -190,7 +190,7 @@ export default function RegistrarDashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 transition-all hover:shadow-md">
+        <div className="bg-white dark:bg-gray-200 rounded-xl shadow-sm border border-gray-100 p-6 transition-all hover:shadow-md">
           <div className="flex items-center">
             <div className="rounded-full bg-green-100 p-3 mr-4">
               <CheckCircle className="h-6 w-6 text-green-600" />
@@ -214,7 +214,7 @@ export default function RegistrarDashboard() {
       </div>
 
       {/* Recent events */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+      <div className="bg-white dark:bg-gray-100 rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg font-semibold text-gray-800">Recent Events</h2>
           <Link

@@ -718,7 +718,7 @@ const FileManager = ({ sharedWithUsers = false }) => {
                   <>
                     <button
                       onClick={() => setShowNewFolderInput(!showNewFolderInput)}
-                      className="flex items-center px-3 py-2 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors"
+                      className="flex items-center px-3 py-2 bg-white border dark:bg-gray-600 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 rounded-lg text-sm font-medium transition-colors"
                     >
                       <FolderPlus className="h-4 w-4 mr-1.5 text-indigo-500" />
                       New Folder
@@ -749,13 +749,13 @@ const FileManager = ({ sharedWithUsers = false }) => {
               </div>
 
               {/* Right side actions */}
-              <div className="flex items-center gap-2">
-                <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+              <div className="flex items-center gap-2 ">
+                <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
                   <button
                     onClick={() => setViewMode("grid")}
                     className={`p-2 ${viewMode === "grid"
-                      ? "bg-indigo-50 text-indigo-600"
-                      : "bg-white text-gray-600 hover:bg-gray-50"
+                      ? "bg-indigo-50  text-indigo-600"
+                      : "bg-white  text-gray-600 hover:bg-gray-50"
                       }`}
                     title="Grid view"
                   >
@@ -765,7 +765,7 @@ const FileManager = ({ sharedWithUsers = false }) => {
                     onClick={() => setViewMode("list")}
                     className={`p-2 ${viewMode === "list"
                       ? "bg-indigo-50 text-indigo-600"
-                      : "bg-white text-gray-600 hover:bg-gray-50"
+                      : "bg-white  text-gray-600 hover:bg-gray-50"
                       }`}
                     title="List view"
                   >
@@ -776,7 +776,7 @@ const FileManager = ({ sharedWithUsers = false }) => {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="p-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="p-2 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="dateDesc">Newest First</option>
                   <option value="dateAsc">Oldest First</option>

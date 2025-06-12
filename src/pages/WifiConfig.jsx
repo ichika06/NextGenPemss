@@ -501,7 +501,7 @@ export default function WifiConfig() {
 
               <div className="p-6 space-y-4">
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Command Input</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-950">Command Input</label>
                   <textarea
                     value={command}
                     onChange={(e) => setCommand(e.target.value)}
@@ -514,7 +514,7 @@ Examples:
 
 Press Ctrl+Enter to send
 Use ↑/↓ arrows for command history`}
-                    className="w-full h-32 p-4 border border-gray-300 rounded-lg font-mono text-sm resize-y focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-gray-50"
+                    className="w-full h-32 p-4 border border-gray-300 dark:text-black rounded-lg font-mono text-sm resize-y focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-gray-50"
                   />
                 </div>
 
@@ -582,7 +582,7 @@ Use ↑/↓ arrows for command history`}
               <div className="bg-gray-900 h-80 overflow-hidden">
                 <div
                   ref={responseRef}
-                  className="p-4 h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800"
+                  className="p-4 h-full dark:bg-gray-300 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800"
                 >
                   <pre className="text-green-400 font-mono text-sm whitespace-pre-wrap leading-relaxed">{response}</pre>
                 </div>
@@ -593,9 +593,9 @@ Use ↑/↓ arrows for command history`}
 
         {/* Driver Instructions Modal */}
         {showDriverInstructions && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
-              <div className="flex items-center justify-between px-6 py-5 border-b border-gray-200 bg-gray-50">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-white/80 p-4">
+            <div className="bg-white rounded-xl dark:shadow-gray-300 shadow-2xl w-full max-w-lg overflow-hidden dark:bg-gray-200">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-gray-200 bg-gray-50 dark:bg-gray-200">
                 <h2 className="text-xl font-semibold text-gray-800">USB Driver Installation</h2>
                 <button
                   onClick={() => setShowDriverInstructions(false)}

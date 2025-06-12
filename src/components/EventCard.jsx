@@ -38,7 +38,7 @@ export default function EventCard({ event }) {
   });
 
   return (
-    <div className="bg-white rounded-lg shadow-2xl overflow-hidden transition-transform duration-300 hover:shadow-2xl hover:-translate-y-1">
+    <div className="bg-white rounded-lg dark:shadow-gray-200 shadow-2xl overflow-hidden transition-transform duration-300 hover:shadow-2xl hover:-translate-y-1">
       <div className="relative h-48 bg-indigo-100">
         {image ? (
           <img

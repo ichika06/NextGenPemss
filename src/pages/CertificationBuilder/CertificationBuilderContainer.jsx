@@ -12,6 +12,7 @@ import { sendEmail, EmailTemplates } from "../../sendEmail"
 import { ChevronUp, ChevronDown, Trash2 } from "lucide-react"
 import certificateTemplates from "./certificate-templates"
 import Swal from "sweetalert2"
+import { useToast } from "../../contexts/ToastContext"
 
 // Import components
 import Toolbar from "./toolbar"
@@ -184,6 +185,8 @@ const boxBlur = (canvas, x, y, width, height, radius, horizontal) => {
 }
 
 export default function CreativeCertificateBuilder() {
+  // Use showSuccessToast from ToastContext
+  const { showToast, updateToastProgress, showSuccessToast, hideToast } = useToast()
   const certificateRef = useRef(null)
   const [backgroundImage, setBackgroundImage] = useState(null)
   const [backgroundColor, setBackgroundColor] = useState("#ffffff")
@@ -626,13 +629,15 @@ export default function CreativeCertificateBuilder() {
     }
   }
 
-  // Send certificates to multiple attendees
+  // Send certificates to multiple attendees with toast progress and success toast
   const sendCertificatesToMultipleAttendees = async () => {
     if (!certificateRef.current || !selectedEvent || selectedAttendees.length === 0) return
 
     try {
       setSendingMultiple(true)
       setSendProgress({ current: 0, total: selectedAttendees.length })
+
+      showToast("Sending certificates...", true, 0, selectedAttendees.length)
 
       const originalElements = [...elements]
 
@@ -681,6 +686,8 @@ export default function CreativeCertificateBuilder() {
               template: EmailTemplates.CERTIFICATE_EMAIL,
               data: emailData,
             })
+
+            updateToastProgress(i + 1)
           }
         } catch (error) {
           console.error(`Error processing attendee ${attendee.userName}:`, error)
@@ -691,11 +698,12 @@ export default function CreativeCertificateBuilder() {
       setGridColor("rgba(0, 0, 0, 0.1)")
       setRulerColor("rgba(0, 0, 0, 0.3)")
 
-      setEmailStatus("sent")
+      showSuccessToast("Certificates sent successfully!")
       setTimeout(() => {
         setEmailStatus("idle")
         setSendingMultiple(false)
         setSendProgress({ current: 0, total: 0 })
+        hideToast()
       }, 3000)
     } catch (error) {
       console.error("Error sending multiple certificates:", error)
@@ -704,6 +712,7 @@ export default function CreativeCertificateBuilder() {
         setEmailStatus("idle")
         setSendingMultiple(false)
         setSendProgress({ current: 0, total: 0 })
+        hideToast()
       }, 3000)
     }
   }

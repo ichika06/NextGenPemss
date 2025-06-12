@@ -6,7 +6,7 @@
 import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { Calendar, Users, Award, Bell, Clock, LogIn, Menu, X, ChevronRight, MapPin, Tag } from "lucide-react"
-import logo from "../assets/next-gen-pemss-logo.svg"
+import logo from "../assets/next-gen-pemss-logo.png"
 import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore"
 import { db } from "../firebase/config"
 import user1 from "../assets/users/joserizal.jpg"
@@ -80,22 +80,22 @@ export default function LandingPage() {
 
   const features = [
     {
-      icon: <Calendar className="h-8 w-8 text-indigo-600" />,
+      icon: <Calendar className="h-8 w-8 text-indigo-600 dark:text-indigo-800" />,
       title: "Event Scheduling",
       description: "Easily schedule and manage school events with our intuitive calendar interface.",
     },
     {
-      icon: <Users className="h-8 w-8 text-indigo-600" />,
+      icon: <Users className="h-8 w-8 text-indigo-600 dark:text-indigo-800" />,
       title: "Attendance Tracking",
       description: "Track student and staff attendance for each event with automated reporting.",
     },
     {
-      icon: <Bell className="h-8 w-8 text-indigo-600" />,
+      icon: <Bell className="h-8 w-8 text-indigo-600 dark:text-indigo-800" />,
       title: "Notifications",
       description: "Send automated reminders and updates to participants about upcoming events.",
     },
     {
-      icon: <Award className="h-8 w-8 text-indigo-600" />,
+      icon: <Award className="h-8 w-8 text-indigo-600 dark:text-indigo-800" />,
       title: "Certificate Generation",
       description: "Generate and distribute certificates for event participants and winners.",
     },
@@ -127,27 +127,27 @@ export default function LandingPage() {
 
   // Event card skeleton for loading state
   const EventSkeleton = () => (
-    <div className="bg-white rounded-lg overflow-hidden shadow-md animate-pulse">
-      <div className="w-full h-48 bg-gray-200"></div>
+    <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-md animate-pulse">
+      <div className="w-full h-48 bg-gray-200 dark:bg-gray-700"></div>
       <div className="p-6">
-        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-        <div className="h-6 bg-gray-200 rounded w-full mb-4"></div>
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-full mb-4"></div>
         <div className="space-y-3">
           <div className="flex items-center">
-            <div className="rounded-full bg-gray-200 h-4 w-4 mr-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div className="rounded-full bg-gray-200 dark:bg-gray-700 h-4 w-4 mr-2"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
           </div>
           <div className="flex items-center">
-            <div className="rounded-full bg-gray-200 h-4 w-4 mr-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div className="rounded-full bg-gray-200 dark:bg-gray-700 h-4 w-4 mr-2"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
           </div>
           <div className="flex items-center">
-            <div className="rounded-full bg-gray-200 h-4 w-4 mr-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+            <div className="rounded-full bg-gray-200 dark:bg-gray-700 h-4 w-4 mr-2"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
           </div>
         </div>
         <div className="mt-4">
-          <div className="h-10 bg-gray-200 rounded w-full"></div>
+          <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
         </div>
       </div>
     </div>
@@ -159,7 +159,7 @@ export default function LandingPage() {
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <div className="flex items-center">
+            <div className="flex items-center dark:border-gray-700 dark:bg-gray-300 dark:rounded-lg dark:m-1.5">
               <img src={logo || "/placeholder.svg"} className="w-15 h-15" alt="NextGen-Pemss Logo" />
               <span className="text-2xl font-bold text-indigo-600 logo-header">NextGen-Pemss</span>
             </div>
@@ -234,7 +234,7 @@ export default function LandingPage() {
 
       <main>
         {/* Hero Section */}
-        <section className="relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+        <section className="relative bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-900 dark:to-purple-900 text-white dark:text-gray-900">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
             <div className="md:w-2/3">
               <h1 className="text-3xl md:text-4xl font-extrabold mb-6 header">NFC-Enable Secure Online Attendance and Events Management System with Real-Time Notifications for Students and Teachers</h1>

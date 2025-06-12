@@ -410,7 +410,7 @@ export default function PublicEventView() {
         Back to List events
       </button>
 
-      <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+      <div className="bg-white rounded-lg  shadow-md overflow-hidden border border-gray-200">
         {/* Event header image section */}
         {event.image ? (
           <div className="relative h-72 md:h-96 overflow-hidden">
@@ -419,7 +419,7 @@ export default function PublicEventView() {
               alt={event.title}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 dark:from-white/60 to-transparent"></div>
             <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
               <div className="flex flex-wrap gap-2 mb-3">
                 <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-500/80 text-white backdrop-blur-sm">
@@ -464,7 +464,7 @@ export default function PublicEventView() {
                   </span>
                 )}
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold text-white mb-2 drop-shadow-sm">
+              <h1 className="text-2xl md:text-3xl font-bold dark:text-gray-900 text-white mb-2 drop-shadow-sm">
                 {event.title}
               </h1>
             </div>
@@ -653,7 +653,7 @@ export default function PublicEventView() {
                 <User className="h-5 w-5 text-indigo-600" />
               </div>
               <div>
-                <div className="font-medium">
+                <div className="font-medium dark:text-gray-900 ">
                   {event.registrarName || "Event Organizer"}
                 </div>
                 {event.registrarEmail && (
