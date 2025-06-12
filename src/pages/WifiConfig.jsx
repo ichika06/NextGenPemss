@@ -18,6 +18,7 @@ import {
   Save,
   FileText,
 } from "lucide-react"
+import PEMSSDriver from "../../drivers/PEMMS_Windows_Drivers.zip"
 import 'web-serial-polyfill';
 
 // --- SerialDeviceManager class ---
@@ -633,7 +634,7 @@ Use ↑/↓ arrows for command history`}
 
                 <div className="flex gap-3">
                   <a
-                    href="https://firebasestorage.googleapis.com/v0/b/nextgen-pemss.firebasestorage.app/o/drivers%2FPEMMS_Windows_Drivers.zip?alt=media&token=f91c0167-6402-4c80-a60b-a20dfa86ca29"
+                    href={PEMSSDriver}
                     target="_blank"
                     download
                     rel="noopener noreferrer"

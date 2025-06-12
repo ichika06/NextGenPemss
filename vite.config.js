@@ -9,6 +9,7 @@ export default defineConfig({
     react(),
     tailwindcss()
   ],
+  assetsInclude: ['**/*.zip'],
   // base: './',
   // build: {
   //   outDir: 'dist',

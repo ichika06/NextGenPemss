@@ -7,6 +7,7 @@ import { useAuth } from "../../contexts/AuthContext"
 import { collection, query, where, onSnapshot } from "firebase/firestore"
 import { db } from "../../firebase/config"
 import StudentDetailsModal from "./StudentDetailsModal"
+import PEMSSDriver from "../../../drivers/PEMMS_Windows_Drivers.zip"
 
 /**
  * Component for hardware USB NFC scanning, reading and writing
@@ -528,7 +529,7 @@ export default function HardwareUSB({ eventId, onClose, onSuccess }) {
 
                 <div className="flex gap-3 mb-4">
                   <a
-                    href="https://firebasestorage.googleapis.com/v0/b/nextgen-pemss.firebasestorage.app/o/drivers%2FPEMMS_Windows_Drivers.zip?alt=media&token=f91c0167-6402-4c80-a60b-a20dfa86ca29"
+                    href={PEMSSDriver}
                     target="_blank"
                     download
                     rel="noopener noreferrer"
