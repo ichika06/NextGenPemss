@@ -71,7 +71,7 @@ export default function MessagingCenter() {
 
     // Fetch available sections for teachers
     useEffect(() => {
-        if (currentUserData?.role === "teacher") {
+        if (currentUserData?.role === "teacher" || currentUserData?.role === "admin" && currentUserData?.accessLevel === "super") {
             fetchSections()
         }
     }, [currentUserData])
@@ -153,7 +153,7 @@ export default function MessagingCenter() {
             const searchTermLower = recipientSearchTerm.toLowerCase()
 
             // Different search strategies based on user role and search type
-            if (currentUserData?.role === "teacher") {
+            if (currentUserData?.role === "teacher" || (currentUserData?.role === "admin" && currentUserData?.accessLevel === "super")) {
                 // Teachers search for students
                 if (searchBy === "email") {
                     usersQuery = query(
@@ -243,7 +243,7 @@ export default function MessagingCenter() {
             let usersQuery
 
             // Get users based on role
-            if (currentUserData?.role === "teacher") {
+            if (currentUserData?.role === "teacher" || (currentUserData?.role === "admin" && currentUserData?.accessLevel === "super")) {
                 usersQuery = query(collection(db, "users"), where("role", "==", "student"), limit(20))
             } else {
                 usersQuery = query(collection(db, "users"), where("role", "==", "teacher"), limit(20))

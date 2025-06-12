@@ -26,6 +26,7 @@ import PublicCalendar from "../PublicEventCalendar";
 import ShowAllUser from "../ShowAllusers";
 import NfcWriter from "../NFCWritter";
 import WifiConfig from "../WifiConfig";
+import AdminMessage from "../TeacherandStudentMessage";
 
 export default function AdminDashboard() {
   const [events, setEvents] = useState([])
@@ -181,6 +182,7 @@ export default function AdminDashboard() {
           <Route path="/showallusers" element={<ShowAllUser />} />
           <Route path="/nfc-card-setup" element={<NfcWriter />} />
           <Route path="/wificonfig" element={<WifiConfig />} />
+          <Route path="/messages" element={<AdminMessage />} />
         </Routes>
       </div>
     </div>

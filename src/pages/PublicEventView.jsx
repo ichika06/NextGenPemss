@@ -261,8 +261,14 @@ export default function PublicEventView() {
 
   // Check if current user is an authorized registrar
   const isAuthorizedRegistrar = () => {
+    // Allow if user is a super admin
+    if (currentUserData.role === "admin" && currentUserData.accessLevel === "super") return true;
+    
     if (!currentUser || !event) return false;
-    return currentUser.uid === event.registrarId;
+    // Allow if user is the event registrar
+    if (currentUser.uid === event.registrarId) return true;
+    
+    return false;
   };
 
   // Check if current user is a student

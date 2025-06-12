@@ -303,6 +303,12 @@ const SidebarNavigation = ({ role, accessLevel, unreadCount, setIsOpen, windowWi
             },
           ],
         },
+        {
+          name: "Messages",
+          path: `/${role}/messages`,
+          icon: <MessageSquare className="h-5 w-5" />,
+          // badge: unreadCount > 0 ? unreadCount : null,
+        },
           {
             name: "Send Notifications",
             path: `/${role}/notification-send-notif`,

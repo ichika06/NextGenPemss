@@ -38,7 +38,7 @@ import CountdownDisplay from "../components/CountingDisplay";
 import { useAlert } from "../components/AlertProvider";
 
 export default function ManageEvent() {
-  const { currentUser, userRole } = useAuth();
+  const { currentUser, userRole, currentUserData } = useAuth();
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -64,7 +64,7 @@ export default function ManageEvent() {
         const eventsRef = collection(db, "events");
         let q;
 
-        if (currentUser.role === "admin") {
+        if (currentUserData.role === "admin" && currentUserData.accessLevel === "super") {
           // Admin can see all events
           q = query(eventsRef);
         } else {
