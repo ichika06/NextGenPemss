@@ -50,7 +50,7 @@ export default function PublicEventView() {
   const [showHardRegistration, setShowHardRegistration] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [showRegistrationOptions, setShowRegistrationOptions] = useState(false);
-  const [showPreRegistration, setShowPreRegistration] = useState(false); // New state for pre-registration modal
+  const [showPreRegistration, setShowPreRegistration] = useState(false);
   const [selectedRegistrationOption, setSelectedRegistrationOption] =
     useState(null);
   const [userRole, setUserRole] = useState(null);
@@ -317,11 +317,11 @@ export default function PublicEventView() {
       eventMinute = parseInt(minuteStr);
     }
     
-    // Create event date object
-    const eventDateTime = new Date(year, month - 1, day, eventHour, eventMinute);
+    // Create event end date/time (11:59 PM on the same day)
+    const eventEndDateTime = new Date(year, month - 1, day, 23, 59, 59, 999);
     
-    // Compare current time with event date/time
-    return currentDate > eventDateTime;
+    // Compare current time with event END date/time
+    return currentDate > eventEndDateTime;
   } catch (error) {
     console.error('Error checking if event is expired:', error);
     return false;
@@ -401,16 +401,16 @@ export default function PublicEventView() {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
+    <div className="container mx-auto p-6 max-w-4xl bg-gray-50 dark:bg-zinc-900 min-h-screen">
       <button
         onClick={backtolast}
-        className="inline-flex items-center px-4 py-2 bg-white border border-gray-300 shadow-2xl  text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors mb-2.5"
+        className="inline-flex items-center px-4 py-2 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 shadow-2xl text-sm font-medium text-gray-700 dark:text-zinc-200 hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors mb-2.5"
       >
         <ChevronLeft className="h-4 w-4 mr-1" />
         Back to List events
       </button>
 
-      <div className="bg-white rounded-lg  shadow-md overflow-hidden border border-gray-200">
+      <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-zinc-700">
         {/* Event header image section */}
         {event.image ? (
           <div className="relative h-72 md:h-96 overflow-hidden">
@@ -419,7 +419,7 @@ export default function PublicEventView() {
               alt={event.title}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 dark:from-white/60 to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
             <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
               <div className="flex flex-wrap gap-2 mb-3">
                 <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-500/80 text-white backdrop-blur-sm">
@@ -446,7 +446,7 @@ export default function PublicEventView() {
                     Live access
                   </span>
                 ) : (
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-100">
                     <Radio className="h-3 w-3 mr-1" />
                     Hide
                   </span>
@@ -464,7 +464,7 @@ export default function PublicEventView() {
                   </span>
                 )}
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold dark:text-gray-900 text-white mb-2 drop-shadow-sm">
+              <h1 className="text-2xl md:text-3xl font-bold text-white mb-2 drop-shadow-sm">
                 {event.title}
               </h1>
             </div>
@@ -472,19 +472,19 @@ export default function PublicEventView() {
         ) : (
           <div className="p-6 pt-8">
             <div className="flex flex-wrap gap-2 mb-3">
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-100">
                 <Tag className="h-3 w-3 mr-1" />
                 {event.category.charAt(0).toUpperCase() +
                   event.category.slice(1)}
               </span>
 
               {event.isPublic ? (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100">
                   <Globe className="h-3 w-3 mr-1" />
                   Public Event
                 </span>
               ) : (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-100">
                   <Lock className="h-3 w-3 mr-1" />
                   Private Event
                 </span>
@@ -496,25 +496,25 @@ export default function PublicEventView() {
                   Live access
                 </span>
               ) : (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-100">
                   <Radio className="h-3 w-3 mr-1" />
                   Hide
                 </span>
               )}
 
               {isFull && (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100">
                   Fully Booked
                 </span>
               )}
 
               {isAlmostFull && (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-100">
                   Almost Full
                 </span>
               )}
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-zinc-100 mb-4">
               {event.title}
             </h1>
           </div>
@@ -524,43 +524,43 @@ export default function PublicEventView() {
           {/* Event details section */}
           <div className="flex flex-wrap justify-between items-center mb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 w-full">
-              <div className="flex items-center text-gray-700">
-                <div className="bg-indigo-50 p-2 rounded-full mr-3">
+              <div className="flex items-center text-gray-700 dark:text-zinc-200">
+                <div className="bg-indigo-50 dark:bg-indigo-900 p-2 rounded-full mr-3">
                   <Calendar className="h-5 w-5 text-indigo-600" />
                 </div>
                 <div>
-                  <div className="text-sm text-gray-500">Date</div>
+                  <div className="text-sm text-gray-500 dark:text-zinc-400">Date</div>
                   <div>{formatDate(event.date)}</div>
                 </div>
               </div>
 
-              <div className="flex items-center text-gray-700">
-                <div className="bg-indigo-50 p-2 rounded-full mr-3">
+              <div className="flex items-center text-gray-700 dark:text-zinc-200">
+                <div className="bg-indigo-50 dark:bg-indigo-900 p-2 rounded-full mr-3">
                   <Clock className="h-5 w-5 text-indigo-600" />
                 </div>
                 <div>
-                  <div className="text-sm text-gray-500">Time</div>
+                  <div className="text-sm text-gray-500 dark:text-zinc-400">Time</div>
                   <div>{event.time}</div>
                 </div>
               </div>
 
-              <div className="flex items-center text-gray-700">
-                <div className="bg-indigo-50 p-2 rounded-full mr-3">
+              <div className="flex items-center text-gray-700 dark:text-zinc-200">
+                <div className="bg-indigo-50 dark:bg-indigo-900 p-2 rounded-full mr-3">
                   <MapPin className="h-5 w-5 text-indigo-600" />
                 </div>
                 <div>
-                  <div className="text-sm text-gray-500">Location</div>
+                  <div className="text-sm text-gray-500 dark:text-zinc-400">Location</div>
                   <div>{event.location}</div>
                 </div>
               </div>
 
-              <div className="flex items-center text-gray-700">
-                <div className="bg-indigo-50 p-2 rounded-full mr-3">
+              <div className="flex items-center text-gray-700 dark:text-zinc-200">
+                <div className="bg-indigo-50 dark:bg-indigo-900 p-2 rounded-full mr-3">
                   <BellRing className="h-5 w-5 text-indigo-600" />
                 </div>
 
                 <div>
-                  <div className="text-sm text-gray-500">Remaining</div>
+                  <div className="text-sm text-gray-500 dark:text-zinc-400">Remaining</div>
                   <CountdownDisplay
                     eventId={event.id}
                     eventDate={event.date}
@@ -578,27 +578,27 @@ export default function PublicEventView() {
                 </div>
               </div>
 
-              <div className="flex items-center text-gray-700">
+              <div className="flex items-center text-gray-700 dark:text-zinc-200">
                 <div
                   className={`p-2 rounded-full mr-3 ${isFull
-                      ? "bg-red-50"
+                      ? "bg-red-50 dark:bg-red-900"
                       : isAlmostFull
-                        ? "bg-amber-50"
-                        : "bg-green-50"
+                        ? "bg-amber-50 dark:bg-amber-900"
+                        : "bg-green-50 dark:bg-green-900"
                     }`}
                 >
                   <Users
                     className={`h-5 w-5 ${isFull
-                        ? "text-red-600"
+                        ? "text-red-600 dark:text-red-100"
                         : isAlmostFull
-                          ? "text-amber-600"
-                          : "text-green-600"
+                          ? "text-amber-600 dark:text-amber-100"
+                          : "text-green-600 dark:text-green-100"
                       }`}
                   />
                 </div>
                 <div>
-                  <div className="text-sm text-gray-500">Capacity</div>
-                  <div className={isFull ? "text-red-600 font-medium" : ""}>
+                  <div className="text-sm text-gray-500 dark:text-zinc-400">Capacity</div>
+                  <div className={isFull ? "text-red-600 dark:text-red-100 font-medium" : ""}>
                     {event.attendees || 0} / {event.capacity} attendees
                     {isFull && " (Fully Booked)"}
                   </div>
@@ -607,12 +607,12 @@ export default function PublicEventView() {
 
               {/* Add pre-registered count if available */}
               {event.preRegisteredCount > 0 && (
-                <div className="flex items-center text-gray-700">
-                  <div className="bg-purple-50 p-2 rounded-full mr-3">
-                    <CalendarPlus className="h-5 w-5 text-purple-600" />
+                <div className="flex items-center text-gray-700 dark:text-zinc-200">
+                  <div className="bg-purple-50 dark:bg-purple-900 p-2 rounded-full mr-3">
+                    <CalendarPlus className="h-5 w-5 text-purple-600 dark:text-purple-100" />
                   </div>
                   <div>
-                    <div className="text-sm text-gray-500">Pre-Registered</div>
+                    <div className="text-sm text-gray-500 dark:text-zinc-400">Pre-Registered</div>
                     <div>{event.preRegisteredCount || 0} students</div>
                   </div>
                 </div>
@@ -620,12 +620,12 @@ export default function PublicEventView() {
 
               {/* Display view count if available */}
               {event.views && event.views.length > 0 && (
-                <div className="flex items-center text-gray-700">
-                  <div className="bg-blue-50 p-2 rounded-full mr-3">
-                    <Eye className="h-5 w-5 text-blue-600" />
+                <div className="flex items-center text-gray-700 dark:text-zinc-200">
+                  <div className="bg-blue-50 dark:bg-blue-900 p-2 rounded-full mr-3">
+                    <Eye className="h-5 w-5 text-blue-600 dark:text-blue-100" />
                   </div>
                   <div>
-                    <div className="text-sm text-gray-500">Views</div>
+                    <div className="text-sm text-gray-500 dark:text-zinc-400">Views</div>
                     <div>{event.views.length} viewers</div>
                   </div>
                 </div>
@@ -634,30 +634,30 @@ export default function PublicEventView() {
           </div>
 
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-zinc-100 mb-3 flex items-center">
               About This Event
-              <div className="h-px bg-gray-200 flex-grow ml-4"></div>
+              <div className="h-px bg-gray-200 dark:bg-zinc-700 flex-grow ml-4"></div>
             </h2>
-            <div className="prose max-w-none text-gray-600">
+            <div className="prose max-w-none text-gray-600 dark:text-zinc-300">
               <p className="whitespace-pre-line">{event.description}</p>
             </div>
           </div>
 
-          <div className="border-t border-gray-200 pt-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
+          <div className="border-t border-gray-200 dark:border-zinc-700 pt-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-zinc-100 mb-3 flex items-center">
               Event Host
-              <div className="h-px bg-gray-200 flex-grow ml-4"></div>
+              <div className="h-px bg-gray-200 dark:bg-zinc-700 flex-grow ml-4"></div>
             </h2>
             <div className="flex items-center">
-              <div className="bg-indigo-50 p-2 rounded-full mr-3">
+              <div className="bg-indigo-50 dark:bg-indigo-900 p-2 rounded-full mr-3">
                 <User className="h-5 w-5 text-indigo-600" />
               </div>
               <div>
-                <div className="font-medium dark:text-gray-900 ">
+                <div className="font-medium dark:text-zinc-100">
                   {event.registrarName || "Event Organizer"}
                 </div>
                 {event.registrarEmail && (
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-gray-500 dark:text-zinc-400">
                     {event.registrarEmail}
                   </div>
                 )}
@@ -670,7 +670,7 @@ export default function PublicEventView() {
               {/* Share and favorite buttons */}
               <button
                 onClick={handleShare}
-                className="p-3 rounded-md border border-gray-200 hover:bg-gray-50 text-gray-600 transition-colors"
+                className="p-3 rounded-md border border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800 text-gray-600 dark:text-zinc-300 transition-colors"
                 aria-label="Share event"
               >
                 <Share2 className="h-5 w-5" />
@@ -678,10 +678,11 @@ export default function PublicEventView() {
 
               <button
                 onClick={toggleFavorite}
-                className={`p-3 rounded-md border transition-colors ${isFavorite
-                    ? "border-red-200 bg-red-50 text-red-500 hover:bg-red-100"
-                    : "border-gray-200 hover:bg-gray-50 text-gray-600"
-                  }`}
+                className={`p-3 rounded-md border transition-colors ${
+                  isFavorite
+                    ? "border-red-200 dark:border-red-700 bg-red-50 dark:bg-red-900 text-red-500 dark:text-red-200 hover:bg-red-100 dark:hover:bg-red-800"
+                    : "border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800 text-gray-600 dark:text-zinc-300"
+                }`}
                 aria-label={
                   isFavorite ? "Remove from favorites" : "Add to favorites"
                 }
@@ -695,14 +696,14 @@ export default function PublicEventView() {
 
           {/* Registration section */}
           {isFull && (
-            <div className="mt-4 bg-red-50 border border-red-100 rounded-md p-4 text-center text-red-700">
+            <div className="mt-4 bg-red-50 dark:bg-red-900 border border-red-100 dark:border-red-700 rounded-md p-4 text-center text-red-700 dark:text-red-200">
               This event is fully booked. Please check back later or browse
               other events.
             </div>
           )}
 
           {!isAuthorizedRegistrar() && currentUser && !isStudent() && (
-            <div className="mt-4 bg-yellow-50 border border-yellow-100 rounded-md p-4 text-center text-yellow-700">
+            <div className="mt-4 bg-yellow-50 dark:bg-yellow-900 border border-yellow-100 dark:border-yellow-700 rounded-md p-4 text-center text-yellow-700 dark:text-yellow-200">
               If you are curious, please ask the Owner {event.registrarName}{" "}
               about the details
             </div>
@@ -710,7 +711,7 @@ export default function PublicEventView() {
 
           {/* Pre-registration notification for students */}
           {isPreRegistered && (
-            <div className="mt-4 bg-green-50 border border-green-100 rounded-md p-4 text-center text-green-700 flex items-center justify-center">
+            <div className="mt-4 bg-green-50 dark:bg-green-900 border border-green-100 dark:border-green-700 rounded-md p-4 text-center text-green-700 dark:text-green-200 flex items-center justify-center">
               <CalendarPlus className="h-5 w-5 mr-2" />
               You're pre-registered for this event! Please arrive on time.
             </div>
@@ -781,7 +782,7 @@ export default function PublicEventView() {
                 onClick={handleRegister}
                 disabled={isFull}
                 className={`flex-1 py-3 px-6 rounded-md font-medium transition-colors flex justify-center items-center ${isFull
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    ? "bg-gray-100 dark:bg-zinc-900 text-gray-400 dark:text-zinc-500 cursor-not-allowed"
                     : "bg-indigo-600 hover:bg-indigo-700 text-white"
                   }`}
               >
@@ -821,7 +822,7 @@ export default function PublicEventView() {
 
                 {/* Show message if already registered */}
                 {userIsRegistered && (
-                  <div className="mt-4 bg-green-50 border border-green-100 rounded-md p-4 text-center text-green-700 flex items-center justify-center">
+                  <div className="mt-4 bg-green-50 dark:bg-green-900 border border-green-100 dark:border-green-700 rounded-md p-4 text-center text-green-700 dark:text-green-200 flex items-center justify-center">
                     <BellRing className="h-5 w-5 mr-2" />
                     You're already registered for this event!
                   </div>

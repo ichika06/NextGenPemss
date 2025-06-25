@@ -4,6 +4,10 @@ import { collection, addDoc, setDoc, doc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../firebase/config";
 import { useAuth } from "../contexts/AuthContext";
+import 'ldrs/ring'
+import { Helix, Treadmill } from 'ldrs/react'
+import 'ldrs/react/Helix.css'
+import 'ldrs/react/Treadmill.css'
 import {
   Calendar,
   Clock,
@@ -22,6 +26,7 @@ import {
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { v4 as uuidv4 } from "uuid";
+import noimage from "../assets/eventnoimage.jpg";
 
 export default function CreateEvent() {
   const { currentUser, userRole, currentUserData } = useAuth();
@@ -234,19 +239,20 @@ export default function CreateEvent() {
 
       let imageUrl = null;
 
-      // Upload image if provided
+      // Upload image if provided, otherwise use shared default image
       if (formData.image) {
         // Store in a public folder if the event is public
         const storageFolder = formData.isPublic
           ? "public/events"
           : `${currentUser.uid}/events`;
-        const imagePath = `${storageFolder}/${Date.now()}_${
-          formData.image.name
-        }`;
+        const imagePath = `${storageFolder}/${Date.now()}_${formData.image.name}`;
         const imageRef = ref(storage, imagePath);
 
         await uploadBytes(imageRef, formData.image);
         imageUrl = await getDownloadURL(imageRef);
+      } else {
+        // Use shared default image (uploads once, then reuses)
+        imageUrl = await getDefaultImageUrl();
       }
 
       // Create event document with an explicit ID to make permissions easier to manage
@@ -352,32 +358,50 @@ export default function CreateEvent() {
     }
   };
 
+  // Helper function to upload default image once and reuse
+  const getDefaultImageUrl = async () => {
+    const defaultImageRef = ref(storage, 'eventnoimage.jpg');
+    
+    try {
+      // Try to get existing default image URL
+      const url = await getDownloadURL(defaultImageRef);
+      return url;
+    } catch (error) {
+      // If default image doesn't exist, upload it once
+      const response = await fetch(noimage);
+      const blob = await response.blob();
+      
+      await uploadBytes(defaultImageRef, blob);
+      return await getDownloadURL(defaultImageRef);
+    }
+  };
+
   return (
-    <div className="p-6">
+    <div className="p-6 bg-gray-50 dark:bg-zinc-900 min-h-screen">
       <div className="flex items-center space-x-3">
         <CalendarPlus className="h-6 w-6 text-indigo-600" />
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-zinc-100">
           Create New Event
         </h1>
       </div>
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-200 px-4 py-3 rounded mb-4">
           {error}
         </div>
       )}
 
       {excelGenerated && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+        <div className="bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-200 px-4 py-3 rounded mb-4">
           Event created successfully! An Excel file has been generated and saved
           to your file manager.
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-zinc-800 rounded-lg shadow p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200 mb-1">
                 Event Title
               </label>
               <div className="relative">
@@ -390,14 +414,14 @@ export default function CreateEvent() {
                   value={formData.title}
                   onChange={handleChange}
                   required
-                  className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="pl-10 w-full px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-900 dark:text-zinc-100"
                   placeholder="Enter event title"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200 mb-1">
                 Event Code
               </label>
               <div className="relative">
@@ -411,24 +435,24 @@ export default function CreateEvent() {
                     value={formData.eventCode}
                     onChange={handleChange}
                     readOnly
-                    className="pl-10 flex-grow px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50"
+                    className="pl-10 flex-grow px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-l-md focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50 dark:bg-zinc-900 dark:text-zinc-100"
                   />
                   <button
                     type="button"
                     onClick={regenerateEventCode}
-                    className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-r-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
+                    className="bg-gray-200 dark:bg-zinc-900 hover:bg-gray-300 dark:hover:bg-zinc-700 text-gray-700 dark:text-zinc-200 font-medium py-2 px-4 rounded-r-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
                   >
                     Regenerate
                   </button>
                 </div>
               </div>
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-gray-500 dark:text-zinc-400">
                 This code can be used for accessing the event.
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200 mb-1">
                 Event Date
               </label>
               <div className="relative">
@@ -441,13 +465,13 @@ export default function CreateEvent() {
                   value={formData.date}
                   onChange={handleChange}
                   required
-                  className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="pl-10 w-full px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-900 dark:text-zinc-100"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200 mb-1">
                 Event Time
               </label>
               <div className="relative">
@@ -460,13 +484,13 @@ export default function CreateEvent() {
                   value={formData.time}
                   onChange={handleChange}
                   required
-                  className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="pl-10 w-full px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-900 dark:text-zinc-100"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200 mb-1">
                 Location
               </label>
               <div className="relative">
@@ -479,14 +503,14 @@ export default function CreateEvent() {
                   value={formData.location}
                   onChange={handleChange}
                   required
-                  className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="pl-10 w-full px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-900 dark:text-zinc-100"
                   placeholder="Enter event location"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200 mb-1">
                 Category
               </label>
               <div className="relative">
@@ -498,7 +522,7 @@ export default function CreateEvent() {
                   value={formData.category}
                   onChange={handleChange}
                   required
-                  className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="pl-10 w-full px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-900 dark:text-zinc-100"
                 >
                   <option value="academic">Academic</option>
                   <option value="sports">Sports</option>
@@ -511,7 +535,7 @@ export default function CreateEvent() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200 mb-1">
                 Capacity
               </label>
               <div className="relative">
@@ -525,7 +549,7 @@ export default function CreateEvent() {
                   onChange={handleChange}
                   required
                   min="1"
-                  className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="pl-10 w-full px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-900 dark:text-zinc-100"
                   placeholder="Maximum number of attendees"
                 />
               </div>
@@ -533,7 +557,7 @@ export default function CreateEvent() {
 
             {/* Updated Live Event Field */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200 mb-2">
                 Live Event
               </label>
               <div className="flex space-x-4 items-center">
@@ -550,11 +574,11 @@ export default function CreateEvent() {
                         isLive: e.target.value === "true",
                       }))
                     }
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-zinc-700"
                   />
                   <label
                     htmlFor="isLiveYes"
-                    className="ml-2 text-sm text-gray-700"
+                    className="ml-2 text-sm text-gray-700 dark:text-zinc-200"
                   >
                     Yes
                   </label>
@@ -572,24 +596,24 @@ export default function CreateEvent() {
                         isLive: e.target.value === "true",
                       }))
                     }
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-zinc-700"
                   />
                   <label
                     htmlFor="isLiveNo"
-                    className="ml-2 text-sm text-gray-700"
+                    className="ml-2 text-sm text-gray-700 dark:text-zinc-200"
                   >
                     No
                   </label>
                 </div>
               </div>
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-gray-500 dark:text-zinc-400">
                 Select 'Yes' if this event will be show in public-view
               </p>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200 mb-1">
               Event Description
             </label>
             <div className="relative">
@@ -602,15 +626,15 @@ export default function CreateEvent() {
                 onChange={handleChange}
                 required
                 rows={4}
-                className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="pl-10 w-full px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-900 dark:text-zinc-100"
                 placeholder="Enter event description"
               ></textarea>
             </div>
           </div>
 
           {/* Event Visibility Section */}
-          <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-            <h3 className="text-lg font-medium text-gray-800 mb-4">Event Visibility</h3>
+          <div className="border border-gray-200 dark:border-zinc-700 rounded-lg p-4 bg-gray-50 dark:bg-zinc-900">
+            <h3 className="text-lg font-medium text-gray-800 dark:text-zinc-100 mb-4">Event Visibility</h3>
             
             <div className="flex items-center mb-4">
               <input
@@ -619,11 +643,11 @@ export default function CreateEvent() {
                 name="isPublic"
                 checked={formData.isPublic}
                 onChange={handleChange}
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-zinc-700 rounded"
               />
               <label
                 htmlFor="isPublic"
-                className="ml-2 flex items-center text-sm text-gray-700"
+                className="ml-2 flex items-center text-sm text-gray-700 dark:text-zinc-200"
               >
                 <Globe className="h-4 w-4 mr-1 text-gray-500" />
                 Make this event public (visible to everyone)
@@ -632,13 +656,13 @@ export default function CreateEvent() {
 
             {/* Branch and Organization Selection for Private Events */}
             {!formData.isPublic && (
-              <div className="space-y-4 pl-6 border-l-2 border-indigo-200">
-                <p className="text-sm text-gray-600 mb-3">
+              <div className="space-y-4 pl-6 border-l-2 border-indigo-200 dark:border-indigo-900">
+                <p className="text-sm text-gray-600 dark:text-zinc-300 mb-3">
                   Configure who can see this private event (select either branch, organization, or both):
                 </p>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200 mb-1">
                     Select Branch (Optional)
                   </label>
                   <div className="relative">
@@ -649,7 +673,7 @@ export default function CreateEvent() {
                       name="branch"
                       value={formData.branch}
                       onChange={handleChange}
-                      className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="pl-10 w-full px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-900 dark:text-zinc-100"
                     >
                       <option value="">All branches</option>
                       {branches.map((branch) => (
@@ -659,13 +683,13 @@ export default function CreateEvent() {
                       ))}
                     </select>
                   </div>
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-gray-500 dark:text-zinc-400">
                     Leave empty to include all branches
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200 mb-1">
                     Select Organization (Optional)
                   </label>
                   <div className="relative">
@@ -676,7 +700,7 @@ export default function CreateEvent() {
                       name="organization"
                       value={formData.organization}
                       onChange={handleChange}
-                      className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="pl-10 w-full px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-900 dark:text-zinc-100"
                     >
                       <option value="">All organizations</option>
                       {organizations.map((org) => (
@@ -686,13 +710,13 @@ export default function CreateEvent() {
                       ))}
                     </select>
                   </div>
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-gray-500 dark:text-zinc-400">
                     Leave empty to include all organizations
                   </p>
                 </div>
 
-                <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
-                  <p className="text-sm text-blue-800">
+                <div className="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-md p-3">
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
                     <strong>Visibility:</strong> This event will be visible to{' '}
                     {getVisibilityDescription()}
                   </p>
@@ -702,7 +726,7 @@ export default function CreateEvent() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200 mb-1">
               Event Image
             </label>
             <div className="mt-1 flex items-center">
@@ -714,7 +738,7 @@ export default function CreateEvent() {
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}
-                  className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="pl-10 w-full px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-900 dark:text-zinc-100"
                 />
               </div>
             </div>
@@ -729,8 +753,8 @@ export default function CreateEvent() {
             )}
           </div>
 
-          <div className="flex items-center gap-2 text-sm text-gray-600 p-3 bg-gray-50 rounded-md">
-            <FileSpreadsheet className="h-5 w-5 text-gray-500" />
+          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-zinc-300 p-3 bg-gray-50 dark:bg-zinc-900 rounded-md">
+            <FileSpreadsheet className="h-5 w-5 text-gray-500 dark:text-zinc-400" />
             <span>
               An Excel file will be automatically generated and saved to your
               file manager for tracking attendees.
@@ -743,7 +767,14 @@ export default function CreateEvent() {
               disabled={loading}
               className="btn-primary text-white font-medium py-2 px-6 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
             >
-              {loading ? "Creating..." : "Create Event"}
+              {loading ? (
+                <div className="flex items-center justify-center gap-2">
+                Creating...
+                <Treadmill size="28" speed="1.2" color="white" />
+              </div>
+              ) : (
+                "Create Event"
+              )}
             </button>
           </div>
         </form>

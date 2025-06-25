@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import {
   collection,
@@ -205,13 +204,13 @@ export default function TeacherManageAttendance() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
-      <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6 flex items-center">
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-zinc-100 mb-6 flex items-center">
         <Users className="mr-3 h-6 w-6 sm:h-7 sm:w-7 text-primary" />
         Manage Attendance Sessions
       </h1>
 
       {/* Search and Filter Bar */}
-      <div className="bg-white rounded-xl shadow-md p-4 mb-6">
+      <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-md p-4 mb-6">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -219,7 +218,7 @@ export default function TeacherManageAttendance() {
             </div>
             <input
               type="text"
-              className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-zinc-900 dark:text-zinc-100"
               placeholder="Search by section, course, room..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -232,7 +231,7 @@ export default function TeacherManageAttendance() {
                 <Filter className="h-5 w-5 text-gray-400" />
               </div>
               <select
-                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-zinc-900 dark:text-zinc-100"
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
               >
@@ -244,22 +243,22 @@ export default function TeacherManageAttendance() {
 
             <button
               onClick={fetchAttendanceSessions}
-              className="flex items-center justify-center p-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="flex items-center justify-center p-2.5 border border-gray-300 dark:border-zinc-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
               title="Refresh"
             >
-              <RefreshCw className="h-5 w-5 text-gray-600" />
+              <RefreshCw className="h-5 w-5 text-gray-600 dark:text-zinc-300" />
             </button>
           </div>
         </div>
       </div>
 
       {/* Sessions List */}
-      <div className="bg-white rounded-xl shadow-md overflow-hidden">
-        <div className="background-primary px-6 py-4">
-          <h2 className="text-primary text-lg font-semibold">
+      <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-md overflow-hidden">
+        <div className="dark:bg-gradient-to-r dark:from-zinc-600 dark:to-gray-800 px-6 py-4">
+          <h2 className=" dark:text-zinc-100 text-lg font-semibold">
             Your Attendance Sessions
           </h2>
-          <p className="text-primary-secondary text-sm">
+          <p className=" dark:text-zinc-300 text-sm">
             {filteredSessions.length}{" "}
             {filteredSessions.length === 1 ? "session" : "sessions"} found
           </p>
@@ -279,11 +278,11 @@ export default function TeacherManageAttendance() {
             </div>
           ) : filteredSessions.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-12 text-center">
-              <AlertCircle className="h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-1">
+              <AlertCircle className="h-12 w-12 text-gray-400 dark:text-zinc-600 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-zinc-100 mb-1">
                 No attendance sessions found
               </h3>
-              <p className="text-gray-500 mb-6">
+              <p className="text-gray-500 dark:text-zinc-400 mb-6">
                 {searchTerm || filterStatus !== "all"
                   ? "Try adjusting your search or filter criteria"
                   : "Create your first attendance session to get started"}
@@ -291,63 +290,63 @@ export default function TeacherManageAttendance() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-zinc-700">
+                <thead className="bg-gray-50 dark:bg-zinc-900">
                   <tr>
                     <th
                       scope="col"
-                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider"
                     >
                       Session Details
                     </th>
                     <th
                       scope="col"
-                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell"
+                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider hidden sm:table-cell"
                     >
                       Date & Status
                     </th>
                     <th
                       scope="col"
-                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell"
+                      className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider hidden md:table-cell"
                     >
                       Attendance Count
                     </th>
                     <th
                       scope="col"
-                      className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider"
                     >
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-zinc-800 divide-y divide-gray-200 dark:divide-zinc-700">
                   {filteredSessions.map((session) => (
-                    <tr key={session.id} className="hover:bg-gray-50">
+                    <tr key={session.id} className="hover:bg-gray-50 dark:hover:bg-zinc-900">
                       <td className="px-3 sm:px-6 py-4">
                         <div className="flex items-start">
-                          <div className="flex-shrink-0 h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
-                            <BookOpen className="h-5 w-5 text-primary" />
+                          <div className="flex-shrink-0 h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-600 flex items-center justify-center">
+                            <BookOpen className="h-5 w-5 dark:text-zinc-100" />
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">
+                            <div className="text-sm font-medium text-gray-900 dark:text-zinc-100">
                               {session.course}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-gray-500 dark:text-zinc-400">
                               Section: {session.section}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-gray-500 dark:text-zinc-400">
                               Room: {session.room}
                             </div>
                             {/* Show date on mobile */}
-                            <div className="text-sm text-gray-500 sm:hidden mt-1">
+                            <div className="text-sm text-gray-500 dark:text-zinc-400 sm:hidden mt-1">
                               {session.date}
                               <div className="mt-1">
                                 {isSessionActive(session) ? (
-                                  <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                  <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
                                     Active
                                   </span>
                                 ) : (
-                                  <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                  <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
                                     Expired
                                   </span>
                                 )}
@@ -357,10 +356,10 @@ export default function TeacherManageAttendance() {
                         </div>
                       </td>
                       <td className="px-3 sm:px-6 py-4 hidden sm:table-cell">
-                        <div className="text-sm text-gray-900">
+                        <div className="text-sm text-gray-900 dark:text-zinc-100">
                           {session.date}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-gray-500 dark:text-zinc-400">
                           Code:{" "}
                           <span className="font-mono">
                             {session.attendanceCode}
@@ -368,18 +367,18 @@ export default function TeacherManageAttendance() {
                         </div>
                         <div className="mt-1">
                           {isSessionActive(session) ? (
-                            <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                            <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
                               Active
                             </span>
                           ) : (
-                            <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                            <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
                               Expired
                             </span>
                           )}
                         </div>
                       </td>
                       <td className="px-3 sm:px-6 py-4 hidden md:table-cell">
-                        <div className="text-sm text-gray-900">
+                        <div className="text-sm text-gray-900 dark:text-zinc-100">
                           {session.students?.length || 0} students
                         </div>
                       </td>
@@ -387,21 +386,21 @@ export default function TeacherManageAttendance() {
                         <div className="flex justify-end space-x-1 sm:space-x-2">
                           <button
                             onClick={() => handleOpenEditModal(session)}
-                            className="text-indigo-600 hover:text-indigo-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded-full p-1"
+                            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded-full p-1"
                             title="Edit"
                           >
                             <Edit className="h-4 w-4 sm:h-5 sm:w-5" />
                           </button>
                           <button
                             onClick={() => handleOpenDeleteModal(session.id)}
-                            className="text-red-600 hover:text-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 rounded-full p-1"
+                            className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 rounded-full p-1"
                             title="Delete"
                           >
                             <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
                           </button>
                           <a
                             href={`/${currentUserData.role}/attendance-details/${session.id}`}
-                            className="text-purple-600 hover:text-purple-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 rounded-full p-1"
+                            className="text-purple-600 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 rounded-full p-1"
                             title="View Details"
                           >
                             <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -425,7 +424,7 @@ export default function TeacherManageAttendance() {
               className="fixed inset-0 transition-opacity"
               aria-hidden="true"
             >
-              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+              <div className="absolute inset-0 bg-gray-500 dark:bg-black opacity-75"></div>
             </div>
 
             <span
@@ -435,21 +434,21 @@ export default function TeacherManageAttendance() {
               &#8203;
             </span>
 
-            <div className="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full w-full mx-4">
+            <div className="relative inline-block align-bottom bg-white dark:bg-zinc-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full w-full mx-4">
               <form onSubmit={handleUpdateSession}>
-                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="bg-white dark:bg-zinc-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <div className="sm:flex sm:items-start">
-                    <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-purple-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-purple-100 dark:bg-purple-900 sm:mx-0 sm:h-10 sm:w-10">
                       <Edit className="h-6 w-6 text-purple-600" />
                     </div>
                     <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                      <h3 className="text-lg leading-6 font-medium text-gray-900">
+                      <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-zinc-100">
                         Edit Attendance Session
                       </h3>
                       <div className="mt-4">
                         <div className="mb-4">
                           <label
-                            className="block text-gray-700 text-sm font-bold mb-2"
+                            className="block text-gray-700 dark:text-gray-200 text-sm font-bold mb-2"
                             htmlFor="editSection"
                           >
                             Section/Class Code
@@ -457,7 +456,7 @@ export default function TeacherManageAttendance() {
                           <input
                             type="text"
                             id="editSection"
-                            className="shadow-sm border border-gray-300 rounded-lg w-full py-2.5 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            className="shadow-sm border border-gray-300 dark:border-zinc-700 rounded-lg w-full py-2.5 px-4 text-gray-700 dark:text-zinc-100 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-zinc-900"
                             value={editSection}
                             onChange={(e) => setEditSection(e.target.value)}
                             required
@@ -466,7 +465,7 @@ export default function TeacherManageAttendance() {
 
                         <div className="mb-4">
                           <label
-                            className="block text-gray-700 text-sm font-bold mb-2"
+                            className="block text-gray-700 dark:text-gray-200 text-sm font-bold mb-2"
                             htmlFor="editCourse"
                           >
                             Course
@@ -474,7 +473,7 @@ export default function TeacherManageAttendance() {
                           <input
                             type="text"
                             id="editCourse"
-                            className="shadow-sm border border-gray-300 rounded-lg w-full py-2.5 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            className="shadow-sm border border-gray-300 dark:border-zinc-700 rounded-lg w-full py-2.5 px-4 text-gray-700 dark:text-zinc-100 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-zinc-900"
                             value={editCourse}
                             onChange={(e) => setEditCourse(e.target.value)}
                             required
@@ -483,7 +482,7 @@ export default function TeacherManageAttendance() {
 
                         <div className="mb-4">
                           <label
-                            className="block text-gray-700 text-sm font-bold mb-2"
+                            className="block text-gray-700 dark:text-gray-200 text-sm font-bold mb-2"
                             htmlFor="editRoom"
                           >
                             Room
@@ -491,7 +490,7 @@ export default function TeacherManageAttendance() {
                           <input
                             type="text"
                             id="editRoom"
-                            className="shadow-sm border border-gray-300 rounded-lg w-full py-2.5 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            className="shadow-sm border border-gray-300 dark:border-zinc-700 rounded-lg w-full py-2.5 px-4 text-gray-700 dark:text-zinc-100 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-zinc-900"
                             value={editRoom}
                             onChange={(e) => setEditRoom(e.target.value)}
                             required
@@ -501,7 +500,7 @@ export default function TeacherManageAttendance() {
                     </div>
                   </div>
                 </div>
-                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <div className="bg-gray-50 dark:bg-zinc-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                   <button
                     type="submit"
                     className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-purple-600 text-base font-medium text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:ml-3 sm:w-auto sm:text-sm"
@@ -510,7 +509,7 @@ export default function TeacherManageAttendance() {
                   </button>
                   <button
                     type="button"
-                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-zinc-700 shadow-sm px-4 py-2 bg-white dark:bg-zinc-800 text-base font-medium text-gray-700 dark:text-zinc-100 hover:bg-gray-50 dark:hover:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                     onClick={() => setShowEditModal(false)}
                   >
                     Cancel
@@ -530,7 +529,7 @@ export default function TeacherManageAttendance() {
               className="fixed inset-0 transition-opacity"
               aria-hidden="true"
             >
-              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+              <div className="absolute inset-0 bg-gray-500 dark:bg-black opacity-75"></div>
             </div>
 
             <span
@@ -540,18 +539,18 @@ export default function TeacherManageAttendance() {
               &#8203;
             </span>
 
-            <div className="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full w-full mx-4">
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div className="relative inline-block align-bottom bg-white dark:bg-zinc-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full w-full mx-4">
+              <div className="bg-white dark:bg-zinc-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
-                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
                     <AlertCircle className="h-6 w-6 text-red-600" />
                   </div>
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-zinc-100">
                       Delete Attendance Session
                     </h3>
                     <div className="mt-2">
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-zinc-400">
                         Are you sure you want to delete this attendance session?
                         This action cannot be undone. All attendance records for
                         this session will be permanently removed.
@@ -560,7 +559,7 @@ export default function TeacherManageAttendance() {
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+              <div className="bg-gray-50 dark:bg-zinc-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                 <button
                   type="button"
                   className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
@@ -570,7 +569,7 @@ export default function TeacherManageAttendance() {
                 </button>
                 <button
                   type="button"
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-zinc-700 shadow-sm px-4 py-2 bg-white dark:bg-zinc-800 text-base font-medium text-gray-700 dark:text-zinc-100 hover:bg-gray-50 dark:hover:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                   onClick={() => setShowDeleteModal(false)}
                 >
                   Cancel

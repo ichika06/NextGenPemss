@@ -65,18 +65,37 @@ export default function RegistrarDashboard() {
 
     const fetchDashboardData = () => {
       try {
-        // Fetch recent events in real time
+        // Fetch recent events in real time (filter out ended events)
         unsubscribeRecentEvents = onSnapshot(
           query(
             collection(db, "events"),
-            orderBy("date", "desc"),
-            limit(3)
+            orderBy("createdAt", "desc"),
+            limit(20) // Fetch more to account for filtering
           ),
           (eventsSnapshot) => {
-            const eventsData = eventsSnapshot.docs.map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-            }));
+            const now = new Date();
+            const eventsData = eventsSnapshot.docs
+              .map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+              }))
+              .filter((event) => {
+                // Filter out ended events (only show upcoming/ongoing events)
+                const eventDate = new Date(event.date);
+                const isNotEnded = eventDate >= now;
+
+                // Filter out events that are both not public AND not live
+                const isVisibleEvent = event.isPublic === true || event.isLive === true;
+
+                // Filter out events that have isPublic: false AND have either location OR organization
+                const shouldExcludePrivateEvent =
+                  event.isPublic === false &&
+                  (event.location || event.organization);
+
+                return isNotEnded && isVisibleEvent && !shouldExcludePrivateEvent;
+              })
+              .slice(0, 20); // Take only the first 3 after filtering
+
             setEvents(eventsData);
           }
         );
@@ -126,18 +145,18 @@ export default function RegistrarDashboard() {
 
   // Main dashboard content
   const DashboardHome = () => (
-    <div className="p-4 sm:p-6 lg:p-8">
+    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 dark:bg-zinc-900 border-none">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
         <div className="flex items-center space-x-3">
           <LayoutDashboard className="h-6 w-6 text-indigo-600" />
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-zinc-100">
             Registrar Dashboard
           </h1>
         </div>
         <div className="mt-4 sm:mt-0 sm:mr-11">
           <Link
             to={`/${userRole}/create-event`}
-            className=" btn-primary inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+            className="btn-primary inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
           >
             <PlusCircle className="h-4 w-4 mr-2" /> Create New Event
           </Link>
@@ -146,19 +165,19 @@ export default function RegistrarDashboard() {
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
-        <div className="bg-white dark:bg-gray-200 rounded-xl shadow-sm border border-gray-100 p-6 transition-all hover:shadow-md">
+        <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-700 p-6 transition-all hover:shadow-md">
           <div className="flex items-center">
-            <div className="rounded-full bg-indigo-100 p-3 mr-4">
+            <div className="rounded-full bg-indigo-100 dark:bg-zinc-900 p-3 mr-4">
               <Calendar className="h-6 w-6 text-indigo-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Total Events</p>
-              <p className="text-2xl font-bold text-gray-800">
+              <p className="text-sm text-gray-600 dark:text-zinc-300">Total Events</p>
+              <p className="text-2xl font-bold">
                 {stats.totalEvents}
               </p>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-zinc-700">
             <Link
               to={`/${userRole}/manage-events`}
               className="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center"
@@ -168,19 +187,19 @@ export default function RegistrarDashboard() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-200 rounded-xl shadow-sm border border-gray-100 p-6 transition-all hover:shadow-md">
+        <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-700 p-6 transition-all hover:shadow-md">
           <div className="flex items-center">
-            <div className="rounded-full bg-amber-100 p-3 mr-4">
+            <div className="rounded-full bg-amber-100 dark:bg-zinc-900 p-3 mr-4">
               <Clock className="h-6 w-6 text-amber-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Pending Events</p>
-              <p className="text-2xl font-bold text-gray-800 ">
+              <p className="text-sm text-gray-600 dark:text-zinc-300">Pending Events</p>
+              <p className="text-2xl font-bold">
                 {stats.pendingEvents}
               </p>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-zinc-700">
             <Link
               to={`/${userRole}/manage-events`}
               className="text-sm text-amber-600 hover:text-amber-800 font-medium flex items-center"
@@ -190,19 +209,19 @@ export default function RegistrarDashboard() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-200 rounded-xl shadow-sm border border-gray-100 p-6 transition-all hover:shadow-md">
+        <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-700 p-6 transition-all hover:shadow-md">
           <div className="flex items-center">
-            <div className="rounded-full bg-green-100 p-3 mr-4">
+            <div className="rounded-full bg-green-100 dark:bg-zinc-900 p-3 mr-4">
               <CheckCircle className="h-6 w-6 text-green-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Completed Events</p>
-              <p className="text-2xl font-bold text-gray-800">
+              <p className="text-sm text-gray-600 dark:text-zinc-300">Completed Events</p>
+              <p className="text-2xl font-bold">
                 {stats.completedEvents}
               </p>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-zinc-700">
             <Link
               to="/registrar/manage-events"
               className="text-sm text-green-600 hover:text-green-800 font-medium flex items-center"
@@ -214,9 +233,9 @@ export default function RegistrarDashboard() {
       </div>
 
       {/* Recent events */}
-      <div className="bg-white dark:bg-gray-100 rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+      <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-700 p-6 mb-8">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-semibold text-gray-800">Recent Events</h2>
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-zinc-100">Recent Events</h2>
           <Link
             to={`/${userRole}/events`}
             className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
@@ -228,7 +247,7 @@ export default function RegistrarDashboard() {
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 text-indigo-500 animate-spin" />
-            <span className="ml-2 text-gray-600">Loading events...</span>
+            <span className="ml-2 text-gray-600 dark:text-zinc-300">Loading events...</span>
           </div>
         ) : events.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -238,11 +257,11 @@ export default function RegistrarDashboard() {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Calendar className="h-12 w-12 text-gray-300 mb-4" />
-            <h3 className="text-lg font-medium text-gray-800 mb-2">
+            <Calendar className="h-12 w-12 text-gray-300 dark:text-zinc-700 mb-4" />
+            <h3 className="text-lg font-medium text-gray-800 dark:text-zinc-100 mb-2">
               No events found
             </h3>
-            <p className="text-gray-500 mb-6 max-w-md">
+            <p className="text-gray-500 dark:text-zinc-400 mb-6 max-w-md">
               You haven't created any events yet. Create your first event to get
               started.
             </p>
@@ -257,45 +276,45 @@ export default function RegistrarDashboard() {
       </div>
 
       {/* Quick actions */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-6">
+      <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-700 p-6">
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-zinc-100 mb-6">
           Quick Actions
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Link
             to={`/${userRole}/add-user`}
-            className="flex flex-col items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+            className="flex flex-col items-center p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors"
           >
             <User className="h-8 w-8 text-indigo-500 mb-2" />
-            <span className="text-sm font-medium text-gray-700">Add User</span>
+            <span className="text-sm font-medium text-gray-700 dark:text-zinc-200">Add User</span>
           </Link>
 
           <Link
             to={`/${userRole}/file-manager`}
-            className="flex flex-col items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+            className="flex flex-col items-center p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors"
           >
             <FolderOpen className="h-8 w-8 text-indigo-500 mb-2" />
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-sm font-medium text-gray-700 dark:text-zinc-200">
               File Manager
             </span>
           </Link>
 
           <Link
             to={`/${userRole}/nfc-card-setup`}
-            className="flex flex-col items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+            className="flex flex-col items-center p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors"
           >
             <Users className="h-8 w-8 text-indigo-500 mb-2" />
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-sm font-medium text-gray-700 dark:text-zinc-200">
               NFC Registration
             </span>
           </Link>
 
           <Link
             to={`/${userRole}/manage-events`}
-            className="flex flex-col items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+            className="flex flex-col items-center p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors"
           >
             <FileText className="h-8 w-8 text-indigo-500 mb-2" />
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-sm font-medium text-gray-700 dark:text-zinc-200">
               Manage Events
             </span>
           </Link>
@@ -305,7 +324,7 @@ export default function RegistrarDashboard() {
   );
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 dark:bg-zinc-900">
       <Sidebar
         role="registrar"
         isOpen={isMobileMenuOpen}

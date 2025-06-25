@@ -440,11 +440,11 @@ const SidebarNavigation = ({ role, accessLevel, unreadCount, setIsOpen, windowWi
         <div key={item.name} className="space-y-1">
           <button
             onClick={() => toggleGroup(item.name)}
-            className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-md transition-colors ${isGroupActive ? "bg-indigo-50 text-indigo-700" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-md transition-colors ${isGroupActive ? "bg-indigo-50 text-indigo-700" : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gradient-to-l dark:hover:from-zinc-900 dark:hover:to-blue-950 hover:text-gray-900 dark:hover:text-gray-200"
               }`}
           >
             <div className="flex items-center">
-              <span className={`mr-3 ${isGroupActive ? "text-indigo-700" : "text-gray-500"}`}>{item.icon}</span>
+              <span className={`mr-3 ${isGroupActive ? "text-indigo-700 dark:text-indigo-600" : "text-gray-500 dark:text-gray-100"}`}>{item.icon}</span>
               {item.name}
             </div>
             <span className="transition-transform duration-200">
@@ -461,7 +461,7 @@ const SidebarNavigation = ({ role, accessLevel, unreadCount, setIsOpen, windowWi
                   onClick={() => handleNavItemClick(subItem)}
                   className={`flex items-center px-4 py-3 text-sm rounded-md ${isActive(subItem.path)
                     ? "bg-indigo-100 text-indigo-700 font-medium"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gradient-to-l dark:hover:from-zinc-900 dark:hover:to-blue-950 dark:hover:text-gray-300 dark:text-gray-400"
                     }`}
                 >
                   <span className={`mr-3 ${isActive(subItem.path) ? "text-indigo-700" : "text-gray-500"}`}>
@@ -481,11 +481,11 @@ const SidebarNavigation = ({ role, accessLevel, unreadCount, setIsOpen, windowWi
         key={item.path}
         to={item.path}
         onClick={() => handleNavItemClick(item)}
-        className={`group flex items-center justify-between px-4 py-3 text-sm font-medium rounded-md transition-colors ${isActive(item.path) ? "bg-indigo-100 text-indigo-700" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+        className={`group flex items-center justify-between px-4 py-3 text-sm font-medium rounded-md transition-colors ${isActive(item.path) ? "bg-indigo-100 text-indigo-700" : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-gradient-to-l dark:hover:from-zinc-900 dark:hover:to-blue-950 dark:hover:text-gray-200"
           }`}
       >
         <div className="flex items-center">
-          <span className={`mr-3 ${isActive(item.path) ? "text-indigo-700" : "text-gray-500"}`}>{item.icon}</span>
+          <span className={`mr-3 ${isActive(item.path) ? "text-indigo-700" : "text-gray-500 dark:text-gray-200 dark:hover:bg-gradient-to-l dark:hover:from-zinc-900 dark:hover:to-blue-950 dark:hover:text-gray-200"}`}>{item.icon}</span>
           {item.name}
         </div>
 

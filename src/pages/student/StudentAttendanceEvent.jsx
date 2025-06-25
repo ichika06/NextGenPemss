@@ -79,13 +79,12 @@ const StudentEventAttendance = () => {
 
   return (
     <div className="container mx-auto px-4 py-18 max-w-7xl">
-
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-        <div className="border-b background-primary px-6 py-4">
-          <h2 className="text-2xl font-bold text-primary">
+      <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-sm overflow-hidden">
+        <div className="border-b background-primary dark:bg-gray-400 px-6 py-4">
+          <h2 className="text-2xl font-bold text-primary dark:text-gray-900">
             Your Registered Events
           </h2>
-          <p className="text-primary-secondary mt-1">
+          <p className="text-primary-secondary dark:text-zinc-300 mt-1">
             View and manage events you've registered to attend
           </p>
         </div>
@@ -101,15 +100,15 @@ const StudentEventAttendance = () => {
               />
             </div>
           ) : error ? (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg my-4">
+            <div className="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-200 px-4 py-3 rounded-lg my-4">
               <p>{error}</p>
             </div>
           ) : registeredEvents.length === 0 ? (
-            <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-              <h3 className="text-lg font-medium text-gray-700">
+            <div className="text-center py-12 bg-gray-50 dark:bg-zinc-900 rounded-lg border border-dashed border-gray-300 dark:border-zinc-700">
+              <h3 className="text-lg font-medium text-gray-700 dark:text-zinc-100">
                 You haven't registered for any events yet.
               </h3>
-              <p className="text-gray-500 mt-2">
+              <p className="text-gray-500 dark:text-zinc-400 mt-2">
                 Browse available events and register to see them here.
               </p>
             </div>

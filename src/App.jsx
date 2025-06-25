@@ -11,7 +11,6 @@ import {
 } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
-import Login from "./pages/Login";
 import Register from "./pages/Register";
 import AdminDashboard from "./pages/admin/Dashboard";
 import RegistrarDashboard from "./pages/registrar/Dashboard";
@@ -49,7 +48,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
       </div>
     );
 
-  if (!currentUser) return <Navigate to="/login" />;
+  if (!currentUser) return <Navigate to="/landingPage" />;
 
   if (!allowedRoles.includes(userRole)) {
     // Redirect to appropriate dashboard based on role
@@ -98,7 +97,7 @@ function AppRoutes() {
   const { userRole } = useAuth();
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
+      
       <Route path="/register" element={<Register />} />
 
       {/* Admin routes */}

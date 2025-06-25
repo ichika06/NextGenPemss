@@ -135,27 +135,27 @@ const GoogleSheetsUploader = ({ attendeesData, eventTitle, dataType = "event" })
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
+    <div className="bg-white dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700 p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Upload className="h-5 w-5 text-green-600" />
-          <h3 className="text-lg font-semibold text-gray-900">Upload to Google Sheets</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-100">Upload to Google Sheets</h3>
         </div>
         <button
           onClick={() => setShowInstructions(!showInstructions)}
-          className="flex items-center space-x-1 text-blue-600 hover:text-blue-800 text-sm"
+          className="flex items-center space-x-1 text-blue-600 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-200 text-sm"
         >
           <Info className="h-4 w-4" />
           <span>Instructions</span>
         </button>
       </div>
 
-      <p className="text-sm text-gray-600">{getDataDescription()}</p>
+      <p className="text-sm text-gray-600 dark:text-zinc-300">{getDataDescription()}</p>
 
       {showInstructions && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h4 className="font-semibold text-blue-900 mb-2">Setup Instructions:</h4>
-          <ol className="list-decimal list-inside space-y-2 text-sm text-blue-800">
+        <div className="bg-blue-50 dark:bg-zinc-900 border border-blue-200 dark:border-zinc-900 rounded-lg p-4">
+          <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Setup Instructions:</h4>
+          <ol className="list-decimal list-inside space-y-2 text-sm text-blue-800 dark:text-blue-200">
             <li>Create a new Google Sheet or open an existing one</li>
             <li>Click the "Share" button (top right corner)</li>
             <li>Change "Restricted" to "Anyone with the link"</li>
@@ -163,8 +163,8 @@ const GoogleSheetsUploader = ({ attendeesData, eventTitle, dataType = "event" })
             <li>Click "Copy link" and paste it below</li>
             <li>Click "Upload to Google Sheets" button</li>
           </ol>
-          <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
-            <p className="text-xs text-yellow-800">
+          <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded">
+            <p className="text-xs text-yellow-800 dark:text-yellow-200">
               <strong>Important:</strong> Make sure the sheet has "Editor" access, not just "Viewer" access, otherwise
               the upload will fail.
             </p>
@@ -174,7 +174,7 @@ const GoogleSheetsUploader = ({ attendeesData, eventTitle, dataType = "event" })
 
       <div className="space-y-3">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Google Sheets Share Link</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200 mb-2">Google Sheets Share Link</label>
           <div className="relative">
             <Link className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
@@ -182,20 +182,20 @@ const GoogleSheetsUploader = ({ attendeesData, eventTitle, dataType = "event" })
               value={sheetUrl}
               onChange={(e) => setSheetUrl(e.target.value)}
               placeholder="https://docs.google.com/spreadsheets/d/your-sheet-id/edit?usp=sharing"
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-zinc-900 text-gray-900 dark:text-zinc-100"
             />
           </div>
         </div>
 
         {error && (
-          <div className="flex items-center space-x-2 text-red-600 text-sm bg-red-50 p-3 rounded-lg">
+          <div className="flex items-center space-x-2 text-red-600 dark:text-red-200 text-sm bg-red-50 dark:bg-red-900 p-3 rounded-lg">
             <AlertCircle className="h-4 w-4 flex-shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         {uploadStatus === "success" && (
-          <div className="flex items-center space-x-2 text-green-600 text-sm bg-green-50 p-3 rounded-lg">
+          <div className="flex items-center space-x-2 text-green-600 dark:text-green-200 text-sm bg-green-50 dark:bg-green-900 p-3 rounded-lg">
             <CheckCircle className="h-4 w-4" />
             <span>
               Successfully uploaded {attendeesData.length} {getDataTypeLabel()} to Google Sheets!
@@ -206,7 +206,7 @@ const GoogleSheetsUploader = ({ attendeesData, eventTitle, dataType = "event" })
         <button
           onClick={uploadToGoogleSheets}
           disabled={!sheetUrl || isUploading || !attendeesData?.length}
-          className="w-full flex items-center justify-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 dark:bg-green-800 dark:hover:bg-green-900 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isUploading ? (
             <>
@@ -225,8 +225,8 @@ const GoogleSheetsUploader = ({ attendeesData, eventTitle, dataType = "event" })
       </div>
 
       {!isSignedIn && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-          <p className="text-sm text-yellow-800">
+        <div className="bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded-lg p-3">
+          <p className="text-sm text-yellow-800 dark:text-yellow-200">
             You'll need to sign in to your Google account when uploading for the first time.
           </p>
         </div>

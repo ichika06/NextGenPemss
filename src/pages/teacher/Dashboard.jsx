@@ -32,7 +32,7 @@ export default function TeacherDashboard() {
       try {
         // Fetch upcoming events
         const now = new Date().toISOString()
-        const eventsQuery = query(collection(db, "events"), where("date", ">=", now), orderBy("date", "asc"), limit(3))
+        const eventsQuery = query(collection(db, "events"), where("date", ">=", now), orderBy("createdAt", "desc"), limit(3))
         const eventsSnapshot = await getDocs(eventsQuery)
         const eventsData = eventsSnapshot.docs.map((doc) => ({
           id: doc.id,
@@ -68,12 +68,12 @@ export default function TeacherDashboard() {
   // Main dashboard content
   const DashboardHome = () => (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Teacher Dashboard</h1>
+      <h1 className="text-2xl font-bold text-gray-800 dark:text-zinc-100 mb-6">Teacher Dashboard</h1>
 
       {/* Upcoming events - View only (no registration) */}
-      <div className="bg-white rounded-lg shadow p-6 mb-8">
+      <div className="bg-white dark:bg-zinc-800 rounded-lg shadow p-6 mb-8">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">Upcoming Events</h2>
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-zinc-100">Upcoming Events</h2>
         </div>
 
         {loading ? (
@@ -92,14 +92,14 @@ export default function TeacherDashboard() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-500">No upcoming events found</div>
+          <div className="text-center py-8 text-gray-500 dark:text-zinc-400">No upcoming events found</div>
         )}
       </div>
     </div>
   )
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 dark:bg-zinc-900">
       <Sidebar
         role="teacher"
         isOpen={isSidebarOpen}

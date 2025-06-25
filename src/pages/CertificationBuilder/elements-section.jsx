@@ -60,7 +60,7 @@ export default function ElementsSection({
     <>
       {/* Add New Elements */}
       <div className="mb-6">
-        <h3 className="font-medium mb-2">Add Elements</h3>
+        <h3 className="font-medium mb-2 dark:text-zinc-100">Add Elements</h3>
         <div className="flex flex-wrap gap-2">
           <button
             className="flex items-center gap-1 px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -87,59 +87,59 @@ export default function ElementsSection({
       </div>
 
       {/* Placeholder Helper */}
-      <div className="mb-6 border p-3 rounded bg-white">
-        <h3 className="font-medium mb-2">Event & Attendee Data Placeholders</h3>
-        <p className="text-sm mb-2">You can use placeholders in text elements to automatically insert data:</p>
+      <div className="mb-6 border p-3 rounded bg-white dark:bg-zinc-800 dark:border-zinc-700">
+        <h3 className="font-medium mb-2 dark:text-zinc-100">Event & Attendee Data Placeholders</h3>
+        <p className="text-sm mb-2 dark:text-zinc-300">You can use placeholders in text elements to automatically insert data:</p>
 
         <div className="mb-3">
-          <h4 className="text-sm font-medium mb-1">Event Placeholders:</h4>
+          <h4 className="text-sm font-medium mb-1 dark:text-zinc-200">Event Placeholders:</h4>
           <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="p-2 bg-gray-50 rounded">
+            <div className="p-2 bg-gray-50 dark:bg-zinc-900 rounded">
               <code className="font-mono">{"{ title }"}</code> - Event title
             </div>
-            <div className="p-2 bg-gray-50 rounded">
+            <div className="p-2 bg-gray-50 dark:bg-zinc-900 rounded">
               <code className="font-mono">{"{ description }"}</code> - Event description
             </div>
-            <div className="p-2 bg-gray-50 rounded">
+            <div className="p-2 bg-gray-50 dark:bg-zinc-900 rounded">
               <code className="font-mono">{"{ date }"}</code> - Event date
             </div>
-            <div className="p-2 bg-gray-50 rounded">
+            <div className="p-2 bg-gray-50 dark:bg-zinc-900 rounded">
               <code className="font-mono">{"{ time }"}</code> - Event time
             </div>
-            <div className="p-2 bg-gray-50 rounded">
+            <div className="p-2 bg-gray-50 dark:bg-zinc-900 rounded">
               <code className="font-mono">{"{ location }"}</code> - Event location
             </div>
-            <div className="p-2 bg-gray-50 rounded">
+            <div className="p-2 bg-gray-50 dark:bg-zinc-900 rounded">
               <code className="font-mono">{"{ registrarName }"}</code> - Organizer name
             </div>
           </div>
         </div>
 
         <div className="mt-4">
-          <h4 className="text-sm font-medium mb-1">Attendee Placeholders:</h4>
+          <h4 className="text-sm font-medium mb-1 dark:text-zinc-200">Attendee Placeholders:</h4>
           <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="p-2 bg-gray-50 rounded">
+            <div className="p-2 bg-gray-50 dark:bg-zinc-900 rounded">
               <code className="font-mono">{"{ userName }"}</code> - Attendee's name
             </div>
-            <div className="p-2 bg-gray-50 rounded">
+            <div className="p-2 bg-gray-50 dark:bg-zinc-900 rounded">
               <code className="font-mono">{"{ email }"}</code> - Attendee's email
             </div>
-            <div className="p-2 bg-gray-50 rounded">
+            <div className="p-2 bg-gray-50 dark:bg-zinc-900 rounded">
               <code className="font-mono">{"{ userId }"}</code> - Attendee's ID
             </div>
-            <div className="p-2 bg-gray-50 rounded">
+            <div className="p-2 bg-gray-50 dark:bg-zinc-900 rounded">
               <code className="font-mono">{"{ phone }"}</code> - Attendee's phone (if available)
             </div>
           </div>
         </div>
 
-        <p className="text-sm mt-3">
+        <p className="text-sm mt-3 dark:text-zinc-300">
           <span className="font-medium">Example:</span>{" "}
           <span className="font-mono">
             This certificate is awarded to {"{ userName }"} for attending {"{ title }"} on {"{ date }"}
           </span>
         </p>
-        <p className="text-sm mt-1 text-gray-600">
+        <p className="text-sm mt-1 text-gray-600 dark:text-zinc-400">
           When sending to multiple attendees, these placeholders will be automatically replaced with each attendee's
           information.
         </p>
@@ -147,8 +147,8 @@ export default function ElementsSection({
 
       {/* Event Data Elements */}
       {selectedEvent && (
-        <div className="mb-6 border p-3 rounded bg-white">
-          <h3 className="font-medium mb-2">Add Event Data</h3>
+        <div className="mb-6 border p-3 rounded bg-white dark:bg-zinc-800 dark:border-zinc-700">
+          <h3 className="font-medium mb-2 dark:text-zinc-100">Add Event Data</h3>
           <div className="grid grid-cols-2 gap-2">
             <button
               className="px-3 py-2 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-sm"
@@ -235,9 +235,9 @@ export default function ElementsSection({
       )}
 
       {/* Signature Pad */}
-      <div className="mb-6 border p-3 rounded bg-white">
-        <h3 className="font-medium mb-2">Add Signature</h3>
-        <div className="border rounded mb-2 bg-gray-50">
+      <div className="mb-6 border p-3 rounded bg-white dark:bg-zinc-800 dark:border-zinc-700">
+        <h3 className="font-medium mb-2 dark:text-zinc-100">Add Signature</h3>
+        <div className="border rounded mb-2 bg-gray-50 dark:bg-zinc-900 dark:border-zinc-700">
           <canvas
             ref={signaturePadRef}
             className="w-full h-36 cursor-crosshair"
@@ -252,7 +252,7 @@ export default function ElementsSection({
         </div>
         <div className="flex gap-2 mb-2">
           <button
-            className="flex-1 px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm flex items-center justify-center gap-1"
+            className="flex-1 px-3 py-1 bg-gray-200 dark:bg-zinc-900 rounded hover:bg-gray-300 dark:hover:bg-zinc-700 text-sm flex items-center justify-center gap-1"
             onClick={clearSignature}
           >
             <X size={14} />
@@ -269,23 +269,23 @@ export default function ElementsSection({
         </div>
 
         {/* Upload Signature Option */}
-        <div className="mt-3 border-t pt-3">
-          <label className="block text-sm mb-2">Or Upload Signature Image</label>
-          <input type="file" onChange={handleFileUpload} className="text-sm w-full" accept="image/*" />
-          <div className="text-xs text-gray-500 mt-1">Transparent PNG files work best for signatures</div>
+        <div className="mt-3 border-t pt-3 dark:border-zinc-700">
+          <label className="block text-sm mb-2 dark:text-zinc-200">Or Upload Signature Image</label>
+          <input type="file" onChange={handleFileUpload} className="text-sm w-full dark:text-zinc-100" accept="image/*" />
+          <div className="text-xs text-gray-500 dark:text-zinc-400 mt-1">Transparent PNG files work best for signatures</div>
         </div>
       </div>
 
       {/* Email Certificate */}
-      <div className="mb-6 border p-3 rounded bg-white">
-        <h3 className="font-medium mb-2">Send Certificate by Email</h3>
+      <div className="mb-6 border p-3 rounded bg-white dark:bg-zinc-800 dark:border-zinc-700">
+        <h3 className="font-medium mb-2 dark:text-zinc-100">Send Certificate by Email</h3>
         <div className="space-y-3">
           {selectedEvent ? (
             <>
               {eventAttendees.length > 0 ? (
                 <>
-                  <div className="bg-blue-50 p-3 rounded border border-blue-200 mb-3">
-                    <h4 className="font-medium text-sm mb-2">Event Attendees</h4>
+                  <div className="bg-blue-50 dark:bg-blue-900 p-3 rounded border border-blue-200 dark:border-blue-700 mb-3">
+                    <h4 className="font-medium text-sm mb-2 dark:text-zinc-100">Event Attendees</h4>
                     <div className="max-h-40 overflow-y-auto">
                       {eventAttendees.map((attendee) => (
                         <div key={attendee.id} className="flex items-center mb-1">
@@ -311,14 +311,14 @@ export default function ElementsSection({
                     <div className="flex justify-between mt-2">
                       <button
                         type="button"
-                        className="text-xs text-blue-600 hover:text-blue-800"
+                        className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200"
                         onClick={() => setSelectedAttendees(eventAttendees.map((a) => a.id))}
                       >
                         Select All
                       </button>
                       <button
                         type="button"
-                        className="text-xs text-blue-600 hover:text-blue-800"
+                        className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200"
                         onClick={() => setSelectedAttendees([])}
                       >
                         Deselect All
@@ -328,9 +328,9 @@ export default function ElementsSection({
                       <button
                         className={`w-full px-3 py-2 ${
                           emailStatus === "error"
-                            ? "bg-red-100 text-red-700"
+                            ? "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200"
                             : emailStatus === "sent"
-                              ? "bg-green-100 text-green-700"
+                              ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200"
                               : "bg-blue-500 hover:bg-blue-600 text-white"
                         } rounded text-sm flex items-center justify-center gap-1`}
                         onClick={sendCertificatesToMultipleAttendees}
@@ -362,43 +362,43 @@ export default function ElementsSection({
                       </button>
                     </div>
                   </div>
-                  <div className="border-t pt-3 mt-3">
-                    <h4 className="font-medium text-sm mb-2">Or Send to a Single Email</h4>
+                  <div className="border-t pt-3 mt-3 dark:border-zinc-700">
+                    <h4 className="font-medium text-sm mb-2 dark:text-zinc-100">Or Send to a Single Email</h4>
                   </div>
                 </>
               ) : isLoadingAttendees ? (
                 <div className="flex items-center justify-center p-4">
                   <Loader2 size={20} className="animate-spin mr-2" />
-                  <span>Loading attendees...</span>
+                  <span className="dark:text-zinc-100">Loading attendees...</span>
                 </div>
               ) : (
-                <div className="bg-yellow-50 p-3 rounded border border-yellow-200 mb-3 text-sm">
+                <div className="bg-yellow-50 dark:bg-yellow-900 p-3 rounded border border-yellow-200 dark:border-yellow-700 mb-3 text-sm dark:text-zinc-100">
                   No attendees found for this event. You can still send to a single email below.
                 </div>
               )}
             </>
           ) : (
-            <div className="bg-yellow-50 p-3 rounded border border-yellow-200 mb-3 text-sm">
+            <div className="bg-yellow-50 dark:bg-yellow-900 p-3 rounded border border-yellow-200 dark:border-yellow-700 mb-3 text-sm dark:text-zinc-100">
               Select an event to see attendees or send to a single email below.
             </div>
           )}
 
           <div>
-            <label className="block text-sm mb-1">Recipient Email</label>
+            <label className="block text-sm mb-1 dark:text-zinc-200">Recipient Email</label>
             <input
               type="email"
               value={recipientEmail}
               onChange={(e) => setRecipientEmail(e.target.value)}
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border rounded dark:bg-zinc-900 dark:text-zinc-100 dark:border-zinc-700"
               placeholder="recipient@example.com"
             />
           </div>
           <div>
-            <label className="block text-sm mb-1">Email Message (Optional)</label>
+            <label className="block text-sm mb-1 dark:text-zinc-200">Email Message (Optional)</label>
             <textarea
               value={emailMessage}
               onChange={(e) => setEmailMessage(e.target.value)}
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border rounded dark:bg-zinc-900 dark:text-zinc-100 dark:border-zinc-700"
               rows={3}
               placeholder="Add a personal message to accompany the certificate..."
             ></textarea>
@@ -406,9 +406,9 @@ export default function ElementsSection({
           <button
             className={`w-full px-3 py-2 ${
               emailStatus === "error"
-                ? "bg-red-100 text-red-700"
+                ? "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200"
                 : emailStatus === "sent"
-                  ? "bg-green-100 text-green-700"
+                  ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200"
                   : "bg-blue-500 hover:bg-blue-600 text-white"
             } rounded text-sm flex items-center justify-center gap-1`}
             onClick={sendCertificateEmailFn}
@@ -437,21 +437,23 @@ export default function ElementsSection({
             )}
           </button>
           {emailStatus === "error" && (
-            <p className="text-xs text-red-600 mt-1">There was an error sending the certificate. Please try again.</p>
+            <p className="text-xs text-red-600 dark:text-red-300 mt-1">There was an error sending the certificate. Please try again.</p>
           )}
         </div>
       </div>
 
       {/* Elements List */}
       <div className="mb-6">
-        <h3 className="font-medium mb-2">Elements</h3>
+        <h3 className="font-medium mb-2 dark:text-zinc-100">Elements</h3>
         {elements.length > 0 ? (
           <div className="space-y-2 max-h-60 overflow-y-auto">
             {elements.map((element) => (
               <div
                 key={element.id}
                 className={`flex items-center justify-between p-2 rounded border ${
-                  selectedElement === element.id ? "bg-blue-50 border-blue-300" : "bg-white"
+                  selectedElement === element.id
+                    ? "bg-blue-50 dark:bg-blue-900 border-blue-300 dark:border-blue-700"
+                    : "bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700"
                 }`}
                 onClick={() => setSelectedElement(element.id)}
               >
@@ -465,13 +467,13 @@ export default function ElementsSection({
                   ) : element.type === "shape" ? (
                     <Square size={14} />
                   ) : null}
-                  <span className="text-sm truncate max-w-[120px]">
+                  <span className="text-sm truncate max-w-[120px] dark:text-zinc-100">
                     {element.type === "text" ? element.content : element.type}
                   </span>
                 </div>
                 <div className="flex items-center">
                   <button
-                    className="p-1 text-blue-500 hover:text-blue-700 mr-1"
+                    className="p-1 text-blue-500 hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200 mr-1"
                     onClick={(e) => {
                       e.stopPropagation()
                       const elementEdit = document.querySelector(`[data-element-id="${element.id}"]`)
@@ -487,7 +489,7 @@ export default function ElementsSection({
                     <Type size={14} />
                   </button>
                   <button
-                    className="p-1 text-gray-500 hover:text-gray-700"
+                    className="p-1 text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200"
                     onClick={(e) => {
                       e.stopPropagation()
                       toggleElementVisibility(element.id)
@@ -497,7 +499,7 @@ export default function ElementsSection({
                     <Eye size={14} />
                   </button>
                   <button
-                    className="p-1 text-gray-500 hover:text-gray-700"
+                    className="p-1 text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200"
                     onClick={(e) => {
                       e.stopPropagation()
                       duplicateElement(element.id)
@@ -507,7 +509,7 @@ export default function ElementsSection({
                     <Copy size={14} />
                   </button>
                   <button
-                    className="p-1 text-red-500 hover:text-red-700"
+                    className="p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-600"
                     onClick={(e) => {
                       e.stopPropagation()
                       removeElement(element.id)
@@ -521,7 +523,7 @@ export default function ElementsSection({
             ))}
           </div>
         ) : (
-          <div className="text-center py-4 text-gray-500 bg-white rounded border">
+          <div className="text-center py-4 text-gray-500 dark:text-zinc-400 bg-white dark:bg-zinc-800 rounded border dark:border-zinc-700">
             No elements added yet. Start by adding text, images, or shapes.
           </div>
         )}
@@ -529,26 +531,26 @@ export default function ElementsSection({
 
       {/* Selected Element Properties */}
       {selectedElement && (
-        <div className="mb-6 border-t pt-4">
+        <div className="mb-6 border-t pt-4 dark:border-zinc-700">
           <div className="flex justify-between items-center mb-2">
-            <h3 className="font-medium">Edit Element</h3>
+            <h3 className="font-medium dark:text-zinc-100">Edit Element</h3>
             <div className="flex items-center">
               <button
-                className="p-1 text-gray-500 hover:text-gray-700 mr-1"
+                className="p-1 text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200 mr-1"
                 onClick={() => moveElementLayer(selectedElement, "up")}
                 title="Bring Forward"
               >
                 <ChevronUp size={16} />
               </button>
               <button
-                className="p-1 text-gray-500 hover:text-gray-700 mr-1"
+                className="p-1 text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200 mr-1"
                 onClick={() => moveElementLayer(selectedElement, "down")}
                 title="Send Backward"
               >
                 <ChevronDown size={16} />
               </button>
               <button
-                className="p-1 text-red-500 hover:text-red-700"
+                className="p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-600"
                 onClick={() => removeElement(selectedElement)}
                 title="Delete"
               >
@@ -743,7 +745,7 @@ export default function ElementsSection({
                     type="text"
                     value={elements.find((el) => el.id === selectedElement)?.content}
                     onChange={(e) => updateElement(selectedElement, { content: e.target.value })}
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border rounded dark:bg-zinc-900 dark:text-zinc-100 dark:border-zinc-700"
                     placeholder="Enter image URL or upload"
                   />
                   <input
@@ -866,35 +868,71 @@ export default function ElementsSection({
             </>
           )}
 
-          {elements.find((el) => el.id === selectedElement)?.type === "shape" && (
-            <>
-              <div className="mb-2">
-                <label className="block text-sm mb-1">Shape Type</label>
-                <select
-                  value={elements.find((el) => el.id === selectedElement)?.shapeType || "rectangle"}
-                  onChange={(e) => updateElement(selectedElement, { shapeType: e.target.value })}
-                  className="w-full p-2 border rounded"
-                >
-                  <option value="rectangle">Rectangle</option>
-                  <option value="rounded">Rounded Rectangle</option>
-                  <option value="circle">Circle</option>
-                </select>
-              </div>
-              <div className="mb-2">
-                <label className="block text-sm mb-1">Color</label>
-                <input
-                  type="color"
-                  value={elements.find((el) => el.id === selectedElement)?.color}
-                  onChange={(e) => updateElement(selectedElement, { color: e.target.value })}
-                  className="w-full h-10 cursor-pointer"
-                />
-              </div>
-            </>
-          )}
-
           {elements.find((el) => el.id === selectedElement)?.type === "signature" && (
             <div className="mt-2">
-              {/* Image Border Controls */}
+              {/* Signature Preview */}
+              {elements.find((el) => el.id === selectedElement)?.content && (
+                <div className="mb-2 flex flex-col items-center">
+                  <span className="text-xs text-gray-500 dark:text-zinc-400 mb-1">Signature Preview:</span>
+                  <img
+                    src={elements.find((el) => el.id === selectedElement)?.content}
+                    alt="Signature Preview"
+                    className="max-h-24 max-w-full border dark:border-zinc-700 rounded bg-white dark:bg-zinc-900"
+                    style={{
+                      objectFit: "contain",
+                      background: "transparent",
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* Position and Size Controls */}
+              <div className="grid grid-cols-2 gap-2 mb-2">
+                <div>
+                  <label className="block text-sm mb-1">X Position</label>
+                  <input
+                    type="number"
+                    value={elements.find((el) => el.id === selectedElement)?.x || 0}
+                    onChange={e => updateElement(selectedElement, { x: Number(e.target.value) })}
+                    className="w-full p-2 border rounded dark:bg-zinc-900 dark:text-zinc-100 dark:border-zinc-700"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm mb-1">Y Position</label>
+                  <input
+                    type="number"
+                    value={elements.find((el) => el.id === selectedElement)?.y || 0}
+                    onChange={e => updateElement(selectedElement, { y: Number(e.target.value) })}
+                    className="w-full p-2 border rounded dark:bg-zinc-900 dark:text-zinc-100 dark:border-zinc-700"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 mb-2">
+                <div>
+                  <label className="block text-sm mb-1">Width</label>
+                  <input
+                    type="number"
+                    min="20"
+                    max="1000"
+                    value={elements.find((el) => el.id === selectedElement)?.width || 200}
+                    onChange={e => updateElement(selectedElement, { width: Number(e.target.value) })}
+                    className="w-full p-2 border rounded dark:bg-zinc-900 dark:text-zinc-100 dark:border-zinc-700"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm mb-1">Height</label>
+                  <input
+                    type="number"
+                    min="20"
+                    max="1000"
+                    value={elements.find((el) => el.id === selectedElement)?.height || 80}
+                    onChange={e => updateElement(selectedElement, { height: Number(e.target.value) })}
+                    className="w-full p-2 border rounded dark:bg-zinc-900 dark:text-zinc-100 dark:border-zinc-700"
+                  />
+                </div>
+              </div>
+
+              {/* Border and Radius Controls */}
               <div className="mt-3">
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-sm">Border</label>
@@ -989,7 +1027,9 @@ export default function ElementsSection({
                   }}
                   className="w-full"
                 />
-                <span className="text-xs">{elements.find((el) => el.id === selectedElement)?.borderRadius || 0}px</span>
+                <span className="text-xs">
+                  {elements.find((el) => el.id === selectedElement)?.borderRadius || 0}px
+                </span>
               </div>
             </div>
           )}

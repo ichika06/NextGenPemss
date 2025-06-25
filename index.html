@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" >
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="./src/assets/next-gen-pemss-logo.svg" />
@@ -10,10 +10,37 @@
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client"></script> 
     <title>NextGen-Pemss</title>
+    
   </head>
-  <body class="bg-gray-100 dark:bg-gray-200 text-gray-800 dark:text-gray-200 transition-colors duration-300">
-    <div id="root"></div>
+  <body class="bg-gray-100 dark:bg-zinc-800 text-gray-800 dark:text-gray-200 transition-colors duration-300">
+    <div id="root" class="dark:bg-zinc-800"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 
+  <!-- Dark mode script -->
+    <script>
+      // Check for saved theme preference or use system preference
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      
+      // Apply theme on page load
+      if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      }
+      
+      // Function to toggle theme that can be called from your app
+      window.toggleDarkMode = function() {
+        if (document.documentElement.classList.contains('dark')) {
+          document.documentElement.classList.remove('dark');
+          localStorage.setItem('theme', 'light');
+        } else {
+          document.documentElement.classList.add('dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      }
+    </script>
 </html>

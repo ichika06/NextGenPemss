@@ -332,71 +332,71 @@ export default function SendNotifications() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
+    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 dark:bg-zinc-900 min-h-screen">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center mb-6">
-          <div className="bg-indigo-100 p-2 rounded-lg mr-4">
-            <Bell className="h-6 w-6 text-indigo-600" />
+          <div className="bg-indigo-100 dark:bg-indigo-900 p-2 rounded-lg mr-4">
+            <Bell className="h-6 w-6 text-indigo-600 dark:text-indigo-300" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Send Notifications</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100">Send Notifications</h1>
         </div>
 
         {success && (
-          <div className="mb-6 p-4 rounded-lg bg-green-50 border border-green-200 flex items-center">
-            <CheckCircle className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
-            <span className="text-green-700">Notifications sent successfully!</span>
+          <div className="mb-6 p-4 rounded-lg bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 flex items-center">
+            <CheckCircle className="h-5 w-5 text-green-500 dark:text-green-300 mr-2 flex-shrink-0" />
+            <span className="text-green-700 dark:text-green-200">Notifications sent successfully!</span>
           </div>
         )}
 
         {error && (
-          <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 flex items-center">
-            <AlertCircle className="h-5 w-5 text-red-500 mr-2 flex-shrink-0" />
-            <span className="text-red-700">{error}</span>
+          <div className="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 flex items-center">
+            <AlertCircle className="h-5 w-5 text-red-500 dark:text-red-300 mr-2 flex-shrink-0" />
+            <span className="text-red-700 dark:text-red-200">{error}</span>
           </div>
         )}
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-700 overflow-hidden">
           {previewMode ? (
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-medium text-gray-800">Notification Preview</h2>
+                <h2 className="text-lg font-medium text-gray-800 dark:text-gray-100">Notification Preview</h2>
                 <button
                   type="button"
                   onClick={() => setPreviewMode(false)}
-                  className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+                  className="text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-400 text-sm font-medium"
                 >
                   Back to Edit
                 </button>
               </div>
 
-              <div className="border border-gray-200 rounded-lg p-4 mb-6">
+              <div className="border border-gray-200 dark:border-zinc-700 rounded-lg p-4 mb-6">
                 <div className="flex items-start">
                   <div className="mr-4 mt-1">{getNotificationIcon(notificationType)}</div>
                   <div className="flex-1">
-                    <h3 className="font-medium text-gray-900 mb-1">{title}</h3>
-                    <p className="text-gray-600 whitespace-pre-line">{message}</p>
-                    <div className="mt-3 text-xs text-gray-500">{new Date().toLocaleString()}</div>
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-1">{title}</h3>
+                    <p className="text-gray-600 dark:text-gray-300 whitespace-pre-line">{message}</p>
+                    <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">{new Date().toLocaleString()}</div>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                <h3 className="font-medium text-gray-700 mb-2">Recipients</h3>
-                <p className="text-gray-600">{getRecipientSummary()}</p>
+              <div className="bg-gray-50 dark:bg-zinc-900 p-4 rounded-lg mb-6">
+                <h3 className="font-medium text-gray-700 dark:text-gray-200 mb-2">Recipients</h3>
+                <p className="text-gray-600 dark:text-gray-300">{getRecipientSummary()}</p>
               </div>
 
               <div className="flex justify-end space-x-3">
                 <button
                   type="button"
                   onClick={() => setPreviewMode(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 bg-white dark:bg-zinc-900 hover:bg-gray-50 dark:hover:bg-zinc-700"
                 >
                   Edit
                 </button>
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  className="px-4 py-2 rounded-lg bg-indigo-600 text-white flex items-center hover:bg-indigo-700"
+                  className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-800 text-white flex items-center"
                 >
                   <Send className="h-4 w-4 mr-2" />
                   Send Notification
@@ -404,14 +404,14 @@ export default function SendNotifications() {
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="divide-y divide-gray-100">
+            <form onSubmit={handleSubmit} className="divide-y divide-gray-100 dark:divide-zinc-700">
               {/* Notification Details */}
               <div className="p-6">
-                <h2 className="text-lg font-medium text-gray-800 mb-4">Notification Details</h2>
+                <h2 className="text-lg font-medium text-gray-800 dark:text-gray-100 mb-4">Notification Details</h2>
 
                 <div className="grid gap-6 md:grid-cols-2">
                   <div className="md:col-span-2">
-                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Title*
                     </label>
                     <input
@@ -419,14 +419,14 @@ export default function SendNotifications() {
                       id="title"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 dark:bg-zinc-900 dark:text-gray-100"
                       placeholder="Enter notification title"
                       required
                     />
                   </div>
 
                   <div className="md:col-span-2">
-                    <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Message*
                     </label>
                     <textarea
@@ -434,14 +434,14 @@ export default function SendNotifications() {
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       rows={4}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 dark:bg-zinc-900 dark:text-gray-100"
                       placeholder="Enter notification message"
                       required
                     />
                   </div>
 
                   <div className="md:col-span-2">
-                    <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="type" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                       Type
                     </label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
@@ -450,11 +450,12 @@ export default function SendNotifications() {
                           key={type}
                           type="button"
                           onClick={() => setNotificationType(type)}
-                          className={`flex items-center p-3 rounded-lg border ${
-                            notificationType === type
-                              ? "bg-indigo-50 border-indigo-300 ring-1 ring-indigo-500"
-                              : "bg-white border-gray-200 hover:bg-gray-50"
-                          }`}
+                          className={`flex items-center p-3 rounded-lg border transition-colors
+                            ${
+                              notificationType === type
+                                ? "bg-indigo-50 dark:bg-indigo-900 border-indigo-300 dark:border-indigo-400 ring-1 ring-indigo-500"
+                                : "bg-white dark:bg-zinc-900 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-zinc-800"
+                            }`}
                         >
                           <div className="mr-2">{getNotificationIcon(type)}</div>
                           <span className="capitalize">{type}</span>
@@ -467,11 +468,11 @@ export default function SendNotifications() {
 
               {/* Recipients */}
               <div className="p-6">
-                <h2 className="text-lg font-medium text-gray-800 mb-4">Recipients</h2>
+                <h2 className="text-lg font-medium text-gray-800 dark:text-gray-100 mb-4">Recipients</h2>
 
                 <div className="space-y-6">
                   {/* Send to roles */}
-                  <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="bg-gray-50 dark:bg-zinc-900 p-4 rounded-lg">
                     <div className="flex items-center mb-3">
                       <input
                         type="checkbox"
@@ -495,9 +496,9 @@ export default function SendNotifications() {
                             })
                           }
                         }}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600 rounded"
                       />
-                      <label htmlFor="sendToRoles" className="ml-2 block text-sm font-medium text-gray-700">
+                      <label htmlFor="sendToRoles" className="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-200">
                         Send to roles
                       </label>
                     </div>
@@ -506,9 +507,12 @@ export default function SendNotifications() {
                       {Object.keys(sendToRoles).map((role) => (
                         <label
                           key={role}
-                          className={`flex items-center p-2 rounded-md ${
-                            sendToRoles[role] ? "bg-indigo-50 border border-indigo-200" : "hover:bg-gray-100"
-                          }`}
+                          className={`flex items-center p-2 rounded-md cursor-pointer transition-colors
+                            ${
+                              sendToRoles[role]
+                                ? "bg-indigo-50 dark:bg-indigo-900 border border-indigo-200 dark:border-indigo-400"
+                                : "hover:bg-gray-100 dark:hover:bg-zinc-800"
+                            }`}
                         >
                           <input
                             type="checkbox"
@@ -519,9 +523,9 @@ export default function SendNotifications() {
                                 [role]: e.target.checked,
                               })
                             }}
-                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600 rounded"
                           />
-                          <span className="ml-2 flex items-center text-sm text-gray-700 capitalize">
+                          <span className="ml-2 flex items-center text-sm text-gray-700 dark:text-gray-200 capitalize">
                             {getRoleIcon(role)}
                             <span className="ml-1">{role}</span>
                           </span>
@@ -531,7 +535,7 @@ export default function SendNotifications() {
                   </div>
 
                   {/* Send to section */}
-                  <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="bg-gray-50 dark:bg-zinc-900 p-4 rounded-lg">
                     <div className="flex items-center mb-3">
                       <input
                         type="checkbox"
@@ -541,9 +545,9 @@ export default function SendNotifications() {
                           setSendToSection(!sendToSection)
                           if (sendToSection) setSection("")
                         }}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600 rounded"
                       />
-                      <label htmlFor="sendToSection" className="ml-2 block text-sm font-medium text-gray-700">
+                      <label htmlFor="sendToSection" className="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-200">
                         Send to specific section
                       </label>
                     </div>
@@ -551,12 +555,12 @@ export default function SendNotifications() {
                     {sendToSection && (
                       <div className="ml-6">
                         <div className="flex items-center">
-                          <School className="h-4 w-4 text-gray-400 mr-2" />
+                          <School className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2" />
                           <input
                             type="text"
                             value={section}
                             onChange={(e) => setSection(e.target.value)}
-                            className="w-full sm:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                            className="w-full sm:w-64 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 dark:bg-zinc-900 dark:text-gray-100"
                             placeholder="Enter section code"
                           />
                         </div>
@@ -565,7 +569,7 @@ export default function SendNotifications() {
                   </div>
 
                   {/* Send to specific user */}
-                  <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="bg-gray-50 dark:bg-zinc-900 p-4 rounded-lg">
                     <div className="flex items-center mb-3">
                       <input
                         type="checkbox"
@@ -575,9 +579,9 @@ export default function SendNotifications() {
                           setSendToSpecificUser(!sendToSpecificUser)
                           if (sendToSpecificUser) setSelectedUser(null)
                         }}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600 rounded"
                       />
-                      <label htmlFor="sendToSpecificUser" className="ml-2 block text-sm font-medium text-gray-700">
+                      <label htmlFor="sendToSpecificUser" className="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-200">
                         Send to specific user
                       </label>
                     </div>
@@ -586,13 +590,13 @@ export default function SendNotifications() {
                       <div className="ml-6 space-y-3">
                         <div className="relative">
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Search className="h-4 w-4 text-gray-400" />
+                            <Search className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                           </div>
                           <input
                             type="text"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                            className="pl-10 w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 dark:bg-zinc-900 dark:text-gray-100"
                             placeholder="Search by name, email, or ID"
                           />
                         </div>
@@ -604,21 +608,21 @@ export default function SendNotifications() {
                         )}
 
                         {searchResults.length > 0 && (
-                          <div className="bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                            <ul className="divide-y divide-gray-200">
+                          <div className="bg-white dark:bg-zinc-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                            <ul className="divide-y divide-gray-200 dark:divide-zinc-700">
                               {searchResults.map((user) => (
                                 <li
                                   key={user.id}
-                                  className="p-3 hover:bg-gray-50 cursor-pointer"
+                                  className="p-3 hover:bg-gray-50 dark:hover:bg-zinc-900 cursor-pointer"
                                   onClick={() => selectUser(user)}
                                 >
                                   <div className="flex items-center">
-                                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3">
+                                    <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center mr-3">
                                       {getRoleIcon(user.role)}
                                     </div>
                                     <div>
-                                      <p className="font-medium text-gray-800">{user.name}</p>
-                                      <p className="text-xs text-gray-500">{getUserTypeLabel(user)}</p>
+                                      <p className="font-medium text-gray-800 dark:text-gray-100">{user.name}</p>
+                                      <p className="text-xs text-gray-500 dark:text-gray-400">{getUserTypeLabel(user)}</p>
                                     </div>
                                   </div>
                                 </li>
@@ -628,18 +632,18 @@ export default function SendNotifications() {
                         )}
 
                         {selectedUser && (
-                          <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3">
+                          <div className="bg-indigo-50 dark:bg-indigo-900 border border-indigo-200 dark:border-indigo-400 rounded-lg p-3">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center">
-                                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center mr-3">
+                                <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center mr-3">
                                   {getRoleIcon(selectedUser.role)}
                                 </div>
                                 <div>
-                                  <p className="font-medium text-gray-800">{selectedUser.name}</p>
-                                  <p className="text-xs text-gray-600">
+                                  <p className="font-medium text-gray-800 dark:text-gray-100">{selectedUser.name}</p>
+                                  <p className="text-xs text-gray-600 dark:text-gray-300">
                                     {selectedUser.email} • {getUserTypeLabel(selectedUser)}
                                   </p>
-                                  <p className="text-xs text-gray-500 mt-1">
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                     Predicted username:{" "}
                                     <span className="font-medium">{predictUsername(selectedUser.name)}</span>
                                   </p>
@@ -648,7 +652,7 @@ export default function SendNotifications() {
                               <button
                                 type="button"
                                 onClick={() => setSelectedUser(null)}
-                                className="text-gray-400 hover:text-red-500"
+                                className="text-gray-400 hover:text-red-500 dark:hover:text-red-400"
                               >
                                 <X className="h-5 w-5" />
                               </button>
@@ -662,8 +666,8 @@ export default function SendNotifications() {
               </div>
 
               {/* Actions */}
-              <div className="p-6 bg-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div className="flex items-center text-sm text-gray-500">
+              <div className="p-6 bg-gray-50 dark:bg-zinc-900 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div className="flex items-center text-sm text-gray-500 dark:text-gray-300">
                   <Users className="h-4 w-4 mr-1" />
                   <span>Recipients: {getRecipientSummary() || "None selected"}</span>
                 </div>
@@ -671,7 +675,7 @@ export default function SendNotifications() {
                   <button
                     type="button"
                     onClick={resetForm}
-                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50"
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-700"
                   >
                     Reset
                   </button>
@@ -679,7 +683,7 @@ export default function SendNotifications() {
                     type="button"
                     onClick={() => setPreviewMode(true)}
                     disabled={!title || !message}
-                    className={`px-4 py-2 rounded-lg border border-indigo-600 text-indigo-600 hover:bg-indigo-50 ${
+                    className={`px-4 py-2 rounded-lg border border-indigo-600 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900 ${
                       !title || !message ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >
@@ -688,8 +692,8 @@ export default function SendNotifications() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className={`px-4 py-2 rounded-lg bg-indigo-600 text-white flex items-center ${
-                      loading ? "opacity-70 cursor-not-allowed" : "hover:bg-indigo-700"
+                    className={`px-4 py-2 rounded-lg bg-indigo-600 dark:bg-indigo-700 text-white flex items-center ${
+                      loading ? "opacity-70 cursor-not-allowed" : "hover:bg-indigo-700 dark:hover:bg-indigo-800"
                     }`}
                   >
                     {loading ? (

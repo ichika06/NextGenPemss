@@ -113,13 +113,13 @@ export default function HardwareNFCScanner({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">Hardware NFC Scanner</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70">
+      <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden border border-gray-200 dark:border-zinc-700">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-zinc-700">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-zinc-100">Hardware NFC Scanner</h2>
           <button 
             onClick={onClose} 
-            className="text-gray-500 hover:text-gray-700 transition-colors"
+            className="text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
@@ -147,21 +147,21 @@ export default function HardwareNFCScanner({
         <div className="px-6 py-6">
           {!isConnected ? (
             <div className="text-center">
-              <div className="bg-green-50 p-4 rounded-full mx-auto mb-4 w-20 h-20 flex items-center justify-center">
-                <Cpu className="h-10 w-10 text-green-600" />
+              <div className="bg-green-50 dark:bg-green-900 p-4 rounded-full mx-auto mb-4 w-20 h-20 flex items-center justify-center">
+                <Cpu className="h-10 w-10 text-green-600 dark:text-green-300" />
               </div>
 
-              <h3 className="text-lg font-medium text-gray-800 mb-2">Connect Your Hardware Scanner</h3>
-              <p className="text-gray-600 mb-6">
+              <h3 className="text-lg font-medium text-gray-800 dark:text-zinc-100 mb-2">Connect Your Hardware Scanner</h3>
+              <p className="text-gray-600 dark:text-zinc-300 mb-6">
                 Select a connection method and connect your NFC hardware device to begin registering attendees.
               </p>
 
               <div className="mb-6">
-                <h4 className="text-sm font-medium text-gray-700 mb-3">Connection Method</h4>
+                <h4 className="text-sm font-medium text-gray-700 dark:text-zinc-200 mb-3">Connection Method</h4>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <div
-                    className={`cursor-pointer flex flex-col items-center justify-between rounded-md border-2 p-4 hover:bg-gray-50 
-                      ${connectionMethod === "usb" ? "border-green-500" : "border-gray-200"}`}
+                    className={`cursor-pointer flex flex-col items-center justify-between rounded-md border-2 p-4 hover:bg-gray-50 dark:hover:bg-zinc-900
+                      ${connectionMethod === "usb" ? "border-green-500 dark:border-green-400" : "border-gray-200 dark:border-zinc-700"}`}
                     onClick={() => setConnectionMethod("usb")}
                     role="button"
                     tabIndex={0}
@@ -173,8 +173,8 @@ export default function HardwareNFCScanner({
 
                   {/* WiFi/Wireless Option */}
                   <div
-                    className={`cursor-pointer flex flex-col items-center justify-between rounded-md border-2 p-4 hover:bg-gray-50 
-                      ${connectionMethod === "wifi" ? "border-green-500" : "border-gray-200"}`}
+                    className={`cursor-pointer flex flex-col items-center justify-between rounded-md border-2 p-4 hover:bg-gray-50 dark:hover:bg-zinc-900
+                      ${connectionMethod === "wifi" ? "border-green-500 dark:border-green-400" : "border-gray-200 dark:border-zinc-700"}`}
                     onClick={() => setConnectionMethod("wifi")}
                     role="button"
                     tabIndex={0}
@@ -186,14 +186,14 @@ export default function HardwareNFCScanner({
                 </div>
               </div>
 
-              {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
+              {error && <p className="text-red-600 dark:text-red-300 text-sm mb-3">{error}</p>}
 
               <button
                 onClick={handleConnectDevice}
                 disabled={isRegistering || !connectionMethod}
                 className={`w-full py-3 px-4 rounded-md font-medium flex items-center justify-center gap-2 ${
                   isRegistering || !connectionMethod
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    ? "bg-gray-100 dark:bg-zinc-900 text-gray-400 dark:text-zinc-500 cursor-not-allowed"
                     : "bg-green-600 hover:bg-green-700 text-white"
                 }`}
                 aria-busy={isRegistering}
@@ -205,22 +205,22 @@ export default function HardwareNFCScanner({
               </button>
 
               {!connectionMethod && !error && (
-                <p className="text-amber-600 text-sm mt-2">Please select a connection method</p>
+                <p className="text-amber-600 dark:text-amber-300 text-sm mt-2">Please select a connection method</p>
               )}
             </div>
           ) : (
             <div>
               <div className="flex items-center mb-4">
-                <div className="bg-green-100 p-2 rounded-full">{getConnectionIcon()}</div>
+                <div className="bg-green-100 dark:bg-green-900 p-2 rounded-full">{getConnectionIcon()}</div>
                 <div className="ml-3">
-                  <div className="text-sm text-gray-500">Device Status</div>
-                  <div className="font-medium text-green-600">Connected via {getConnectionLabel()}</div>
+                  <div className="text-sm text-gray-500 dark:text-zinc-400">Device Status</div>
+                  <div className="font-medium text-green-600 dark:text-green-300">Connected via {getConnectionLabel()}</div>
                 </div>
                 <div className="ml-auto flex gap-2">
-                  <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Ready</span>
+                  <span className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 text-xs px-2 py-1 rounded-full">Ready</span>
                   <button 
                     onClick={disconnectDevice} 
-                    className="text-xs text-gray-500 hover:text-red-600"
+                    className="text-xs text-gray-500 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400"
                     aria-label="Disconnect device"
                   >
                     Disconnect
@@ -228,29 +228,29 @@ export default function HardwareNFCScanner({
                 </div>
               </div>
 
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+              <div className="bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg p-4 mb-4">
                 <div className="flex justify-between items-center mb-2">
-                  <div className="text-gray-600 text-sm">Registrations</div>
+                  <div className="text-gray-600 dark:text-zinc-300 text-sm">Registrations</div>
                   <div className="font-medium">{registrationCount}</div>
                 </div>
                 <div className="flex justify-between items-center">
-                  <div className="text-gray-600 text-sm">Last Registered</div>
+                  <div className="text-gray-600 dark:text-zinc-300 text-sm">Last Registered</div>
                   <div className="font-medium">{lastRegisteredName || "No one yet"}</div>
                 </div>
               </div>
 
               <div className="text-center mb-6">
-                <p className="text-gray-600 mb-2">Scan an NFC tag or card to register an attendee.</p>
-                <p className="text-gray-500 text-sm">The scanner is actively listening for NFC tags.</p>
+                <p className="text-gray-600 dark:text-zinc-300 mb-2">Scan an NFC tag or card to register an attendee.</p>
+                <p className="text-gray-500 dark:text-zinc-400 text-sm">The scanner is actively listening for NFC tags.</p>
               </div>
             </div>
           )}
         </div>
 
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+        <div className="px-6 py-4 bg-gray-50 dark:bg-zinc-900 border-t border-gray-200 dark:border-zinc-700">
           <button
             onClick={onClose}
-            className="w-full py-2 px-4 border border-gray-300 rounded-md text-gray-700 font-medium hover:bg-gray-100 transition-colors"
+            className="w-full py-2 px-4 border border-gray-300 dark:border-zinc-700 rounded-md text-gray-700 dark:text-zinc-200 font-medium hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
           >
             Close
           </button>

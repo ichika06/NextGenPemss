@@ -48,21 +48,101 @@ export default function StudentDashboard() {
 
   useEffect(() => {
     function fetchDashboardData() {
-      if (!currentUser) return;
+      if (!currentUser || !currentUserData) return;
 
       // Start loading for each section
       setUpcomingEventsLoading(true);
       setRegisteredEventsLoading(true);
 
-      // Fetch upcoming events - only fetch public events
+      // Helper function to sort events by priority
+      const sortEventsByPriority = (events) => {
+        return events.sort((a, b) => {
+          // Priority 1: Both branch and organization match
+          const aBothMatch =
+            a.branch === currentUserData.branch &&
+            a.branch !== null &&
+            a.organization === currentUserData.organization &&
+            a.organization !== null;
+          const bBothMatch =
+            b.branch === currentUserData.branch &&
+            b.branch !== null &&
+            b.organization === currentUserData.organization &&
+            b.organization !== null;
+
+          if (aBothMatch && !bBothMatch) return -1;
+          if (!aBothMatch && bBothMatch) return 1;
+
+          // Priority 2: Organization matches (even if branch is null or doesn't match)
+          const aOrgMatch =
+            a.organization === currentUserData.organization &&
+            a.organization !== null;
+          const bOrgMatch =
+            b.organization === currentUserData.organization &&
+            b.organization !== null;
+
+          if (aOrgMatch && !bOrgMatch) return -1;
+          if (!aOrgMatch && bOrgMatch) return 1;
+
+          // Priority 3: Branch matches (even if organization is null or doesn't match)
+          const aBranchMatch =
+            a.branch === currentUserData.branch && a.branch !== null;
+          const bBranchMatch =
+            b.branch === currentUserData.branch && b.branch !== null;
+
+          if (aBranchMatch && !bBranchMatch) return -1;
+          if (!aBranchMatch && bBranchMatch) return 1;
+
+          // Default: sort by creation date (newest first)
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+      };
+
+      // Enhanced helper function to check if event should be shown
+      const shouldShowEvent = (event) => {
+        // Show if event is public
+        if (event.isPublic === true) return true;
+
+        // For live events, apply strict matching rules
+        if (event.isLive === true) {
+          // Check if branch matches
+          const branchMatch =
+            event.branch === currentUserData.branch &&
+            event.branch !== null &&
+            currentUserData.branch !== null;
+
+          // Check if organization matches
+          const orgMatch =
+            event.organization === currentUserData.organization &&
+            event.organization !== null &&
+            currentUserData.organization !== null;
+
+          // Show event only if:
+          // 1. Both branch and organization match, OR
+          // 2. Branch matches (regardless of organization), OR
+          // 3. Organization matches (when branch doesn't match or is null)
+          if (branchMatch && orgMatch) {
+            return true; // Perfect match
+          } else if (orgMatch && !branchMatch) {
+            return true; // Organization matches and branch doesn't match
+          }
+
+          // If neither branch nor organization matches, don't show
+          return false;
+        }
+
+        return false;
+      };
+
+      // Fetch upcoming events - get all live events first, then filter
       const now = new Date().toISOString();
       const eventsQuery = query(
         collection(db, "events"),
         where("date", ">=", now),
-        where("isPublic", "==", true),
-        orderBy("date", "asc"),
-        limit(3)
+        where("isLive", "==", true), // Only get live events
+        orderBy("createdAt", "desc"),
+        limit(50) // Increased limit to get more events for filtering
       );
+
       const unsubscribeUpcomingEvents = onSnapshot(
         eventsQuery,
         (eventsSnapshot) => {
@@ -70,7 +150,16 @@ export default function StudentDashboard() {
             id: doc.id,
             ...doc.data(),
           }));
-          setUpcomingEvents(eventsData);
+
+          // Filter events based on enhanced visibility rules
+          const filteredEvents = eventsData.filter(shouldShowEvent);
+
+          // Sort events by priority and take top 3
+          const prioritizedEvents = sortEventsByPriority(filteredEvents).slice(
+            0,
+            3
+          );
+          setUpcomingEvents(prioritizedEvents);
           setUpcomingEventsLoading(false);
         }
       );
@@ -80,6 +169,7 @@ export default function StudentDashboard() {
         collection(db, "eventAttendees"),
         where("email", "==", currentUser.email)
       );
+
       const unsubscribeRegistrations = onSnapshot(
         registrationsQuery,
         (registrationsSnapshot) => {
@@ -105,16 +195,23 @@ export default function StudentDashboard() {
                 collection(db, "events"),
                 where("__name__", "==", eventId)
               );
+
               const unsubscribeEventDoc = onSnapshot(
                 eventQuery,
                 (eventSnapshot) => {
                   if (!eventSnapshot.empty) {
                     const eventData = eventSnapshot.docs[0].data();
-                    // Store in map with ID as key to ensure uniqueness
-                    registeredEventsMap[eventId] = {
+
+                    // Apply the same filtering logic to registered events
+                    const eventWithId = {
                       id: eventId,
                       ...eventData,
                     };
+
+                    // Only include if it passes the filter
+                    if (shouldShowEvent(eventWithId)) {
+                      registeredEventsMap[eventId] = eventWithId;
+                    }
                   }
 
                   // Increment completed queries count
@@ -122,10 +219,12 @@ export default function StudentDashboard() {
 
                   // Only update state when all queries have completed
                   if (completedQueries === eventIds.length) {
-                    // Convert map to array for state update
-                    const uniqueRegisteredEvents =
-                      Object.values(registeredEventsMap);
-                    setRegisteredEvents(uniqueRegisteredEvents);
+                    // Convert map to array and sort by priority
+                    const uniqueRegisteredEvents = Object.values(registeredEventsMap);
+                    const prioritizedRegisteredEvents = sortEventsByPriority(
+                      uniqueRegisteredEvents
+                    );
+                    setRegisteredEvents(prioritizedRegisteredEvents);
                     setRegisteredEventsLoading(false);
                   }
                 }
@@ -154,7 +253,7 @@ export default function StudentDashboard() {
     return () => {
       unsubscribeAll && unsubscribeAll();
     };
-  }, [currentUser]);
+  }, [currentUser, currentUserData]);
 
   // Modified function to only redirect to event details
   const handleViewEventDetails = (eventId) => {
@@ -174,10 +273,10 @@ export default function StudentDashboard() {
     const isAlmostFull = event.attendees >= event.capacity * 0.8 && !isFull;
 
     return (
-      <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 flex flex-col h-full">
+      <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-zinc-700 flex flex-col h-full">
         {/* Card Header with Image */}
         <div
-          className="h-40 bg-gray-200 relative"
+          className="h-40 bg-gray-200 dark:bg-zinc-900 relative"
           style={{
             backgroundImage: event.image ? `url(${event.image})` : "none",
             backgroundSize: "cover",
@@ -231,7 +330,7 @@ export default function StudentDashboard() {
         <div className="p-4 flex-grow flex flex-col">
           <div className="mb-4 space-y-2 flex-grow">
             {/* Date and Location */}
-            <div className="flex items-center text-gray-600 text-sm">
+            <div className="flex items-center text-gray-600 dark:text-zinc-300 text-sm">
               <svg
                 className="w-4 h-4 mr-1"
                 fill="none"
@@ -248,7 +347,7 @@ export default function StudentDashboard() {
               <span>{event.date}</span>
             </div>
 
-            <div className="flex items-center text-gray-600 text-sm">
+            <div className="flex items-center text-gray-600 dark:text-zinc-300 text-sm">
               <svg
                 className="w-4 h-4 mr-1"
                 fill="none"
@@ -272,7 +371,7 @@ export default function StudentDashboard() {
             </div>
 
             {/* Capacity */}
-            <div className="flex items-center text-gray-600 text-sm">
+            <div className="flex items-center text-gray-600 dark:text-zinc-300 text-sm">
               <svg
                 className="w-4 h-4 mr-1"
                 fill="none"
@@ -293,7 +392,7 @@ export default function StudentDashboard() {
 
             {/* Short description */}
             {event.description && (
-              <p className="text-gray-600 text-sm line-clamp-2 mt-2">
+              <p className="text-gray-600 dark:text-zinc-300 text-sm line-clamp-2 mt-2">
                 {event.description}
               </p>
             )}
@@ -316,25 +415,25 @@ export default function StudentDashboard() {
   // Main dashboard content
   const DashboardHome = () => (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">
+      <h1 className="text-2xl font-bold text-gray-800 dark:text-zinc-100 mb-6">
         Student Dashboard
       </h1>
 
       {registeringError && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+        <div className="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-200 px-4 py-3 rounded mb-6">
           {registeringError}
         </div>
       )}
 
       {/* Upcoming events */}
-      <div className="bg-white rounded-lg shadow p-6 mb-8">
+      <div className="bg-white dark:bg-zinc-800 rounded-lg shadow p-6 mb-8">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-zinc-100">
             Upcoming Events
           </h2>
           <button
             onClick={() => navigate("/events")}
-            className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium"
           >
             View All
           </button>
@@ -360,16 +459,16 @@ export default function StudentDashboard() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500 dark:text-zinc-400">
             No upcoming events found
           </div>
         )}
       </div>
 
       {/* Registered events */}
-      <div className="bg-white rounded-lg shadow p-6 mb-8">
+      <div className="bg-white dark:bg-zinc-800 rounded-lg shadow p-6 mb-8">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-zinc-100">
             My Registered Events
           </h2>
 
@@ -377,7 +476,7 @@ export default function StudentDashboard() {
             onClick={() =>
               navigate(`/${currentUserData.role}/event-attendance`)
             }
-            className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium"
           >
             View All
           </button>
@@ -403,7 +502,7 @@ export default function StudentDashboard() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500 dark:text-zinc-400">
             You haven't registered for any events yet
           </div>
         )}
@@ -412,7 +511,7 @@ export default function StudentDashboard() {
   );
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 dark:bg-zinc-900">
       <Sidebar
         role="student"
         isOpen={isSidebarOpen}
@@ -433,7 +532,7 @@ export default function StudentDashboard() {
           <Route path="/public-event-calendar" element={<PublicCalendar />} />
           <Route path="/pre-registered" element={<EventPreRegister />} />
           <Route path="/event-attendance" element={<EventAttended />} />
-          
+
           <Route
             path="/student-event-attendance"
             element={<StudentEventsAttendance />}

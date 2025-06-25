@@ -38,8 +38,8 @@ export default function EventCard({ event }) {
   });
 
   return (
-    <div className="bg-white rounded-lg dark:shadow-gray-200 shadow-2xl overflow-hidden transition-transform duration-300 hover:shadow-2xl hover:-translate-y-1">
-      <div className="relative h-48 bg-indigo-100">
+    <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-2xl dark:shadow-zinc-900 overflow-hidden transition-transform duration-300 hover:shadow-2xl hover:-translate-y-1 dark:border dark:border-zinc-700">
+      <div className="relative h-48 bg-indigo-100 dark:bg-indigo-900">
         {image ? (
           <img
             src={image || "/placeholder.svg"}
@@ -54,7 +54,7 @@ export default function EventCard({ event }) {
 
         {/* Horizontal badges at bottom left */}
         <div className="absolute bottom-2 left-2 flex flex-row gap-2">
-        <div className="bg-amber-50 px-2 py-1 rounded-full text-xs font-medium text-zinc-600 text-center flex items-center gap-1">
+          <div className="bg-amber-50 dark:bg-amber-900 px-2 py-1 rounded-full text-xs font-medium text-zinc-600 dark:text-amber-100 text-center flex items-center gap-1">
             <Tag className="h-4 w-4" />
             {category}
           </div>
@@ -72,32 +72,32 @@ export default function EventCard({ event }) {
       </div>
 
       <div className="p-4">
-        <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-1">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-zinc-100 mb-2 line-clamp-1">
           {title}
         </h3>
 
         <div className="space-y-2 mb-4">
-          <div className="flex items-center text-sm text-gray-600">
+          <div className="flex items-center text-sm text-gray-600 dark:text-zinc-300">
             <Calendar className="h-4 w-4 mr-2 text-indigo-500" />
             {formattedDate}
           </div>
 
-          <div className="flex items-center text-sm text-gray-600">
+          <div className="flex items-center text-sm text-gray-600 dark:text-zinc-300">
             <Clock className="h-4 w-4 mr-2 text-indigo-500" />
             {time}
           </div>
 
-          <div className="flex items-center text-sm text-gray-600">
+          <div className="flex items-center text-sm text-gray-600 dark:text-zinc-300">
             <MapPin className="h-4 w-4 mr-2 text-indigo-500" />
             <span className="line-clamp-1">{location}</span>
           </div>
 
-          <div className="flex items-center text-sm text-gray-600">
+          <div className="flex items-center text-sm text-gray-600 dark:text-zinc-300">
             <Users className="h-4 w-4 mr-2 text-indigo-500" />
             {attendees} attendees
           </div>
 
-          <div className="flex items-center text-sm text-gray-600">
+          <div className="flex items-center text-sm text-gray-600 dark:text-zinc-300">
             <BellRing className="h-4 w-4 mr-2 text-indigo-500" />
             <CountdownDisplay
               eventDate={event.date}

@@ -167,18 +167,17 @@ export default function UserRegistrationManagement() {
 
 
   return (
-    <div className="container mx-auto py-6 px-4 min-h-screen">
-
+    <div className="container mx-auto py-6 px-4 min-h-screen bg-gray-50 dark:bg-zinc-900">
       <div className="flex flex-col space-y-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-zinc-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-zinc-700">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-            <h1 className="text-3xl font-bold text-gray-800">User Management</h1>
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-zinc-100">User Management</h1>
             <div className="flex flex-wrap gap-3">
               <button
                 className={`px-4 py-2 rounded-md transition-colors ${
                   viewMode === "allUsers"
                     ? "bg-blue-600 text-white shadow-md"
-                    : "bg-white text-gray-800 border border-gray-300 hover:bg-gray-50"
+                    : "bg-white dark:bg-zinc-900 text-gray-800 dark:text-zinc-100 border border-gray-300 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-900"
                 }`}
                 onClick={handleShowAllUsers}
               >
@@ -188,7 +187,7 @@ export default function UserRegistrationManagement() {
                 className={`px-4 py-2 rounded-md transition-colors ${
                   viewMode === "myCreatedUsers"
                     ? "bg-blue-600 text-white shadow-md"
-                    : "bg-white text-gray-800 border border-gray-300 hover:bg-gray-50"
+                    : "bg-white dark:bg-zinc-900 text-gray-800 dark:text-zinc-100 border border-gray-300 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-900"
                 }`}
                 onClick={() => setViewMode("myCreatedUsers")}
               >
@@ -198,19 +197,19 @@ export default function UserRegistrationManagement() {
           </div>
 
           {/* Search Bar */}
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="mb-6 p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg border border-gray-200 dark:border-zinc-700">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-gray-400" />
+                    <Search className="h-5 w-5 text-gray-400 dark:text-zinc-500" />
                   </div>
                   <input
                     type="text"
                     placeholder="Search users..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="pl-10 pr-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-900 dark:text-zinc-100"
                   />
                 </div>
               </div>
@@ -218,7 +217,7 @@ export default function UserRegistrationManagement() {
                 <select
                   value={searchField}
                   onChange={(e) => setSearchField(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-900 dark:text-zinc-100"
                 >
                   <option value="email">Email</option>
                   <option value="studentId">Student ID</option>
@@ -235,8 +234,8 @@ export default function UserRegistrationManagement() {
               <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
             </div>
           ) : usersToShow.length === 0 ? (
-            <div className="text-center py-10 bg-white rounded-lg border border-gray-200">
-              <p className="text-gray-500 text-lg">
+            <div className="text-center py-10 bg-white dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700">
+              <p className="text-gray-500 dark:text-zinc-400 text-lg">
                 {searchQuery 
                   ? "No users match your search criteria." 
                   : viewMode === "myCreatedUsers" 
@@ -249,13 +248,13 @@ export default function UserRegistrationManagement() {
               {usersToShow.map((user) => (
                 <div
                   key={user.id}
-                  className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-shadow"
+                  className="bg-white dark:bg-zinc-800 rounded-lg shadow-sm overflow-hidden border border-gray-200 dark:border-zinc-700 hover:shadow-md transition-shadow"
                 >
                   {/* User Card - Vertical Layout */}
                   <div className="flex flex-col p-5">
                     {/* Profile Image - Centered */}
                     <div className="flex justify-center mb-4">
-                      <div className="h-20 w-20 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200">
+                      <div className="h-20 w-20 rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-900 border-2 border-gray-200 dark:border-zinc-700">
                         <img
                           src={user.profileImage || defaultProfile}
                           alt={user.name}
@@ -266,8 +265,8 @@ export default function UserRegistrationManagement() {
 
                     {/* User Info - Centered */}
                     <div className="text-center mb-4">
-                      <h3 className="text-xl font-semibold text-gray-800">{user.name}</h3>
-                      <div className="flex items-center justify-center mt-1 text-gray-500 text-sm">
+                      <h3 className="text-xl font-semibold text-gray-800 dark:text-zinc-100">{user.name}</h3>
+                      <div className="flex items-center justify-center mt-1 text-gray-500 dark:text-zinc-400 text-sm">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           className="h-3 w-3 mr-1"
@@ -287,64 +286,64 @@ export default function UserRegistrationManagement() {
 
                       {/* Role Badge */}
                       {user.role && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 mt-2 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                        <span className="inline-flex items-center px-2.5 py-0.5 mt-2 rounded-full text-xs font-medium bg-gray-100 dark:bg-zinc-900 text-gray-800 dark:text-zinc-200 border border-gray-200 dark:border-zinc-700">
                           {user.role}
                         </span>
                       )}
                     </div>
 
                     {/* Additional Info */}
-                    <div className="space-y-2 border-t border-gray-100 pt-4 mb-4">
+                    <div className="space-y-2 border-t border-gray-100 dark:border-zinc-700 pt-4 mb-4">
                       {user.addedBy && (
                         <div className="text-sm flex justify-between">
-                          <span className="font-medium text-gray-600">Added by:</span>
-                          <span className="text-gray-700">{user.addedBy}</span>
+                          <span className="font-medium text-gray-600 dark:text-zinc-300">Added by:</span>
+                          <span className="text-gray-700 dark:text-zinc-100">{user.addedBy}</span>
                         </div>
                       )}
                       {user.createdAt && (
                         <div className="text-sm flex justify-between">
-                          <span className="font-medium text-gray-600">Created:</span>
-                          <span className="text-gray-700">{formatDate(user.createdAt)}</span>
+                          <span className="font-medium text-gray-600 dark:text-zinc-300">Created:</span>
+                          <span className="text-gray-700 dark:text-zinc-100">{formatDate(user.createdAt)}</span>
                         </div>
                       )}
                       
                       {/* Display ID fields if they exist */}
                       {user.studentId && (
                         <div className="text-sm flex justify-between">
-                          <span className="font-medium text-gray-600">Student ID:</span>
-                          <span className="text-gray-700">{user.studentId}</span>
+                          <span className="font-medium text-gray-600 dark:text-zinc-300">Student ID:</span>
+                          <span className="text-gray-700 dark:text-zinc-100">{user.studentId}</span>
                         </div>
                       )}
                       {user.employeeId && (
                         <div className="text-sm flex justify-between">
-                          <span className="font-medium text-gray-600">Employee ID:</span>
-                          <span className="text-gray-700">{user.employeeId}</span>
+                          <span className="font-medium text-gray-600 dark:text-zinc-300">Employee ID:</span>
+                          <span className="text-gray-700 dark:text-zinc-100">{user.employeeId}</span>
                         </div>
                       )}
                       {user.adminId && (
                         <div className="text-sm flex justify-between">
-                          <span className="font-medium text-gray-600">Admin ID:</span>
-                          <span className="text-gray-700">{user.adminId}</span>
+                          <span className="font-medium text-gray-600 dark:text-zinc-300">Admin ID:</span>
+                          <span className="text-gray-700 dark:text-zinc-100">{user.adminId}</span>
                         </div>
                       )}
                       {user.teacherId && (
                         <div className="text-sm flex justify-between">
-                          <span className="font-medium text-gray-600">Teacher ID:</span>
-                          <span className="text-gray-700">{user.teacherId}</span>
+                          <span className="font-medium text-gray-600 dark:text-zinc-300">Teacher ID:</span>
+                          <span className="text-gray-700 dark:text-zinc-100">{user.teacherId}</span>
                         </div>
                       )}
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex justify-between mt-auto pt-4 border-t border-gray-100">
+                    <div className="flex justify-between mt-auto pt-4 border-t border-gray-100 dark:border-zinc-700">
                       <button
-                        className="text-sm text-blue-600 hover:text-blue-800 font-medium py-1 px-3 rounded-md hover:bg-blue-50 transition-colors"
+                        className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium py-1 px-3 rounded-md hover:bg-blue-50 dark:hover:bg-zinc-900 transition-colors"
                         onClick={() => handleViewDetails(user)}
                       >
                         View Details
                       </button>
                       {user.addedBy === currentUser?.email && (
-                        <button className="text-sm text-red-600 hover:text-red-800 font-medium py-1 px-3 rounded-md hover:bg-red-50 transition-colors">
+                        <button className="text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 font-medium py-1 px-3 rounded-md hover:bg-red-50 dark:hover:bg-zinc-900 transition-colors">
                           Delete
                         </button>
                       )}
@@ -358,7 +357,7 @@ export default function UserRegistrationManagement() {
           {viewMode === "myCreatedUsers" && !accessGranted && (
             <div className="flex justify-center mt-8">
               <button
-                className="flex items-center gap-2 px-5 py-2.5 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm"
+                className="flex items-center gap-2 px-5 py-2.5 border border-gray-300 dark:border-zinc-700 rounded-md text-gray-700 dark:text-zinc-100 bg-white dark:bg-zinc-900 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors shadow-sm"
                 onClick={handleRequestAccess}
               >
                 <svg
@@ -383,15 +382,15 @@ export default function UserRegistrationManagement() {
 
         {isDialogOpen && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-xl max-w-md w-full">
               <div className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900">Security Verification</h3>
-                <p className="mt-2 text-sm text-gray-500">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-100">Security Verification</h3>
+                <p className="mt-2 text-sm text-gray-500 dark:text-zinc-300">
                   Enter the security PIN to access all users. Contact your administrator if you don't have a PIN.
                 </p>
                 <div className="mt-6 space-y-4">
                   <div className="space-y-2">
-                    <label htmlFor="pin" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="pin" className="block text-sm font-medium text-gray-700 dark:text-zinc-200">
                       Security PIN
                     </label>
                     <input
@@ -400,15 +399,15 @@ export default function UserRegistrationManagement() {
                       placeholder="Enter security PIN"
                       value={securityPin}
                       onChange={(e) => setSecurityPin(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-900 dark:text-zinc-100"
                     />
                     {error && <p className="text-sm text-red-500">{error}</p>}
                   </div>
                 </div>
               </div>
-              <div className="px-6 py-4 bg-gray-50 flex justify-end space-x-3 rounded-b-lg">
+              <div className="px-6 py-4 bg-gray-50 dark:bg-zinc-900 flex justify-end space-x-3 rounded-b-lg">
                 <button
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                  className="px-4 py-2 border border-gray-300 dark:border-zinc-700 rounded-md text-gray-700 dark:text-zinc-100 bg-white dark:bg-zinc-900 hover:bg-gray-50 dark:hover:bg-zinc-800"
                   onClick={() => setIsDialogOpen(false)}
                 >
                   Cancel

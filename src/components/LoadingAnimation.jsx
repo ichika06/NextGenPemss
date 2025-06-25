@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
 import { Loader2, RefreshCw } from "lucide-react";
+import { Bouncy } from 'ldrs/react'
+import 'ldrs/ring'
+import 'ldrs/react/Bouncy.css'
 
 /**
  * LoadingAnimation Component
@@ -91,13 +94,12 @@ export function LoadingAnimation({
     switch (type) {
       case "spinner":
         return (
-          <Loader2
-            className={cn(
-              "animate-spin",
-              sizeClasses[size],
-              variantClasses[variant]
-            )}
-          />
+          // Default values shown
+          <Bouncy
+            size="30"
+            speed="1.20"
+            color={variant === "primary" ? "blue" : variant}
+          />  
         );
       case "pulse":
         return (

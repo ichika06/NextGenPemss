@@ -43,7 +43,7 @@ export default function AdminDashboard() {
     function fetchDashboardData() {
       try {
         // Fetch recent events
-        const eventsQuery = query(collection(db, "events"), orderBy("date", "desc"), limit(3));
+        const eventsQuery = query(collection(db, "events"), orderBy("createdAt", "desc"), limit(3));
         const unsubscribeEvents = onSnapshot(eventsQuery, (eventsSnapshot) => {
           const eventsData = eventsSnapshot.docs.map((doc) => ({
             id: doc.id,
@@ -98,49 +98,49 @@ export default function AdminDashboard() {
   // Main dashboard content
   const DashboardHome = () => (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
+      <h1 className="text-2xl font-bold text-gray-800 dark:text-zinc-100 mb-6">Admin Dashboard</h1>
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6 flex items-center">
-          <div className="rounded-full bg-indigo-100 p-3 mr-4">
-            <Calendar className="h-6 w-6 text-indigo-600" />
+        <div className="bg-white dark:bg-zinc-800 rounded-lg shadow p-6 flex items-center">
+          <div className="rounded-full bg-indigo-100 dark:bg-indigo-900 p-3 mr-4">
+            <Calendar className="h-6 w-6 text-indigo-600 dark:text-indigo-300" />
           </div>
           <div>
-            <p className="text-sm text-gray-600">Total Events</p>
-            <p className="text-2xl font-bold text-gray-800">{stats.totalEvents}</p>
+            <p className="text-sm text-gray-600 dark:text-zinc-300">Total Events</p>
+            <p className="text-2xl font-bold text-gray-800 dark:text-zinc-100">{stats.totalEvents}</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6 flex items-center">
-          <div className="rounded-full bg-green-100 p-3 mr-4">
-            <Users className="h-6 w-6 text-green-600" />
+        <div className="bg-white dark:bg-zinc-800 rounded-lg shadow p-6 flex items-center">
+          <div className="rounded-full bg-green-100 dark:bg-green-900 p-3 mr-4">
+            <Users className="h-6 w-6 text-green-600 dark:text-green-300" />
           </div>
           <div>
-            <p className="text-sm text-gray-600">Total Users</p>
-            <p className="text-2xl font-bold text-gray-800">{stats.totalUsers}</p>
+            <p className="text-sm text-gray-600 dark:text-zinc-300">Total Users</p>
+            <p className="text-2xl font-bold text-gray-800 dark:text-zinc-100">{stats.totalUsers}</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6 flex items-center">
-          <div className="rounded-full bg-purple-100 p-3 mr-4">
-            <BarChart className="h-6 w-6 text-purple-600" />
+        <div className="bg-white dark:bg-zinc-800 rounded-lg shadow p-6 flex items-center">
+          <div className="rounded-full bg-purple-100 dark:bg-purple-900 p-3 mr-4">
+            <BarChart className="h-6 w-6 text-purple-600 dark:text-purple-300" />
           </div>
           <div>
-            <p className="text-sm text-gray-600">Upcoming Events</p>
-            <p className="text-2xl font-bold text-gray-800">{stats.upcomingEvents}</p>
+            <p className="text-sm text-gray-600 dark:text-zinc-300">Upcoming Events</p>
+            <p className="text-2xl font-bold text-gray-800 dark:text-zinc-100">{stats.upcomingEvents}</p>
           </div>
         </div>
       </div>
 
       {/* Recent events */}
-      <div className="bg-white rounded-lg shadow p-6 mb-8">
+      <div className="bg-white dark:bg-zinc-800 rounded-lg shadow p-6 mb-8">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">Recent Events</h2>
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-zinc-100">Recent Events</h2>
         </div>
 
         {loading ? (
-          <div className="text-center py-8">Loading...</div>
+          <div className="text-center py-8 dark:text-zinc-200">Loading...</div>
         ) : events.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {events.map((event) => (
@@ -148,14 +148,14 @@ export default function AdminDashboard() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-500">No events found</div>
+          <div className="text-center py-8 text-gray-500 dark:text-zinc-400">No events found</div>
         )}
       </div>
     </div>
   )
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 dark:bg-zinc-900">
       {/* Pass the sidebar state and setter to the Sidebar component */}
       <Sidebar
         role="admin"

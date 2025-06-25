@@ -527,32 +527,32 @@ export default function MessagingCenter() {
     // Render the message composition form
     const renderComposeForm = () => {
         return (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-gray-200 dark:border-zinc-700 p-6">
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center">
                         <Edit className="h-5 w-5 text-indigo-600 mr-2" />
-                        <h2 className="text-xl font-semibold text-gray-800">Compose Message</h2>
+                        <h2 className="text-xl font-semibold text-gray-800 dark:text-zinc-100">Compose Message</h2>
                     </div>
                     <button
                         onClick={() => {
                             setComposingMessage(false)
                             setErrorMessage("")
                         }}
-                        className="text-gray-400 hover:text-gray-600 flex items-center"
+                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 flex items-center"
                     >
                         <ChevronLeft className="h-5 w-5 mr-1" /> Back
                     </button>
                 </div>
 
                 {errorMessage && (
-                    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center text-red-700">
+                    <div className="mb-4 p-3 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-lg flex items-center text-red-700 dark:text-red-200">
                         <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
                         {errorMessage}
                     </div>
                 )}
 
                 {successMessage && (
-                    <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center text-green-700">
+                    <div className="mb-4 p-3 bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-lg flex items-center text-green-700 dark:text-green-200">
                         <CheckCircle className="h-5 w-5 mr-2 flex-shrink-0" />
                         {successMessage}
                     </div>
@@ -562,13 +562,14 @@ export default function MessagingCenter() {
                     {/* Message Type Selection - Only for teachers */}
                     {currentUserData?.role === "teacher" && (
                         <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Message Type:</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200 mb-2">Message Type:</label>
                             <div className="flex space-x-4">
                                 <label
-                                    className={`flex items-center p-3 rounded-lg border cursor-pointer ${messageType === "individual"
-                                            ? "bg-indigo-50 border-indigo-300 ring-1 ring-indigo-500"
-                                            : "bg-white border-gray-200 hover:bg-gray-50"
-                                        }`}
+                                    className={`flex items-center p-3 rounded-lg border cursor-pointer ${
+                                        messageType === "individual"
+                                            ? "bg-indigo-50 dark:bg-indigo-900 border-indigo-300 dark:border-indigo-500 ring-1 ring-indigo-500"
+                                            : "bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-900"
+                                    }`}
                                 >
                                     <input
                                         type="radio"
@@ -582,14 +583,15 @@ export default function MessagingCenter() {
                                         className="sr-only"
                                     />
                                     <User className="h-5 w-5 text-indigo-600 mr-2" />
-                                    <span>Individual Student</span>
+                                    <span className="dark:text-zinc-100">Individual Student</span>
                                 </label>
 
                                 <label
-                                    className={`flex items-center p-3 rounded-lg border cursor-pointer ${messageType === "group"
-                                            ? "bg-indigo-50 border-indigo-300 ring-1 ring-indigo-500"
-                                            : "bg-white border-gray-200 hover:bg-gray-50"
-                                        }`}
+                                    className={`flex items-center p-3 rounded-lg border cursor-pointer ${
+                                        messageType === "group"
+                                            ? "bg-indigo-50 dark:bg-indigo-900 border-indigo-300 dark:border-indigo-500 ring-1 ring-indigo-500"
+                                            : "bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-900"
+                                    }`}
                                 >
                                     <input
                                         type="radio"
@@ -604,7 +606,7 @@ export default function MessagingCenter() {
                                         className="sr-only"
                                     />
                                     <Users className="h-5 w-5 text-indigo-600 mr-2" />
-                                    <span>Section (Group)</span>
+                                    <span className="dark:text-zinc-100">Section (Group)</span>
                                 </label>
                             </div>
                         </div>
@@ -612,7 +614,7 @@ export default function MessagingCenter() {
 
                     {/* Recipient Selection */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">To:</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200 mb-1">To:</label>
 
                         {/* For teachers sending to a section */}
                         {currentUserData?.role === "teacher" && messageType === "group" && (
@@ -621,7 +623,7 @@ export default function MessagingCenter() {
                                     <select
                                         value={selectedSection}
                                         onChange={(e) => setSelectedSection(e.target.value)}
-                                        className="block w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 appearance-none"
+                                        className="block w-full p-3 border border-gray-300 dark:border-zinc-700 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 dark:bg-zinc-900 dark:text-zinc-100 appearance-none"
                                     >
                                         <option value="">Select a section...</option>
                                         {sections.map((section) => (
@@ -636,18 +638,18 @@ export default function MessagingCenter() {
                                 </div>
 
                                 {loadingSections && (
-                                    <div className="flex items-center text-gray-500 text-sm">
+                                    <div className="flex items-center text-gray-500 dark:text-zinc-400 text-sm">
                                         <RefreshCw className="h-3 w-3 mr-1 animate-spin" /> Loading sections...
                                     </div>
                                 )}
 
                                 {selectedSection && (
-                                    <div className="bg-indigo-50 p-3 rounded-lg border border-indigo-100">
+                                    <div className="bg-indigo-50 dark:bg-indigo-900 p-3 rounded-lg border border-indigo-100 dark:border-indigo-700">
                                         <div className="flex items-center">
                                             <Users className="h-5 w-5 text-indigo-500 mr-2" />
                                             <div>
-                                                <p className="font-medium text-gray-800">Section: {selectedSection}</p>
-                                                <p className="text-xs text-gray-500">All students in this section will receive this message</p>
+                                                <p className="font-medium text-gray-800 dark:text-zinc-100">Section: {selectedSection}</p>
+                                                <p className="text-xs text-gray-500 dark:text-zinc-400">All students in this section will receive this message</p>
                                             </div>
                                         </div>
                                     </div>
@@ -659,9 +661,9 @@ export default function MessagingCenter() {
                         {(messageType === "individual" || currentUserData?.role === "student") && (
                             <>
                                 {selectedRecipient ? (
-                                    <div className="flex items-center justify-between bg-indigo-50 p-3 rounded-lg border border-indigo-100">
+                                    <div className="flex items-center justify-between bg-indigo-50 dark:bg-indigo-900 p-3 rounded-lg border border-indigo-100 dark:border-indigo-700">
                                         <div className="flex items-center">
-                                            <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center mr-3">
+                                            <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center mr-3">
                                                 {selectedRecipient.profileImage ? (
                                                     <img
                                                         src={selectedRecipient.profileImage || "/placeholder.svg"}
@@ -673,18 +675,18 @@ export default function MessagingCenter() {
                                                 )}
                                             </div>
                                             <div>
-                                                <p className="font-medium text-gray-800">{selectedRecipient.name}</p>
-                                                <p className="text-xs text-gray-500">{getUserIdentifier(selectedRecipient)}</p>
+                                                <p className="font-medium text-gray-800 dark:text-zinc-100">{selectedRecipient.name}</p>
+                                                <p className="text-xs text-gray-500 dark:text-zinc-400">{getUserIdentifier(selectedRecipient)}</p>
                                             </div>
                                         </div>
-                                        <button onClick={() => setSelectedRecipient(null)} className="text-gray-400 hover:text-red-500">
+                                        <button onClick={() => setSelectedRecipient(null)} className="text-gray-400 hover:text-red-500 dark:hover:text-red-400">
                                             <X className="h-5 w-5" />
                                         </button>
                                     </div>
                                 ) : (
                                     <div className="space-y-3">
                                         <div className="flex flex-wrap gap-2 mb-2">
-                                            <div className="flex items-center text-sm text-gray-500 mr-2">
+                                            <div className="flex items-center text-sm text-gray-500 dark:text-zinc-400 mr-2">
                                                 <Filter className="h-4 w-4 mr-1" /> Search by:
                                             </div>
 
@@ -692,8 +694,8 @@ export default function MessagingCenter() {
                                                 type="button"
                                                 onClick={() => setSearchBy("name")}
                                                 className={`px-3 py-1 text-sm rounded-full ${searchBy === "name"
-                                                        ? "bg-indigo-100 text-indigo-700"
-                                                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                                        ? "bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200"
+                                                        : "bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-100 hover:bg-gray-200 dark:hover:bg-zinc-900"
                                                     }`}
                                             >
                                                 Name
@@ -703,8 +705,8 @@ export default function MessagingCenter() {
                                                 type="button"
                                                 onClick={() => setSearchBy("email")}
                                                 className={`px-3 py-1 text-sm rounded-full ${searchBy === "email"
-                                                        ? "bg-indigo-100 text-indigo-700"
-                                                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                                        ? "bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200"
+                                                        : "bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-100 hover:bg-gray-200 dark:hover:bg-zinc-900"
                                                     }`}
                                             >
                                                 Email
@@ -714,8 +716,8 @@ export default function MessagingCenter() {
                                                 type="button"
                                                 onClick={() => setSearchBy("id")}
                                                 className={`px-3 py-1 text-sm rounded-full ${searchBy === "id"
-                                                        ? "bg-indigo-100 text-indigo-700"
-                                                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                                        ? "bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200"
+                                                        : "bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-100 hover:bg-gray-200 dark:hover:bg-zinc-900"
                                                     }`}
                                             >
                                                 {currentUserData?.role === "teacher" ? "Student ID" : "Teacher ID"}
@@ -730,7 +732,7 @@ export default function MessagingCenter() {
                                                 onKeyDown={handleKeyDown}
                                                 onFocus={() => recipientSearchTerm.trim().length >= 2 && setShowPredictions(true)}
                                                 placeholder={`Search for ${currentUserData?.role === "teacher" ? "students" : "teachers"} by ${searchBy}...`}
-                                                className="block w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                                                className="block w-full p-3 pl-10 border border-gray-300 dark:border-zinc-700 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 dark:bg-zinc-900 dark:text-zinc-100"
                                             />
                                             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                                 <Search className="h-4 w-4 text-gray-400" />
@@ -742,7 +744,7 @@ export default function MessagingCenter() {
                                             )}
 
                                             {showPredictions && predictedUsers.length > 0 && (
-                                                <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                                <div className="absolute z-10 mt-1 w-full bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                                                     <ul className="py-1">
                                                         {predictedUsers.map((user, index) => {
                                                             const displayField =
@@ -778,10 +780,10 @@ export default function MessagingCenter() {
                                                                         setShowPredictions(false)
                                                                         setRecipientSearchTerm("")
                                                                     }}
-                                                                    className={`px-4 py-2 cursor-pointer flex items-center ${index === highlightedIndex ? "bg-indigo-50" : "hover:bg-gray-50"
+                                                                    className={`px-4 py-2 cursor-pointer flex items-center ${index === highlightedIndex ? "bg-indigo-50 dark:bg-indigo-900" : "hover:bg-gray-50 dark:hover:bg-zinc-900"
                                                                         }`}
                                                                 >
-                                                                    <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3 flex-shrink-0">
+                                                                    <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center mr-3 flex-shrink-0">
                                                                         {user.profileImage ? (
                                                                             <img
                                                                                 src={user.profileImage || "/placeholder.svg"}
@@ -793,14 +795,14 @@ export default function MessagingCenter() {
                                                                         )}
                                                                     </div>
                                                                     <div className="overflow-hidden">
-                                                                        <p className="font-medium text-gray-800 truncate">{user.name}</p>
-                                                                        <p className="text-xs text-gray-500 truncate">
+                                                                        <p className="font-medium text-gray-800 dark:text-zinc-100 truncate">{user.name}</p>
+                                                                        <p className="text-xs text-gray-500 dark:text-zinc-400 truncate">
                                                                             {searchBy === "name" ? (
                                                                                 getUserIdentifier(user)
                                                                             ) : (
                                                                                 <>
                                                                                     {beforeMatch}
-                                                                                    <span className="font-bold text-indigo-600">{match}</span>
+                                                                                    <span className="font-bold text-indigo-600 dark:text-indigo-300">{match}</span>
                                                                                     {afterMatch}
                                                                                 </>
                                                                             )}
@@ -815,15 +817,15 @@ export default function MessagingCenter() {
                                         </div>
 
                                         {recipients.length > 0 && (
-                                            <div className="bg-white border border-gray-200 rounded-lg shadow-sm max-h-60 overflow-y-auto">
-                                                <ul className="divide-y divide-gray-100">
+                                            <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-sm max-h-60 overflow-y-auto">
+                                                <ul className="divide-y divide-gray-100 dark:divide-zinc-700">
                                                     {recipients.map((recipient) => (
                                                         <li
                                                             key={recipient.uid}
                                                             onClick={() => setSelectedRecipient(recipient)}
-                                                            className="flex items-center p-3 hover:bg-gray-50 cursor-pointer"
+                                                            className="flex items-center p-3 hover:bg-gray-50 dark:hover:bg-zinc-900 cursor-pointer"
                                                         >
-                                                            <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center mr-3">
+                                                            <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center mr-3">
                                                                 {recipient.profileImage ? (
                                                                     <img
                                                                         src={recipient.profileImage || "/placeholder.svg"}
@@ -835,10 +837,10 @@ export default function MessagingCenter() {
                                                                 )}
                                                             </div>
                                                             <div>
-                                                                <p className="font-medium text-gray-800">{recipient.name}</p>
-                                                                <div className="flex items-center text-xs text-gray-500">
+                                                                <p className="font-medium text-gray-800 dark:text-zinc-100">{recipient.name}</p>
+                                                                <div className="flex items-center text-xs text-gray-500 dark:text-zinc-400">
                                                                     <span className="mr-2">{recipient.email}</span>
-                                                                    <span className="bg-gray-100 px-2 py-0.5 rounded-full">
+                                                                    <span className="bg-gray-100 dark:bg-zinc-900 px-2 py-0.5 rounded-full">
                                                                         {getUserIdentifier(recipient)}
                                                                     </span>
                                                                 </div>
@@ -850,7 +852,7 @@ export default function MessagingCenter() {
                                         )}
 
                                         {recipientSearchTerm && recipients.length === 0 && !searchingRecipients && (
-                                            <div className="text-sm text-gray-500 p-2">No recipients found. Try a different search term.</div>
+                                            <div className="text-sm text-gray-500 dark:text-zinc-400 p-2">No recipients found. Try a different search term.</div>
                                         )}
                                     </div>
                                 )}
@@ -859,24 +861,24 @@ export default function MessagingCenter() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Subject:</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200 mb-1">Subject:</label>
                         <input
                             type="text"
                             value={messageSubject}
                             onChange={(e) => setMessageSubject(e.target.value)}
                             placeholder="Enter subject"
-                            className="block w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                            className="block w-full p-3 border border-gray-300 dark:border-zinc-700 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 dark:bg-zinc-900 dark:text-zinc-100"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Message:</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200 mb-1">Message:</label>
                         <textarea
                             value={messageText}
                             onChange={(e) => setMessageText(e.target.value)}
                             placeholder="Enter your message here..."
                             rows={6}
-                            className="block w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                            className="block w-full p-3 border border-gray-300 dark:border-zinc-700 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 dark:bg-zinc-900 dark:text-zinc-100"
                         />
                     </div>
 
@@ -889,13 +891,14 @@ export default function MessagingCenter() {
                                 (messageType === "individual" && !selectedRecipient) ||
                                 (messageType === "group" && !selectedSection)
                             }
-                            className={`inline-flex items-center px-4 py-2 rounded-lg text-white ${!messageText.trim() ||
-                                    !messageSubject.trim() ||
-                                    (messageType === "individual" && !selectedRecipient) ||
-                                    (messageType === "group" && !selectedSection)
-                                    ? "bg-gray-300 cursor-not-allowed"
+                            className={`inline-flex items-center px-4 py-2 rounded-lg text-white ${
+                                !messageText.trim() ||
+                                !messageSubject.trim() ||
+                                (messageType === "individual" && !selectedRecipient) ||
+                                (messageType === "group" && !selectedSection)
+                                    ? "bg-gray-300 dark:bg-zinc-700 cursor-not-allowed"
                                     : "bg-indigo-600 hover:bg-indigo-700"
-                                }`}
+                            }`}
                         >
                             <Send className="h-4 w-4 mr-2" /> Send Message
                         </button>
@@ -908,22 +911,22 @@ export default function MessagingCenter() {
     // Render the message viewing interface
     const renderMessageView = () => {
         return (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-                <div className="p-6 border-b border-gray-200">
+            <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-gray-200 dark:border-zinc-700">
+                <div className="p-6 border-b border-gray-200 dark:border-zinc-700">
                     <div className="flex items-center justify-between mb-4">
                         <button
                             onClick={() => setViewingMessage(null)}
-                            className="flex items-center text-gray-500 hover:text-indigo-600"
+                            className="flex items-center text-gray-500 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-300"
                         >
                             <ChevronLeft className="h-5 w-5 mr-1" /> Back to {activeTab}
                         </button>
                     </div>
 
-                    <h1 className="text-xl font-bold text-gray-800 mb-3">{viewingMessage.subject}</h1>
+                    <h1 className="text-xl font-bold text-gray-800 dark:text-zinc-100 mb-3">{viewingMessage.subject}</h1>
 
                     <div className="flex items-start space-x-3 mb-6">
                         <div className="flex-shrink-0">
-                            <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                            <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center">
                                 {viewingMessage.senderProfileImage ? (
                                     <img
                                         src={viewingMessage.senderProfileImage || "/placeholder.svg"}
@@ -936,13 +939,13 @@ export default function MessagingCenter() {
                             </div>
                         </div>
                         <div>
-                            <p className="font-medium text-gray-800">
+                            <p className="font-medium text-gray-800 dark:text-zinc-100">
                                 {viewingMessage.senderName}
-                                <span className="text-sm font-normal text-gray-500 ml-2">
+                                <span className="text-sm font-normal text-gray-500 dark:text-zinc-400 ml-2">
                                     ({viewingMessage.senderRole === "student" ? "Student" : "Teacher"})
                                 </span>
                             </p>
-                            <p className="text-sm text-gray-500">To: {viewingMessage.recipientName}</p>
+                            <p className="text-sm text-gray-500 dark:text-zinc-400">To: {viewingMessage.recipientName}</p>
                             <p className="text-xs text-gray-400 mt-1">
                                 {viewingMessage.sentAt ? formatTimestamp(viewingMessage.sentAt) : "Just now"}
                             </p>
@@ -952,7 +955,7 @@ export default function MessagingCenter() {
 
                 <div className="p-6">
                     <div className="prose max-w-none">
-                        <p className="whitespace-pre-wrap text-gray-700">{viewingMessage.message}</p>
+                        <p className="whitespace-pre-wrap text-gray-700 dark:text-zinc-100">{viewingMessage.message}</p>
                     </div>
 
                     {viewingMessage.senderId !== currentUser.uid && (
@@ -985,7 +988,7 @@ export default function MessagingCenter() {
             return (
                 <div className="flex flex-col items-center justify-center py-12">
                     <RefreshCw className="h-8 w-8 text-indigo-500 animate-spin mb-4" />
-                    <p className="text-gray-500">Loading messages...</p>
+                    <p className="text-gray-500 dark:text-zinc-400">Loading messages...</p>
                 </div>
             )
         }
@@ -993,9 +996,9 @@ export default function MessagingCenter() {
         if (filteredMessages.length === 0) {
             return (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <Mail className="h-12 w-12 text-gray-300 mb-4" />
-                    <h3 className="text-lg font-medium text-gray-700 mb-1">No messages found</h3>
-                    <p className="text-gray-500 max-w-md">
+                    <Mail className="h-12 w-12 text-gray-300 dark:text-zinc-600 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-700 dark:text-zinc-100 mb-1">No messages found</h3>
+                    <p className="text-gray-500 dark:text-zinc-400 max-w-md">
                         {activeTab === "inbox"
                             ? "Your inbox is empty. Messages from teachers and students will appear here."
                             : "You haven't sent any messages yet."}
@@ -1005,18 +1008,18 @@ export default function MessagingCenter() {
         }
 
         return (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-                <ul className="divide-y divide-gray-200">
+            <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-gray-200 dark:border-zinc-700">
+                <ul className="divide-y divide-gray-200 dark:divide-zinc-700">
                     {filteredMessages.map((message) => (
                         <li
                             key={message.id}
                             onClick={() => handleViewMessage(message)}
-                            className={`p-4 sm:px-6 hover:bg-gray-50 cursor-pointer transition-colors ${!message.read && message.recipientId === currentUser.uid ? "bg-indigo-50" : ""
+                            className={`p-4 sm:px-6 hover:bg-gray-50 dark:hover:bg-zinc-900 cursor-pointer transition-colors ${!message.read && message.recipientId === currentUser.uid ? "bg-indigo-50 dark:bg-indigo-900" : ""
                                 }`}
                         >
                             <div className="flex items-center space-x-4">
                                 <div className="flex-shrink-0">
-                                    <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                                    <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center">
                                         {activeTab === "inbox" ? (
                                             message.senderProfileImage ? (
                                                 <img
@@ -1041,24 +1044,24 @@ export default function MessagingCenter() {
                                 <div className="min-w-0 flex-1">
                                     <div className="flex items-center justify-between">
                                         <p
-                                            className={`text-sm font-medium ${!message.read && message.recipientId === currentUser.uid ? "text-indigo-700" : "text-gray-900"
+                                            className={`text-sm font-medium ${!message.read && message.recipientId === currentUser.uid ? "text-indigo-700 dark:text-indigo-200" : "text-gray-900 dark:text-zinc-100"
                                                 }`}
                                         >
                                             {activeTab === "inbox" ? message.senderName : message.recipientName}
                                         </p>
-                                        <p className="text-xs text-gray-500">
+                                        <p className="text-xs text-gray-500 dark:text-zinc-400">
                                             {message.sentAt ? formatTimestamp(message.sentAt) : "Just now"}
                                         </p>
                                     </div>
                                     <p
                                         className={`text-sm ${!message.read && message.recipientId === currentUser.uid
-                                                ? "font-medium text-gray-900"
-                                                : "text-gray-700"
+                                                ? "font-medium text-gray-900 dark:text-zinc-100"
+                                                : "text-gray-700 dark:text-zinc-300"
                                             }`}
                                     >
                                         {message.subject}
                                     </p>
-                                    <p className="text-sm text-gray-500 truncate mt-1">{message.message}</p>
+                                    <p className="text-sm text-gray-500 dark:text-zinc-400 truncate mt-1">{message.message}</p>
                                 </div>
                             </div>
                         </li>
@@ -1069,9 +1072,9 @@ export default function MessagingCenter() {
     }
 
     return (
-        <div className="p-4 sm:p-6 lg:p-8">
+        <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 dark:bg-zinc-900 min-h-screen">
             {successMessage && (
-                <div className="mb-6 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center text-green-700">
+                <div className="mb-6 p-3 bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-lg flex items-center text-green-700 dark:text-green-200">
                     <CheckCircle className="h-5 w-5 mr-2 flex-shrink-0" />
                     {successMessage}
                 </div>
@@ -1080,7 +1083,7 @@ export default function MessagingCenter() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
                 <div className="flex items-center">
                     <MessageSquare className="h-6 w-6 text-indigo-600 mr-3" />
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Messages</h1>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-zinc-100">Messages</h1>
                 </div>
 
                 {!composingMessage && !viewingMessage && (
@@ -1100,14 +1103,14 @@ export default function MessagingCenter() {
                     <div className="flex flex-wrap gap-2 mb-4">
                         <button
                             onClick={() => setActiveTab("inbox")}
-                            className={`inline-flex items-center px-4 py-2 rounded-lg ${activeTab === "inbox" ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                            className={`inline-flex items-center px-4 py-2 rounded-lg ${activeTab === "inbox" ? "bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200" : "bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-100 hover:bg-gray-200 dark:hover:bg-zinc-900"
                                 }`}
                         >
                             <Inbox className="h-4 w-4 mr-2" /> Inbox
                         </button>
                         <button
                             onClick={() => setActiveTab("sent")}
-                            className={`inline-flex items-center px-4 py-2 rounded-lg ${activeTab === "sent" ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                            className={`inline-flex items-center px-4 py-2 rounded-lg ${activeTab === "sent" ? "bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200" : "bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-100 hover:bg-gray-200 dark:hover:bg-zinc-900"
                                 }`}
                         >
                             <ScrollText className="h-4 w-4 mr-2" /> Sent
@@ -1120,7 +1123,7 @@ export default function MessagingCenter() {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             placeholder="Search messages..."
-                            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                            className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 dark:bg-zinc-900 dark:text-zinc-100"
                         />
                         <div className="absolute inset-y-0 left-0 flex items-center pl-3">
                             <Search className="h-4 w-4 text-gray-400" />

@@ -175,15 +175,15 @@ const DeleteUserAccount = () => {
 
   if (!hasDeletePermission) {
     return (
-      <div className="max-w-md mx-auto bg-white rounded-lg shadow-md">
+      <div className="max-w-md mx-auto bg-white dark:bg-zinc-800 rounded-lg shadow-md">
         <div className="pt-6 pb-6 px-6">
           <div className="text-center space-y-4">
-            <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-              <XCircle className="h-6 w-6 text-red-600" />
+            <div className="mx-auto w-12 h-12 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
+              <XCircle className="h-6 w-6 text-red-600 dark:text-red-200" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Access Denied</h3>
-              <p className="text-sm text-gray-500 mt-1">You don't have permission to delete user accounts.</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-100">Access Denied</h3>
+              <p className="text-sm text-gray-500 dark:text-zinc-300 mt-1">You don't have permission to delete user accounts.</p>
             </div>
           </div>
         </div>
@@ -194,20 +194,20 @@ const DeleteUserAccount = () => {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Main Card */}
-      <div className="bg-white rounded-lg shadow-md">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-            <Trash2 className="h-5 w-5 text-red-600" />
+      <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-md">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-zinc-700">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-zinc-100 flex items-center gap-2">
+            <Trash2 className="h-5 w-5 text-red-600 dark:text-red-200" />
             Delete User Account
           </h2>
-          <p className="text-sm text-gray-500 mt-1">Search for a user and permanently delete their account from the system.</p>
+          <p className="text-sm text-gray-500 dark:text-zinc-300 mt-1">Search for a user and permanently delete their account from the system.</p>
         </div>
         <div className="p-6 space-y-6">
           {/* Warning Alert */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+          <div className="bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded-md p-4">
             <div className="flex items-center">
-              <AlertTriangle className="h-4 w-4 text-yellow-600 mr-2" />
-              <div className="text-sm text-yellow-800">
+              <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-200 mr-2" />
+              <div className="text-sm text-yellow-800 dark:text-yellow-100">
                 <strong>Warning:</strong> This action cannot be undone. All user data will be permanently deleted.
               </div>
             </div>
@@ -215,7 +215,7 @@ const DeleteUserAccount = () => {
 
           {/* Search Section */}
           <div className="space-y-3">
-            <label htmlFor="userId" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="userId" className="block text-sm font-medium text-gray-700 dark:text-zinc-200">
               User ID (Student ID, Teacher ID, Employee ID, Admin ID, or UID)
             </label>
             <div className="flex gap-3">
@@ -226,12 +226,12 @@ const DeleteUserAccount = () => {
                 onChange={(e) => setUserId(e.target.value)}
                 placeholder="Enter user ID (e.g., UA202400217, 20161589)"
                 disabled={searching || loading}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-900 dark:text-zinc-100 disabled:bg-gray-50 dark:disabled:bg-zinc-800 disabled:cursor-not-allowed"
               />
               <button
                 onClick={handleSearchUser}
                 disabled={searching || loading}
-                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-4 py-2 bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-zinc-100 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 <Search className="h-4 w-4" />
                 {searching ? "Searching..." : "Search"}
@@ -243,15 +243,15 @@ const DeleteUserAccount = () => {
           {message && (
             <div className={`rounded-md p-4 ${
               messageType === "error" 
-                ? "bg-red-50 border border-red-200" 
-                : "bg-blue-50 border border-blue-200"
+                ? "bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700" 
+                : "bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700"
             }`}>
               <div className="flex items-center gap-2">
-                {messageType === "success" && <CheckCircle className="h-4 w-4 text-green-600" />}
-                {messageType === "error" && <XCircle className="h-4 w-4 text-red-600" />}
-                {messageType === "warning" && <AlertTriangle className="h-4 w-4 text-yellow-600" />}
+                {messageType === "success" && <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-200" />}
+                {messageType === "error" && <XCircle className="h-4 w-4 text-red-600 dark:text-red-200" />}
+                {messageType === "warning" && <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-200" />}
                 <div className={`text-sm ${
-                  messageType === "error" ? "text-red-800" : "text-blue-800"
+                  messageType === "error" ? "text-red-800 dark:text-red-200" : "text-blue-800 dark:text-blue-200"
                 }`}>
                   {message}
                 </div>
@@ -263,21 +263,21 @@ const DeleteUserAccount = () => {
 
       {/* User Details Card */}
       {userToDelete && !deletionResult && (
-        <div className="bg-white rounded-lg shadow-md">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+        <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-md">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-zinc-700">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-100 flex items-center gap-2">
               <User className="h-5 w-5" />
               User Details
             </h3>
           </div>
           <div className="p-6 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-gray-100 dark:bg-zinc-900 rounded-full flex items-center justify-center">
                 {getRoleIcon(userToDelete.role)}
               </div>
               <div className="flex-1">
-                <h4 className="font-semibold text-lg">{userToDelete.name}</h4>
-                <div className="flex items-center gap-2 text-sm text-gray-500">
+                <h4 className="font-semibold text-lg dark:text-zinc-100">{userToDelete.name}</h4>
+                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-zinc-300">
                   <Mail className="h-3 w-3" />
                   {userToDelete.email}
                 </div>
@@ -287,7 +287,7 @@ const DeleteUserAccount = () => {
               </span>
             </div>
 
-            <div className="border-t border-gray-200 pt-4"></div>
+            <div className="border-t border-gray-200 dark:border-zinc-700 pt-4"></div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               {userToDelete.studentId && (
@@ -326,10 +326,10 @@ const DeleteUserAccount = () => {
               </div>
             </div>
 
-            <div className="border-t border-gray-200 pt-4"></div>
+            <div className="border-t border-gray-200 dark:border-zinc-700 pt-4"></div>
 
             <div className="space-y-3">
-              <h4 className="font-medium">Deletion Options</h4>
+              <h4 className="font-medium dark:text-zinc-100">Deletion Options</h4>
               <div className="space-y-2">
                 <label className="flex items-center space-x-2">
                   <input
@@ -341,9 +341,9 @@ const DeleteUserAccount = () => {
                         deleteFromDatabase: e.target.checked,
                       }))
                     }
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="rounded border-gray-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500 dark:bg-zinc-900"
                   />
-                  <span className="text-sm">Delete from database</span>
+                  <span className="text-sm dark:text-zinc-100">Delete from database</span>
                 </label>
                 <label className="flex items-center space-x-2">
                   <input
@@ -355,9 +355,9 @@ const DeleteUserAccount = () => {
                         deleteFromAuth: e.target.checked,
                       }))
                     }
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="rounded border-gray-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500 dark:bg-zinc-900"
                   />
-                  <span className="text-sm">Delete from Firebase Authentication</span>
+                  <span className="text-sm dark:text-zinc-100">Delete from Firebase Authentication</span>
                 </label>
                 <label className="flex items-center space-x-2">
                   <input
@@ -369,9 +369,9 @@ const DeleteUserAccount = () => {
                         sendNotificationEmail: e.target.checked,
                       }))
                     }
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="rounded border-gray-300 dark:border-zinc-700 text-blue-600 focus:ring-blue-500 dark:bg-zinc-900"
                   />
-                  <span className="text-sm">Send notification email to user</span>
+                  <span className="text-sm dark:text-zinc-100">Send notification email to user</span>
                 </label>
               </div>
             </div>
@@ -390,7 +390,7 @@ const DeleteUserAccount = () => {
                   setUserId("")
                   setMessage("")
                 }}
-                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="px-4 py-2 bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-zinc-100 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 Cancel
               </button>
@@ -401,17 +401,17 @@ const DeleteUserAccount = () => {
 
       {/* Deletion Result Card */}
       {deletionResult && (
-        <div className="bg-white rounded-lg shadow-md">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
+        <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-md">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-zinc-700">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-100 flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-200" />
               Deletion Complete
             </h3>
           </div>
           <div className="p-6 space-y-4">
-            <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-              <h4 className="font-medium text-green-800 mb-2">Successfully Processed</h4>
-              <div className="text-sm text-green-700 space-y-1">
+            <div className="bg-green-50 dark:bg-green-900 p-4 rounded-lg border border-green-200 dark:border-green-700">
+              <h4 className="font-medium text-green-800 dark:text-green-100 mb-2">Successfully Processed</h4>
+              <div className="text-sm text-green-700 dark:text-green-200 space-y-1">
                 <div>
                   <strong>User:</strong> {deletionResult.user.name}
                 </div>
@@ -425,11 +425,11 @@ const DeleteUserAccount = () => {
             </div>
 
             <div className="space-y-3">
-              <h4 className="font-medium">Deletion Results</h4>
+              <h4 className="font-medium dark:text-zinc-100">Deletion Results</h4>
               <div className="space-y-2">
                 {deletionResult.options.deleteFromDatabase && (
                   <div className="flex items-center gap-2 text-sm">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-200" />
                     Database record deleted
                   </div>
                 )}
@@ -437,12 +437,12 @@ const DeleteUserAccount = () => {
                   <div className="flex items-center gap-2 text-sm">
                     {deletionResult.results.auth?.success ? (
                       <>
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-200" />
                         Firebase Authentication account deleted
                       </>
                     ) : (
                       <>
-                        <XCircle className="h-4 w-4 text-red-600" />
+                        <XCircle className="h-4 w-4 text-red-600 dark:text-red-200" />
                         Firebase Authentication deletion failed
                       </>
                     )}
@@ -450,7 +450,7 @@ const DeleteUserAccount = () => {
                 )}
                 {deletionResult.options.sendNotificationEmail && (
                   <div className="flex items-center gap-2 text-sm">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-200" />
                     Notification email sent
                   </div>
                 )}
@@ -469,19 +469,19 @@ const DeleteUserAccount = () => {
 
       {/* Confirmation Modal */}
       {showConfirmation && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-zinc-900 dark:bg-opacity-80 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-zinc-800">
             <div className="mt-3">
               <div className="flex items-center gap-2 mb-4">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
-                <h3 className="text-lg font-medium text-gray-900">Confirm Account Deletion</h3>
+                <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-200" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-zinc-100">Confirm Account Deletion</h3>
               </div>
-              <p className="text-sm text-gray-500 mb-4">This action cannot be undone. Please review the details carefully.</p>
+              <p className="text-sm text-gray-500 dark:text-zinc-300 mb-4">This action cannot be undone. Please review the details carefully.</p>
 
               {userToDelete && (
                 <div className="space-y-4">
-                  <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                    <div className="text-sm space-y-1">
+                  <div className="bg-red-50 dark:bg-red-900 p-4 rounded-lg border border-red-200 dark:border-red-700">
+                    <div className="text-sm space-y-1 text-red-800 dark:text-red-200">
                       <div>
                         <strong>Name:</strong> {userToDelete.name}
                       </div>
@@ -495,7 +495,7 @@ const DeleteUserAccount = () => {
                   </div>
 
                   <div>
-                    <label htmlFor="confirmation" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="confirmation" className="block text-sm font-medium text-gray-700 dark:text-zinc-200 mb-1">
                       Type "DELETE" to confirm:
                     </label>
                     <input
@@ -505,7 +505,7 @@ const DeleteUserAccount = () => {
                       onChange={(e) => setConfirmationInput(e.target.value)}
                       placeholder="Type DELETE here"
                       disabled={loading}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-50"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 dark:bg-zinc-900 dark:text-zinc-100 disabled:bg-gray-50 dark:disabled:bg-zinc-800"
                     />
                   </div>
                 </div>
@@ -515,7 +515,7 @@ const DeleteUserAccount = () => {
                 <button
                   onClick={() => setShowConfirmation(false)}
                   disabled={loading}
-                  className="flex-1 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-zinc-100 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
                 >
                   Cancel
                 </button>

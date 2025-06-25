@@ -84,9 +84,9 @@ export default function UserDetailsModal({ user, isOpen, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-      <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden border border-gray-100 animate-fadeIn">
+      <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden border border-gray-100 dark:border-zinc-700 animate-fadeIn">
         {/* Header with gradient background */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 flex justify-between items-center">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-indigo-700 dark:to-gray-800 text-white p-6 flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <User className="h-6 w-6" />
             <h3 className="text-xl font-bold">User Details</h3>
@@ -102,8 +102,8 @@ export default function UserDetailsModal({ user, isOpen, onClose }) {
 
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
           {/* User header with image - Enhanced with card style */}
-          <div className="flex flex-col sm:flex-row items-center bg-blue-50 p-5 rounded-xl mb-6 border border-blue-100">
-            <div className="h-24 w-24 rounded-full overflow-hidden bg-white border-4 border-white shadow-md mb-4 sm:mb-0 sm:mr-6">
+          <div className="flex flex-col sm:flex-row items-center bg-blue-50 dark:bg-zinc-900 p-5 rounded-xl mb-6 border border-blue-100 dark:border-zinc-700">
+            <div className="h-24 w-24 rounded-full overflow-hidden bg-white dark:bg-zinc-800 border-4 border-white dark:border-zinc-700 shadow-md mb-4 sm:mb-0 sm:mr-6">
               <img
                 src={user.profileImage || "/placeholder.svg"}
                 alt={user.name}
@@ -111,12 +111,12 @@ export default function UserDetailsModal({ user, isOpen, onClose }) {
               />
             </div>
             <div className="text-center sm:text-left">
-              <h4 className="text-2xl font-bold text-gray-800">{user.name}</h4>
-              <div className="flex items-center justify-center sm:justify-start mt-1 text-blue-700">
+              <h4 className="text-2xl font-bold text-gray-800 dark:text-zinc-100">{user.name}</h4>
+              <div className="flex items-center justify-center sm:justify-start mt-1 text-blue-700 dark:text-indigo-300">
                 <Shield className="h-4 w-4 mr-1.5" />
                 <p className="font-medium capitalize">{user.role || "No role assigned"}</p>
               </div>
-              <div className="flex items-center justify-center sm:justify-start mt-2 text-gray-500">
+              <div className="flex items-center justify-center sm:justify-start mt-2 text-gray-500 dark:text-zinc-300">
                 <Mail className="h-4 w-4 mr-1.5" />
                 <p>{user.email || "No email available"}</p>
               </div>
@@ -126,54 +126,54 @@ export default function UserDetailsModal({ user, isOpen, onClose }) {
           {/* Details grid with enhanced styling and icons */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Personal Information */}
-            <div className="bg-gray-50 rounded-xl p-5 border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center mb-4 text-blue-700">
+            <div className="bg-gray-50 dark:bg-zinc-900 rounded-xl p-5 border border-gray-100 dark:border-zinc-700 hover:shadow-md transition-shadow">
+              <div className="flex items-center mb-4 text-blue-700 dark:text-indigo-300">
                 <User className="h-5 w-5 mr-2" />
                 <h5 className="font-semibold">Personal Information</h5>
               </div>
               <div className="space-y-4">
                 <div className="flex items-start">
-                  <div className="bg-blue-100 p-2 rounded-lg mr-3 text-blue-700">
+                  <div className="bg-blue-100 dark:bg-indigo-900 p-2 rounded-lg mr-3 text-blue-700 dark:text-indigo-300">
                     <User className="h-4 w-4" />
                   </div>
                   <div>
-                    <span className="block text-xs text-gray-500">Full Name</span>
-                    <span className="block text-sm font-medium">{user.name || "N/A"}</span>
+                    <span className="block text-xs text-gray-500 dark:text-zinc-400">Full Name</span>
+                    <span className="block text-sm font-medium dark:text-zinc-100">{user.name || "N/A"}</span>
                   </div>
                 </div>
                 <div className="flex items-start">
-                  <div className="bg-blue-100 p-2 rounded-lg mr-3 text-blue-700">
+                  <div className="bg-blue-100 dark:bg-indigo-900 p-2 rounded-lg mr-3 text-blue-700 dark:text-indigo-300">
                     <Mail className="h-4 w-4" />
                   </div>
                   <div>
-                    <span className="block text-xs text-gray-500">Email</span>
-                    <span className="block text-sm font-medium">{user.email || "N/A"}</span>
+                    <span className="block text-xs text-gray-500 dark:text-zinc-400">Email</span>
+                    <span className="block text-sm font-medium dark:text-zinc-100">{user.email || "N/A"}</span>
                   </div>
                 </div>
                 <div className="flex items-start">
-                  <div className="bg-blue-100 p-2 rounded-lg mr-3 text-blue-700">
+                  <div className="bg-blue-100 dark:bg-indigo-900 p-2 rounded-lg mr-3 text-blue-700 dark:text-indigo-300">
                     <Phone className="h-4 w-4" />
                   </div>
                   <div>
-                    <span className="block text-xs text-gray-500">Phone</span>
-                    <span className="block text-sm font-medium">{user.phone || "N/A"}</span>
+                    <span className="block text-xs text-gray-500 dark:text-zinc-400">Phone</span>
+                    <span className="block text-sm font-medium dark:text-zinc-100">{user.phone || "N/A"}</span>
                   </div>
                 </div>
                 <div className="flex items-start">
-                  <div className="bg-blue-100 p-2 rounded-lg mr-3 text-blue-700">
+                  <div className="bg-blue-100 dark:bg-indigo-900 p-2 rounded-lg mr-3 text-blue-700 dark:text-indigo-300">
                     <Key className="h-4 w-4" />
                   </div>
                   <div>
-                    <span className="block text-xs text-gray-500">User ID</span>
-                    <span className="block text-sm font-medium">{user.uid || "N/A"}</span>
+                    <span className="block text-xs text-gray-500 dark:text-zinc-400">User ID</span>
+                    <span className="block text-sm font-medium dark:text-zinc-100">{user.uid || "N/A"}</span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Role-Specific Information */}
-            <div className="bg-gray-50 rounded-xl p-5 border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center mb-4 text-green-700">
+            <div className="bg-gray-50 dark:bg-zinc-900 rounded-xl p-5 border border-gray-100 dark:border-zinc-700 hover:shadow-md transition-shadow">
+              <div className="flex items-center mb-4 text-green-700 dark:text-green-300">
                 <GraduationCap className="h-5 w-5 mr-2" />
                 <h5 className="font-semibold">
                   {user.role === 'student' ? 'Academic Information' : 
@@ -187,12 +187,12 @@ export default function UserDetailsModal({ user, isOpen, onClose }) {
                   const IconComponent = field.icon
                   return (
                     <div key={field.key} className="flex items-start">
-                      <div className="bg-green-100 p-2 rounded-lg mr-3 text-green-700">
+                      <div className="bg-green-100 dark:bg-green-900 p-2 rounded-lg mr-3 text-green-700 dark:text-green-300">
                         <IconComponent className="h-4 w-4" />
                       </div>
                       <div>
-                        <span className="block text-xs text-gray-500">{field.label}</span>
-                        <span className="block text-sm font-medium">
+                        <span className="block text-xs text-gray-500 dark:text-zinc-400">{field.label}</span>
+                        <span className="block text-sm font-medium dark:text-zinc-100">
                           {user[field.key] || "N/A"}
                         </span>
                       </div>
@@ -203,48 +203,48 @@ export default function UserDetailsModal({ user, isOpen, onClose }) {
             </div>
 
             {/* Account Information */}
-            <div className="bg-gray-50 rounded-xl p-5 border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center mb-4 text-purple-700">
+            <div className="bg-gray-50 dark:bg-zinc-900 rounded-xl p-5 border border-gray-100 dark:border-zinc-700 hover:shadow-md transition-shadow">
+              <div className="flex items-center mb-4 text-purple-700 dark:text-purple-300">
                 <Briefcase className="h-5 w-5 mr-2" />
                 <h5 className="font-semibold">Account Information</h5>
               </div>
               <div className="space-y-4">
                 <div className="flex items-start">
-                  <div className="bg-purple-100 p-2 rounded-lg mr-3 text-purple-700">
+                  <div className="bg-purple-100 dark:bg-purple-900 p-2 rounded-lg mr-3 text-purple-700 dark:text-purple-300">
                     <UserPlus className="h-4 w-4" />
                   </div>
                   <div>
-                    <span className="block text-xs text-gray-500">Added By</span>
-                    <span className="block text-sm font-medium">{user.addedby || "N/A"}</span>
+                    <span className="block text-xs text-gray-500 dark:text-zinc-400">Added By</span>
+                    <span className="block text-sm font-medium dark:text-zinc-100">{user.addedby || "N/A"}</span>
                   </div>
                 </div>
                 <div className="flex items-start">
-                  <div className="bg-purple-100 p-2 rounded-lg mr-3 text-purple-700">
+                  <div className="bg-purple-100 dark:bg-purple-900 p-2 rounded-lg mr-3 text-purple-700 dark:text-purple-300">
                     <Calendar className="h-4 w-4" />
                   </div>
                   <div>
-                    <span className="block text-xs text-gray-500">Created At</span>
-                    <span className="block text-sm font-medium">{formatDate(user.createdAt)}</span>
+                    <span className="block text-xs text-gray-500 dark:text-zinc-400">Created At</span>
+                    <span className="block text-sm font-medium dark:text-zinc-100">{formatDate(user.createdAt)}</span>
                   </div>
                 </div>
                 <div className="flex items-start">
-                  <div className="bg-purple-100 p-2 rounded-lg mr-3 text-purple-700">
+                  <div className="bg-purple-100 dark:bg-purple-900 p-2 rounded-lg mr-3 text-purple-700 dark:text-purple-300">
                     <Shield className="h-4 w-4" />
                   </div>
                   <div>
-                    <span className="block text-xs text-gray-500">Role</span>
-                    <span className="block text-sm font-medium capitalize">{user.role || "N/A"}</span>
+                    <span className="block text-xs text-gray-500 dark:text-zinc-400">Role</span>
+                    <span className="block text-sm font-medium capitalize dark:text-zinc-100">{user.role || "N/A"}</span>
                   </div>
                 </div>
                 {user.generatedPassword && (
                   <div className="flex items-start">
-                    <div className="bg-purple-100 p-2 rounded-lg mr-3 text-purple-700">
+                    <div className="bg-purple-100 dark:bg-purple-900 p-2 rounded-lg mr-3 text-purple-700 dark:text-purple-300">
                       <Lock className="h-4 w-4" />
                     </div>
                     <div>
-                      <span className="block text-xs text-gray-500">Generated Password</span>
+                      <span className="block text-xs text-gray-500 dark:text-zinc-400">Generated Password</span>
                       <div className="flex items-center">
-                        <span className="block text-sm font-medium mr-2 font-mono bg-gray-100 px-2 py-1 rounded">
+                        <span className="block text-sm font-medium mr-2 font-mono bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded dark:text-zinc-100">
                           {user.generatedPassword}
                         </span>
                       </div>
@@ -255,28 +255,28 @@ export default function UserDetailsModal({ user, isOpen, onClose }) {
             </div>
 
             {/* System Settings */}
-            <div className="bg-gray-50 rounded-xl p-5 border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center mb-4 text-amber-700">
+            <div className="bg-gray-50 dark:bg-zinc-900 rounded-xl p-5 border border-gray-100 dark:border-zinc-700 hover:shadow-md transition-shadow">
+              <div className="flex items-center mb-4 text-amber-700 dark:text-amber-300">
                 <Settings className="h-5 w-5 mr-2" />
                 <h5 className="font-semibold">System Settings</h5>
               </div>
               <div className="space-y-4">
                 <div className="flex items-start">
-                  <div className="bg-amber-100 p-2 rounded-lg mr-3 text-amber-700">
+                  <div className="bg-amber-100 dark:bg-amber-900 p-2 rounded-lg mr-3 text-amber-700 dark:text-amber-300">
                     <UserCheck className="h-4 w-4" />
                   </div>
                   <div>
-                    <span className="block text-xs text-gray-500">Authentication Completed</span>
+                    <span className="block text-xs text-gray-500 dark:text-zinc-400">Authentication Completed</span>
                     <span className="flex items-center mt-1">
                       {user.authCompleted ? (
                         <>
-                          <CheckCircle className="h-4 w-4 text-green-500 mr-1.5" />
-                          <span className="text-sm font-medium text-green-700">Yes</span>
+                          <CheckCircle className="h-4 w-4 text-green-500 dark:text-green-300 mr-1.5" />
+                          <span className="text-sm font-medium text-green-700 dark:text-green-200">Yes</span>
                         </>
                       ) : (
                         <>
-                          <XCircle className="h-4 w-4 text-red-500 mr-1.5" />
-                          <span className="text-sm font-medium text-red-700">No</span>
+                          <XCircle className="h-4 w-4 text-red-500 dark:text-red-300 mr-1.5" />
+                          <span className="text-sm font-medium text-red-700 dark:text-red-200">No</span>
                         </>
                       )}
                     </span>
@@ -284,28 +284,28 @@ export default function UserDetailsModal({ user, isOpen, onClose }) {
                 </div>
                 {user.notifications && (
                   <div className="flex items-start">
-                    <div className="bg-amber-100 p-2 rounded-lg mr-3 text-amber-700">
+                    <div className="bg-amber-100 dark:bg-amber-900 p-2 rounded-lg mr-3 text-amber-700 dark:text-amber-300">
                       <Bell className="h-4 w-4" />
                     </div>
                     <div>
-                      <span className="block text-xs text-gray-500 mb-2">Notification Preferences</span>
+                      <span className="block text-xs text-gray-500 dark:text-zinc-400 mb-2">Notification Preferences</span>
                       <div className="space-y-2 ml-1">
                         <div className="flex items-center">
                           {user.notifications?.email ? (
-                            <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                            <CheckCircle className="h-4 w-4 text-green-500 dark:text-green-300 mr-2" />
                           ) : (
-                            <XCircle className="h-4 w-4 text-red-500 mr-2" />
+                            <XCircle className="h-4 w-4 text-red-500 dark:text-red-300 mr-2" />
                           )}
-                          <span className="text-sm">Email notifications</span>
+                          <span className="text-sm dark:text-zinc-100">Email notifications</span>
                         </div>
 
                         <div className="flex items-center">
                           {user.notifications?.system ? (
-                            <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                            <CheckCircle className="h-4 w-4 text-green-500 dark:text-green-300 mr-2" />
                           ) : (
-                            <XCircle className="h-4 w-4 text-red-500 mr-2" />
+                            <XCircle className="h-4 w-4 text-red-500 dark:text-red-300 mr-2" />
                           )}
-                          <span className="text-sm">System notifications</span>
+                          <span className="text-sm dark:text-zinc-100">System notifications</span>
                         </div>
                       </div>
                     </div>

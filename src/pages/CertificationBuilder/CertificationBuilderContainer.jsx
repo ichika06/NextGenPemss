@@ -324,15 +324,25 @@ export default function CreativeCertificateBuilder() {
       setBlurredBackgroundImage(null)
     }
   }, [backgroundImage, backgroundProps.blur, backgroundProps.opacity])
-
-  // Function to fetch user events from Firestore
+  
+ // Function to fetch user events from Firestore
   const fetchUserEvents = async () => {
     if (!currentUser?.email) return
 
     setIsLoadingEvents(true)
     try {
       const eventsRef = collection(db, "events")
-      const q = query(eventsRef, where("registrarEmail", "==", currentUser.email))
+      
+      // Check if user is super admin to show all events
+      let q
+      if (currentUserData?.role === "admin" && currentUserData?.accessLevel === "super") {
+        // Super admin sees all events - no filter needed
+        q = query(eventsRef)
+      } else {
+        // Regular users see only their registered events
+        q = query(eventsRef, where("registrarEmail", "==", currentUser.email))
+      }
+      
       const querySnapshot = await getDocs(q)
 
       const events = []
@@ -1775,7 +1785,7 @@ export default function CreativeCertificateBuilder() {
   }
 
   return (
-    <div className="flex flex-col h-full max-w-6xl mx-auto gap-6 p-4">
+    <div className="flex flex-col h-full max-w-6xl mx-auto gap-6 p-4 bg-gray-50 dark:bg-zinc-900 min-h-screen">
       {/* Toolbar Component */}
       <Toolbar
         historyIndex={historyIndex}
@@ -1800,26 +1810,28 @@ export default function CreativeCertificateBuilder() {
 
       {/* Event Details Panel (when event is selected) */}
       {selectedEvent && (
-        <div className="bg-blue-50 p-4 rounded-lg mb-4 border border-blue-200">
-          <h3 className="font-medium text-lg mb-2">Selected Event: {selectedEvent.title}</h3>
+        <div className="bg-blue-50 dark:bg-blue-900 p-4 rounded-lg mb-4 border border-blue-200 dark:border-blue-700">
+          <h3 className="font-medium text-lg text-gray-800 dark:text-zinc-100 mb-2">
+            Selected Event: {selectedEvent.title}
+          </h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-gray-600">Description:</p>
-              <p className="text-sm">{selectedEvent.description}</p>
+              <p className="text-sm text-gray-600 dark:text-zinc-300">Description:</p>
+              <p className="text-sm text-gray-800 dark:text-zinc-100">{selectedEvent.description}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Date & Time:</p>
-              <p className="text-sm">
+              <p className="text-sm text-gray-600 dark:text-zinc-300">Date & Time:</p>
+              <p className="text-sm text-gray-800 dark:text-zinc-100">
                 {selectedEvent.date} at {selectedEvent.time}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Location:</p>
-              <p className="text-sm">{selectedEvent.location}</p>
+              <p className="text-sm text-gray-600 dark:text-zinc-300">Location:</p>
+              <p className="text-sm text-gray-800 dark:text-zinc-100">{selectedEvent.location}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Capacity:</p>
-              <p className="text-sm">
+              <p className="text-sm text-gray-600 dark:text-zinc-300">Capacity:</p>
+              <p className="text-sm text-gray-800 dark:text-zinc-100">
                 {selectedEvent.attendees} / {selectedEvent.capacity}
               </p>
             </div>
@@ -1853,12 +1865,14 @@ export default function CreativeCertificateBuilder() {
       />
 
       {/* Controls Panel */}
-      <div className="w-full bg-gray-100 rounded-lg overflow-hidden">
+      <div className="w-full bg-gray-100 dark:bg-zinc-800 rounded-lg overflow-hidden">
         {/* Tabs */}
-        <div className="flex border-b bg-white">
+        <div className="flex border-b bg-white dark:bg-zinc-900">
           <button
             className={`flex-1 py-3 px-4 text-center ${
-              activeTab === "elements" ? "border-b-2 border-blue-500 font-medium" : ""
+              activeTab === "elements"
+              ? "border-b-2 border-blue-500 font-medium text-gray-900 dark:text-zinc-100"
+              : "text-gray-700 dark:text-zinc-200"
             }`}
             onClick={() => setActiveTab("elements")}
           >
@@ -1866,7 +1880,9 @@ export default function CreativeCertificateBuilder() {
           </button>
           <button
             className={`flex-1 py-3 px-4 text-center ${
-              activeTab === "design" ? "border-b-2 border-blue-500 font-medium" : ""
+              activeTab === "design"
+              ? "border-b-2 border-blue-500 font-medium text-gray-900 dark:text-zinc-100"
+              : "text-gray-700 dark:text-zinc-200"
             }`}
             onClick={() => setActiveTab("design")}
           >
@@ -1874,7 +1890,9 @@ export default function CreativeCertificateBuilder() {
           </button>
           <button
             className={`flex-1 py-3 px-4 text-center ${
-              activeTab === "templates" ? "border-b-2 border-blue-500 font-medium" : ""
+              activeTab === "templates"
+              ? "border-b-2 border-blue-500 font-medium text-gray-900 dark:text-zinc-100"
+              : "text-gray-700 dark:text-zinc-200"
             }`}
             onClick={() => setActiveTab("templates")}
           >
@@ -1963,26 +1981,26 @@ export default function CreativeCertificateBuilder() {
           )}
           {/* Selected Element Properties */}
           {selectedElement && (
-            <div className="mb-6 border-t pt-4">
+            <div className="mb-6 border-t border-gray-200 dark:border-zinc-700 pt-4">
               <div className="flex justify-between items-center mb-2">
-                <h3 className="font-medium">Edit Element</h3>
+                <h3 className="font-medium text-gray-800 dark:text-zinc-100">Edit Element</h3>
                 <div className="flex items-center">
                   <button
-                    className="p-1 text-gray-500 hover:text-gray-700 mr-1"
+                    className="p-1 text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200 mr-1"
                     onClick={() => moveElementLayer(selectedElement, "up")}
                     title="Bring Forward"
                   >
                     <ChevronUp size={16} />
                   </button>
                   <button
-                    className="p-1 text-gray-500 hover:text-gray-700 mr-1"
+                    className="p-1 text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200 mr-1"
                     onClick={() => moveElementLayer(selectedElement, "down")}
                     title="Send Backward"
                   >
                     <ChevronDown size={16} />
                   </button>
                   <button
-                    className="p-1 text-red-500 hover:text-red-700"
+                    className="p-1 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-600"
                     onClick={() => removeElement(selectedElement)}
                     title="Delete"
                   >

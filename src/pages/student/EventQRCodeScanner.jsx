@@ -127,7 +127,7 @@ export default function QRScannerModal({ onRegister, onClose, isOpen }) {
           html5QrCodeScannerRef.current.html5Qrcode.isScanning
         ) {
           // If it's running, stop it before clearing
-          html5QrCodeScannerRef.current.html5Qrcode
+          html5QrCodeScannerRef.current.html5QrCode
             .stop()
             .then(() => {
               html5QrCodeScannerRef.current.clear().catch((error) => {
@@ -420,16 +420,16 @@ export default function QRScannerModal({ onRegister, onClose, isOpen }) {
   ) => {
     try {
       setScanMessage("Updating attendance records...");
-  
+
       // Standardized filename based on event title
       const standardFileName = `${eventData.title.replace(/\s+/g, "_")}_attendees.xlsx`;
-  
+
       // Determine the storage folder based on whether the event is public
       const storageFolder = eventData.isPublic
         ? "public/events"
         : `${currentUserData.uid}/event_data`;
       const standardFilePath = `${storageFolder}/${standardFileName}`;
-  
+
       // Find the attendance sheet document if it exists
       const docsRef = collection(db, "eventDocuments");
       const docsQuery = query(
@@ -438,7 +438,7 @@ export default function QRScannerModal({ onRegister, onClose, isOpen }) {
         where("documentType", "==", "attendeeSheet")
       );
       const docsSnapshot = await getDocs(docsQuery);
-      
+
       // Prepare attendee data
       const attendeeData = {
         name: userData.name,
@@ -447,26 +447,26 @@ export default function QRScannerModal({ onRegister, onClose, isOpen }) {
         status: userData.role || "Attendee",
         notes: `Registered via QR scan on ${new Date(registeredTimestamp).toLocaleString()}`
       };
-  
+
       let workbook;
       let blob;
-  
+
       if (!docsSnapshot.empty) {
         // Get existing document data
         const docData = docsSnapshot.docs[0].data();
         const fileUrl = docData.fileUrl;
-        
+
         try {
           // Download the existing file
           const response = await fetch(fileUrl);
           const fileBlob = await response.blob();
-          
+
           // Read the Excel file
           const data = await fileBlob.arrayBuffer();
           workbook = XLSX.read(data, { type: "array" });
         } catch (err) {
           console.error("Error processing existing Excel file:", err);
-          
+
           // Create a temporary EventAttendanceWorkbook and get the workbook from it
           const attendanceWorkbookResult = await new Promise(resolve => {
             const tempComponent = new EventAttendanceWorkbook({
@@ -475,11 +475,11 @@ export default function QRScannerModal({ onRegister, onClose, isOpen }) {
               showDownloadButton: false,
               initialAttendees: [attendeeData]
             });
-            
+
             // Create the workbook without rendering the component
             tempComponent.handleCreateWorkbook();
           });
-          
+
           workbook = attendanceWorkbookResult.workbook;
         }
       } else {
@@ -491,26 +491,26 @@ export default function QRScannerModal({ onRegister, onClose, isOpen }) {
             showDownloadButton: false,
             initialAttendees: [attendeeData]
           });
-          
+
           // Create the workbook without rendering the component
           tempComponent.handleCreateWorkbook();
         });
-        
+
         workbook = attendanceWorkbookResult.workbook;
       }
-  
+
       // Process workbook to add the attendee if not already added with initialAttendees
       if (!docsSnapshot.empty) {
         const attendeesSheetName = "Event Attendees";
         if (workbook.SheetNames.includes(attendeesSheetName)) {
           const worksheet = workbook.Sheets[attendeesSheetName];
-          
+
           // Convert the sheet to JSON with headers
           const rawData = XLSX.utils.sheet_to_json(worksheet, {
             header: 1,
             defval: "",
           });
-  
+
           // Check if we have at least the header row
           if (rawData.length >= 1) {
             // Check if the user is already registered by finding their email
@@ -521,7 +521,7 @@ export default function QRScannerModal({ onRegister, onClose, isOpen }) {
                 break;
               }
             }
-  
+
             if (existingUserIndex !== -1) {
               // Update existing user data
               rawData[existingUserIndex] = [
@@ -542,31 +542,31 @@ export default function QRScannerModal({ onRegister, onClose, isOpen }) {
               ]);
             }
           }
-          
+
           // Create a new worksheet from the modified rawData
           const newWorksheet = XLSX.utils.aoa_to_sheet(rawData);
           workbook.Sheets[attendeesSheetName] = newWorksheet;
         }
       }
-  
+
       // Convert to array buffer
       const excelBuffer = XLSX.write(workbook, {
         bookType: "xlsx",
         type: "array",
       });
-  
+
       // Convert to Blob
       blob = new Blob([excelBuffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-  
+
       // Upload to Firebase Storage
       const fileRef = ref(storage, standardFilePath);
       await uploadBytes(fileRef, blob);
-  
+
       // Get download URL
       const downloadURL = await getDownloadURL(fileRef);
-  
+
       if (!docsSnapshot.empty) {
         // Update existing document reference
         const docRef = docsSnapshot.docs[0].ref;
@@ -587,7 +587,7 @@ export default function QRScannerModal({ onRegister, onClose, isOpen }) {
           updatedAt: new Date().toISOString(),
         });
       }
-  
+
       // Update the file record in Firebase
       await updateFileRecord(
         eventId,
@@ -598,7 +598,7 @@ export default function QRScannerModal({ onRegister, onClose, isOpen }) {
         eventData.isPublic,
         storageFolder
       );
-  
+
       console.log("Attendance sheet updated successfully");
     } catch (err) {
       console.error("Error updating attendance sheet:", err);
@@ -680,16 +680,16 @@ export default function QRScannerModal({ onRegister, onClose, isOpen }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70">
+      <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-zinc-700">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-zinc-100">
             Event Registration
           </h2>
           <button
             onClick={onClose}
             disabled={processingRegistration}
-            className="text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-50"
+            className="text-gray-500 dark:text-zinc-300 hover:text-gray-700 dark:hover:text-white transition-colors disabled:opacity-50"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
@@ -698,14 +698,14 @@ export default function QRScannerModal({ onRegister, onClose, isOpen }) {
 
         <div className="px-6 py-6">
           {scanStatus === "error" && (
-            <div className="mb-6 p-4 bg-red-50 text-red-800 rounded-md flex items-start gap-3">
+            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900 text-red-800 dark:text-red-200 rounded-md flex items-start gap-3">
               <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-medium">Error scanning QR code</p>
                 <p className="text-sm mt-1">{scanError}</p>
                 <button
                   onClick={handleRetry}
-                  className="mt-3 px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-800 rounded transition-colors"
+                  className="mt-3 px-3 py-1 text-xs bg-red-100 dark:bg-red-800 hover:bg-red-200 dark:hover:bg-red-700 text-red-800 dark:text-red-200 rounded transition-colors"
                 >
                   Try Again
                 </button>
@@ -714,7 +714,7 @@ export default function QRScannerModal({ onRegister, onClose, isOpen }) {
           )}
 
           {scanStatus === "success" && (
-            <div className="mb-6 p-4 bg-green-50 text-green-800 rounded-md flex items-start gap-3">
+            <div className="mb-6 p-4 bg-green-50 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-md flex items-start gap-3">
               <CheckCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-medium">
@@ -738,7 +738,7 @@ export default function QRScannerModal({ onRegister, onClose, isOpen }) {
           {(scanStatus === "idle" || scanStatus === "scanning") &&
             !processingRegistration && (
               <>
-                <p className="text-gray-600 mb-4 text-center">{scanMessage}</p>
+                <p className="text-gray-600 dark:text-zinc-300 mb-4 text-center">{scanMessage}</p>
 
                 <div
                   id="qr-reader"
@@ -747,7 +747,7 @@ export default function QRScannerModal({ onRegister, onClose, isOpen }) {
                   style={{ maxWidth: "100%" }}
                 ></div>
 
-                <p className="text-sm text-gray-500 text-center">
+                <p className="text-sm text-gray-500 dark:text-zinc-400 text-center">
                   Make sure your camera is enabled and the QR code is clearly
                   visible.
                 </p>
@@ -756,15 +756,15 @@ export default function QRScannerModal({ onRegister, onClose, isOpen }) {
 
           {(processingRegistration || scanStatus === "processing") && (
             <div className="flex flex-col items-center justify-center py-6">
-              <Loader2 className="h-8 w-8 text-blue-600 animate-spin mb-3" />
-              <p className="text-gray-700">
+              <Loader2 className="h-8 w-8 text-blue-600 dark:text-blue-400 animate-spin mb-3" />
+              <p className="text-gray-700 dark:text-zinc-100">
                 {scanMessage || "Processing registration..."}
               </p>
             </div>
           )}
         </div>
 
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+        <div className="px-6 py-4 bg-gray-50 dark:bg-zinc-900 border-t border-gray-200 dark:border-zinc-700">
           {scanStatus === "success" ? (
             <button
               onClick={onClose}
@@ -776,7 +776,7 @@ export default function QRScannerModal({ onRegister, onClose, isOpen }) {
             <button
               onClick={onClose}
               disabled={processingRegistration || scanStatus === "processing"}
-              className="w-full py-2 px-4 border border-gray-300 rounded-md text-gray-700 font-medium hover:bg-gray-100 transition-colors disabled:opacity-50"
+              className="w-full py-2 px-4 border border-gray-300 dark:border-zinc-700 rounded-md text-gray-700 dark:text-zinc-100 font-medium hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
             >
               Cancel
             </button>

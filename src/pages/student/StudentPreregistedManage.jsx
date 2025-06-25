@@ -198,17 +198,17 @@ export default function StudentPreRegisteredEvents() {
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-18 py-18">
-        <div className="flex flex-col items-center justify-center p-12 bg-white rounded-xl shadow-lg">
+        <div className="flex flex-col items-center justify-center p-12 bg-white dark:bg-zinc-800 rounded-xl shadow-lg">
           <div className="relative w-16 h-16 mb-6">
-            <div className="absolute inset-0 bg-purple-100 rounded-full animate-ping opacity-75"></div>
-            <div className="relative flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full">
-              <Loader2 className="h-8 w-8 text-purple-600 animate-spin" />
+            <div className="absolute inset-0 bg-purple-100 dark:bg-purple-900 rounded-full animate-ping opacity-75"></div>
+            <div className="relative flex items-center justify-center w-16 h-16 bg-purple-100 dark:bg-purple-900 rounded-full">
+              <Loader2 className="h-8 w-8 text-purple-600 dark:text-purple-300 animate-spin" />
             </div>
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-zinc-100 mb-2">
             Loading Your Events
           </h3>
-          <p className="text-gray-500">
+          <p className="text-gray-500 dark:text-zinc-400">
             Please wait while we fetch your pre-registered events...
           </p>
         </div>
@@ -219,17 +219,17 @@ export default function StudentPreRegisteredEvents() {
   if (error) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-18 py-18">
-        <div className="flex flex-col items-center justify-center p-8 bg-white rounded-xl shadow-lg">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-            <AlertCircle className="h-8 w-8 text-red-500" />
+        <div className="flex flex-col items-center justify-center p-8 bg-white dark:bg-zinc-800 rounded-xl shadow-lg">
+          <div className="w-16 h-16 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mb-4">
+            <AlertCircle className="h-8 w-8 text-red-500 dark:text-red-200" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-zinc-100 mb-2">
             Error Loading Events
           </h3>
-          <p className="text-red-500 mb-4">{error}</p>
+          <p className="text-red-500 dark:text-red-200 mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            className="px-4 py-2 bg-purple-600 dark:bg-purple-800 text-white rounded-lg hover:bg-purple-700 dark:hover:bg-purple-900 transition-colors"
           >
             Try Again
           </button>
@@ -241,20 +241,20 @@ export default function StudentPreRegisteredEvents() {
   if (events.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-18 py-18">
-        <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-          <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CalendarX className="h-10 w-10 text-purple-500" />
+        <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-8 text-center">
+          <div className="w-20 h-20 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CalendarX className="h-10 w-10 text-purple-500 dark:text-purple-300" />
           </div>
-          <h2 className="text-2xl font-bold mb-3 text-gray-900">
+          <h2 className="text-2xl font-bold mb-3 text-gray-900 dark:text-zinc-100">
             No Pre-Registered Events
           </h2>
-          <p className="text-gray-600 mb-6 max-w-md mx-auto">
+          <p className="text-gray-600 dark:text-zinc-300 mb-6 max-w-md mx-auto">
             You haven't pre-registered for any events yet. Browse available
             events to find something that interests you.
           </p>
           <Link
             to="/events"
-            className="inline-flex items-center px-5 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors"
+            className="inline-flex items-center px-5 py-3 bg-purple-600 dark:bg-purple-800 hover:bg-purple-700 dark:hover:bg-purple-900 text-white font-medium rounded-lg transition-colors"
           >
             Browse Events
             <ChevronRight className="ml-1 h-5 w-5" />
@@ -273,19 +273,19 @@ export default function StudentPreRegisteredEvents() {
       <div className="mb-6">
         <button
           onClick={handleBack}
-          className="inline-flex items-center px-4 py-2.5 bg-white border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          className="inline-flex items-center px-4 py-2.5 bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-zinc-100 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
         >
           <ArrowLeft className="h-5 w-5 mr-2" />
           <span>Back to List Events</span>
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8">
-        <div className="border-b border-gray-200 pb-4 mb-6">
-          <h2 className="text-2xl font-bold mb-2 text-gray-900">
+      <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-6 sm:p-8">
+        <div className="border-b border-gray-200 dark:border-zinc-700 pb-4 mb-6">
+          <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-zinc-100">
             Your Pre-Registered Events
           </h2>
-          <p className="text-gray-500">
+          <p className="text-gray-500 dark:text-zinc-400">
             Events you've signed up for but haven't attended yet
           </p>
         </div>
@@ -300,13 +300,13 @@ export default function StudentPreRegisteredEvents() {
                 key={event.id}
                 className={`border rounded-xl p-4 sm:p-6 transition-all ${
                   isPast
-                    ? "border-gray-200 bg-gray-50"
-                    : "border-purple-100 bg-purple-50 hover:shadow-md"
+                    ? "border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-900"
+                    : "border-purple-100 dark:border-purple-900 bg-purple-50 dark:bg-purple-950 hover:shadow-md"
                 }`}
               >
                 <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                   {/* Event Image or Placeholder */}
-                  <div className="lg:w-1/4 h-32 rounded-lg overflow-hidden bg-white border border-gray-200 flex-shrink-0">
+                  <div className="lg:w-1/4 h-32 rounded-lg overflow-hidden bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 flex-shrink-0">
                     {event.eventProfile ? (
                       <img
                         src={event.eventProfile || "/placeholder.svg"}
@@ -314,8 +314,8 @@ export default function StudentPreRegisteredEvents() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-purple-100">
-                        <Calendar className="h-12 w-12 text-purple-300" />
+                      <div className="w-full h-full flex items-center justify-center bg-purple-100 dark:bg-purple-900">
+                        <Calendar className="h-12 w-12 text-purple-300 dark:text-purple-200" />
                       </div>
                     )}
                   </div>
@@ -324,35 +324,35 @@ export default function StudentPreRegisteredEvents() {
                     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                       <div>
                         <div className="flex flex-wrap items-center gap-2 mb-3">
-                          <h3 className="font-semibold text-xl text-gray-900">
+                          <h3 className="font-semibold text-xl text-gray-900 dark:text-zinc-100">
                             <Link
                               to={`/events/${event.id}`}
-                              className="hover:text-purple-700 transition-colors"
+                              className="hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
                             >
                               {event.eventTitle || event.title}
                             </Link>
                           </h3>
 
                           {isPast ? (
-                            <span className="text-xs font-medium bg-gray-200 text-gray-700 px-2 py-1 rounded-full">
+                            <span className="text-xs font-medium bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-200 px-2 py-1 rounded-full">
                               Past Event
                             </span>
                           ) : daysRemaining === 0 ? (
-                            <span className="text-xs font-medium bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                            <span className="text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded-full">
                               Today
                             </span>
                           ) : daysRemaining === 1 ? (
-                            <span className="text-xs font-medium bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+                            <span className="text-xs font-medium bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded-full">
                               Tomorrow
                             </span>
                           ) : daysRemaining && daysRemaining < 7 ? (
-                            <span className="text-xs font-medium bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                            <span className="text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full">
                               In {daysRemaining} days
                             </span>
                           ) : null}
 
                           {event.category && (
-                            <span className="text-xs font-medium bg-purple-100 text-purple-800 px-2 py-1 rounded-full flex items-center">
+                            <span className="text-xs font-medium bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 px-2 py-1 rounded-full flex items-center">
                               <Tag className="h-3 w-3 mr-1" />
                               {event.category}
                             </span>
@@ -360,34 +360,34 @@ export default function StudentPreRegisteredEvents() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-4 text-sm mb-3">
-                          <div className="flex items-center text-gray-700">
-                            <Calendar className="h-4 w-4 mr-2 text-purple-500" />
+                          <div className="flex items-center text-gray-700 dark:text-zinc-200">
+                            <Calendar className="h-4 w-4 mr-2 text-purple-500 dark:text-purple-300" />
                             {formatDate(event.eventDate || event.date)}
                           </div>
-                          <div className="flex items-center text-gray-700">
-                            <Clock className="h-4 w-4 mr-2 text-purple-500" />
+                          <div className="flex items-center text-gray-700 dark:text-zinc-200">
+                            <Clock className="h-4 w-4 mr-2 text-purple-500 dark:text-purple-300" />
                             {event.eventTime || event.time}
                           </div>
-                          <div className="flex items-center text-gray-700 md:col-span-2">
-                            <MapPin className="h-4 w-4 mr-2 text-purple-500" />
+                          <div className="flex items-center text-gray-700 dark:text-zinc-200 md:col-span-2">
+                            <MapPin className="h-4 w-4 mr-2 text-purple-500 dark:text-purple-300" />
                             {event.eventLocation || event.location}
                           </div>
 
                           {event.capacity && (
-                            <div className="flex items-center text-gray-700">
-                              <Users className="h-4 w-4 mr-2 text-purple-500" />
+                            <div className="flex items-center text-gray-700 dark:text-zinc-200">
+                              <Users className="h-4 w-4 mr-2 text-purple-500 dark:text-purple-300" />
                               Capacity: {event.capacity}
                             </div>
                           )}
                         </div>
 
                         {event.description && (
-                          <p className="text-sm text-gray-600 line-clamp-2 mb-2">
+                          <p className="text-sm text-gray-600 dark:text-zinc-300 line-clamp-2 mb-2">
                             {event.description}
                           </p>
                         )}
 
-                        <div className="flex items-center text-xs text-gray-500 mt-1">
+                        <div className="flex items-center text-xs text-gray-500 dark:text-zinc-400 mt-1">
                           <Info className="h-3 w-3 mr-1" />
                           Pre-registered on{" "}
                           {new Date(event.timestamp).toLocaleString()}
@@ -401,8 +401,8 @@ export default function StudentPreRegisteredEvents() {
                             disabled={cancellingId === event.id}
                             className={`p-3 rounded-lg transition-colors ${
                               cancellingId === event.id
-                                ? "bg-red-100 text-red-300 cursor-not-allowed"
-                                : "bg-red-100 text-red-600 hover:bg-red-200"
+                                ? "bg-red-100 dark:bg-red-900 text-red-300 dark:text-red-400 cursor-not-allowed"
+                                : "bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800"
                             }`}
                             title="Cancel pre-registration"
                           >

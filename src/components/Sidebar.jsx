@@ -18,6 +18,7 @@ import {
   Loader
 } from "lucide-react"
 import logo from "../assets/next-gen-pemss-logo.svg"
+import DarkModeToggle from "../components/DarkModeToggle"
 
 // Import UserDataService directly to avoid circular dependencies
 import UserDataService from "../components/reuseRegistration/UserDataService"
@@ -25,7 +26,6 @@ import UserDataService from "../components/reuseRegistration/UserDataService"
 import UserStorageService from "../components/reuseRegistration/UserStorageService"
 // Import the new SidebarNavigation component
 import SidebarNavigation from "./SidebarNavigation"
-import DarkModeToggle from "./DarkModeToggle"
 
 export default function Sidebar({ role, isOpen, setIsOpen }) {
   const { logout, currentUser } = useAuth()
@@ -94,7 +94,7 @@ export default function Sidebar({ role, isOpen, setIsOpen }) {
   const handleLogout = async () => {
     try {
       await logout()
-      navigate("/login")
+      navigate("/landingPage")
     } catch (error) {
       console.error("Failed to log out", error)
     }
@@ -136,10 +136,10 @@ export default function Sidebar({ role, isOpen, setIsOpen }) {
   // User Profile Display Component - Updated with profile image
   const UserProfileDisplay = ({isMobile = false}) => (
     <div className={`flex items-center  ${isMobile ? '' : ''}`}>
-      <div className="flex-shrink-0">
+      <div className="flex-shrink-0 ">
         {loading ? (
           <div className={`${isMobile ? 'h-12 w-12' : 'h-10 w-10'} rounded-full bg-gray-200 flex items-center justify-center`}>
-            <Loader className="h-5 w-5 text-gray-400 animate-spin" />
+            <Loader className="h-5 w-5 text-gray-400 dark:text-gray-500 animate-spin" />
           </div>
         ) : profileImageUrl ? (
           <div className={`${isMobile ? 'h-12 w-12' : 'h-10 w-10'} rounded-full bg-gray-100 overflow-hidden border border-gray-200`}>
@@ -162,7 +162,7 @@ export default function Sidebar({ role, isOpen, setIsOpen }) {
         )}
       </div>
       <div className={`${isMobile ? 'ml-4' : 'ml-3'} overflow-hidden`}>
-        <p className={`${isMobile ? 'text-base' : 'text-sm'} font-medium text-gray-900 truncate`}>
+        <p className={`${isMobile ? 'text-base' : 'text-sm'} font-medium text-gray-900 dark:text-gray-200 truncate`}>
           {loading ? "Loading..." : userData?.name || currentUser?.email || "User"}
         </p>
         <p className={`${isMobile ? 'text-sm' : 'text-xs'} text-gray-500 truncate`}>
@@ -187,21 +187,21 @@ export default function Sidebar({ role, isOpen, setIsOpen }) {
 
       {/* Sidebar for desktop */}
       <div
-        className={`hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:border-r lg:border-gray-200 lg:bg-white lg:shadow-sm z-30`}
+        className={`hidden lg:flex dark:bg-zinc-800 dark:lg:border-gray-600 lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:border-r lg:border-gray-200 lg:bg-white lg:shadow-sm z-30`}
       >
         <div className="flex flex-col h-full">
           {/* Logo and header */}
-          <div className="flex  items-center h-16 px-6 border-b border-gray-200">
+          <div className="flex items-center h-16 px-6 border-b border-gray-200 dark:border-gray-600">
             <Link to={`/${role}`} className="flex items-center space-x-2">
               <div className="text-white p-1.5 rounded">
                 <img src={logo} className="h-8 w-auto rounded" alt="NextGen-Pemss Logo" />
               </div>
-              <span className="text-l font-bold text-gray-900">NextGen-Pemss</span>
+              <span className="text-l font-bold text-gray-900 dark:text-gray-200">NextGen-Pemss</span>
             </Link>
           </div>
 
           {/* User info - Updated */}
-          <div className="px-4 py-4 border-b  border-gray-200">
+          <div className="px-4 py-4 border-b border-gray-200 dark:border-gray-600">
             <UserProfileDisplay />
           </div>
 
@@ -215,7 +215,7 @@ export default function Sidebar({ role, isOpen, setIsOpen }) {
           />
 
           {/* Logout button */}
-          <div className="p-4 border-t border-gray-200 flex flex-row space-x-2">
+          <div className="p-4 border-t border-gray-200 dark:border-gray-600 flex justify-between items-center">
             <button
               onClick={handleLogout}
               className="w-full flex items-center px-4 py-2 text-sm font-medium text-red-600 rounded-md hover:bg-red-50 transition-colors"
@@ -223,17 +223,15 @@ export default function Sidebar({ role, isOpen, setIsOpen }) {
               <LogOut className="mr-3 h-5 w-5" />
               Logout
             </button>
-            {/* Dark Mode Toggle */}
-          
-            <DarkModeToggle />
 
+            <DarkModeToggle />
           </div>
         </div>
       </div>
 
       {/* Mobile sidebar backdrop */}
       <div
-        className={`lg:hidden fixed inset-0 bg-gray-800 bg-opacity-50 backdrop-blur-sm dark:backdrop-blur-none z-30 transition-opacity duration-300 ${
+        className={`lg:hidden fixed inset-0 dark:bg-zinc-900 bg-opacity-50 backdrop-blur-sm z-30 transition-opacity duration-300 ${
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={() => setIsOpen(false)}
@@ -242,7 +240,7 @@ export default function Sidebar({ role, isOpen, setIsOpen }) {
 
       {/* Mobile sidebar */}
       <div
-        className={`lg:hidden fixed inset-y-0 right-0 w-full max-w-xs bg-white shadow-xl z-40 transform transition-transform duration-300 ease-in-out ${
+        className={`lg:hidden fixed inset-y-0 right-0 w-full max-w-xs bg-white dark:bg-zinc-800 shadow-xl z-40 transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -258,23 +256,18 @@ export default function Sidebar({ role, isOpen, setIsOpen }) {
           </div>
 
           {/* Logo and header */}
-          <div className="flex items-center h-20 px-6 border-b border-gray-200">
+          <div className="flex items-center h-20 px-6 border-b border-gray-200 dark:border-gray-600">
             <Link to={`/${role}`} className="flex items-center space-x-2" onClick={() => setIsOpen(false)}>
               <div className="text-white p-1.5 rounded">
                 <img src={logo} className="h-10 w-auto rounded" alt="NextGen-Pemss Logo" />
               </div>
-              <span className="text-xl font-bold text-gray-900">NextGen-Pemss</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-gray-200">NextGen-Pemss</span>
             </Link>
           </div>
 
           {/* User info - Updated for mobile */}
-          <div className="px-6 py-5 border-b border-gray-200 bg-gray-50">
+          <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-800 dark:bg-zinc-800 bg-gray-50">
             <UserProfileDisplay isMobile={true} />
-          </div>
-
-          {/* Dark Mode Toggle */}
-          <div className="px-6 py-3 border-b border-gray-100 flex justify-end">
-            <DarkModeToggle />
           </div>
 
           {/* Navigation - Using the new SidebarNavigation component */}
@@ -287,7 +280,7 @@ export default function Sidebar({ role, isOpen, setIsOpen }) {
           />
 
           {/* Logout button */}
-          <div className="p-6 border-t border-gray-200">
+          <div className="p-4 border-t border-gray-200 dark:border-gray-600 flex justify-between items-center">
             <button
               onClick={handleLogout}
               className="w-full flex items-center justify-center px-4 py-3 text-base font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
@@ -295,6 +288,8 @@ export default function Sidebar({ role, isOpen, setIsOpen }) {
               <LogOut className="mr-3 h-5 w-5" />
               Logout
             </button>
+
+            <DarkModeToggle  />
           </div>
         </div>
       </div>

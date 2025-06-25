@@ -254,18 +254,18 @@ export default function TeacherCreateAttendance() {
 
   return (
     <div className="max-w-7xl mx-auto mt-5 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
-      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-4 sm:mb-6 flex items-center">
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 dark:text-zinc-100 mb-4 sm:mb-6 flex items-center">
         <Users className="mr-2 h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 text-primary" />
         Create Attendance Session
       </h1>
 
       {!attendanceCreated ? (
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
-          <div className="background-primary px-4 sm:px-6 py-3 sm:py-4">
-            <h2 className="text-primary text-base sm:text-lg font-semibold">
+        <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-md overflow-hidden">
+          <div className="background-primary dark:bg-gradient-to-r dark:from-zinc-600 dark:to-gray-800 px-4 sm:px-6 py-3 sm:py-4">
+            <h2 className=" dark:text-zinc-100 text-base sm:text-lg font-semibold">
               New Attendance Session
             </h2>
-            <p className="text-primary-secondary text-xs sm:text-sm">
+            <p className=" dark:text-zinc-300 text-xs sm:text-sm">
               Fill in the details below to create a new attendance session
             </p>
           </div>
@@ -276,12 +276,12 @@ export default function TeacherCreateAttendance() {
               <div className="block sm:hidden">
                 <button
                   type="button"
-                  className="w-full flex justify-between items-center py-3 px-4 bg-gray-50 rounded-lg text-left"
+                  className="w-full flex justify-between items-center py-3 px-4 bg-gray-50 dark:bg-zinc-900 rounded-lg text-left"
                   onClick={() => toggleSection("teacher")}
                 >
                   <div className="flex items-center">
                     <User className="mr-2 h-4 w-4 text-primary" />
-                    <span className="font-semibold text-gray-800">
+                    <span className="font-semibold text-gray-800 dark:text-zinc-100">
                       Teacher Information
                     </span>
                   </div>
@@ -294,11 +294,11 @@ export default function TeacherCreateAttendance() {
                 </button>
 
                 {expandedSection === "teacher" && (
-                  <div className="mt-3 p-4 border border-gray-200 rounded-lg">
+                  <div className="mt-3 p-4 border border-gray-200 dark:border-zinc-700 rounded-lg">
                     <div className="space-y-4">
                       <div>
                         <label
-                          className="text-gray-700 text-xs font-bold mb-1 flex items-center"
+                          className="text-gray-700 dark:text-gray-200 text-xs font-bold mb-1 flex items-center"
                           htmlFor="teacherName-mobile"
                         >
                           <User className="mr-1 h-3 w-3 text-gray-500" />
@@ -307,7 +307,7 @@ export default function TeacherCreateAttendance() {
                         <input
                           type="text"
                           id="teacherName-mobile"
-                          className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
+                          className="shadow-sm border border-gray-300 dark:border-zinc-700 rounded-lg w-full py-2 px-3 text-sm text-gray-700 dark:text-zinc-100 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors dark:bg-zinc-900"
                           value={teacherName}
                           onChange={(e) => setTeacherName(e.target.value)}
                           disabled={currentUserData?.name}
@@ -317,7 +317,7 @@ export default function TeacherCreateAttendance() {
 
                       <div>
                         <label
-                          className="text-gray-700 text-xs font-bold mb-1 flex items-center"
+                          className="text-gray-700 dark:text-gray-200 text-xs font-bold mb-1 flex items-center"
                           htmlFor="teacherEmail-mobile"
                         >
                           <Mail className="mr-1 h-3 w-3 text-gray-500" />
@@ -326,7 +326,7 @@ export default function TeacherCreateAttendance() {
                         <input
                           type="email"
                           id="teacherEmail-mobile"
-                          className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-sm text-gray-700 leading-tight bg-gray-50 cursor-not-allowed"
+                          className="shadow-sm border border-gray-300 dark:border-zinc-700 rounded-lg w-full py-2 px-3 text-sm text-gray-700 dark:text-zinc-100 leading-tight bg-gray-50 dark:bg-zinc-900 cursor-not-allowed"
                           value={currentUser?.email || ""}
                           disabled
                         />
@@ -334,7 +334,7 @@ export default function TeacherCreateAttendance() {
 
                       <div>
                         <label
-                          className="text-gray-700 text-xs font-bold mb-1 flex items-center"
+                          className="text-gray-700 dark:text-gray-200 text-xs font-bold mb-1 flex items-center"
                           htmlFor="department-mobile"
                         >
                           <Building className="mr-1 h-3 w-3 text-gray-500" />
@@ -343,7 +343,7 @@ export default function TeacherCreateAttendance() {
                         <input
                           type="text"
                           id="department-mobile"
-                          className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
+                          className="shadow-sm border border-gray-300 dark:border-zinc-700 rounded-lg w-full py-2 px-3 text-sm text-gray-700 dark:text-zinc-100 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors dark:bg-zinc-900"
                           value={department}
                           onChange={(e) => setDepartment(e.target.value)}
                           placeholder="Computer Science"
@@ -353,7 +353,7 @@ export default function TeacherCreateAttendance() {
 
                       <div>
                         <label
-                          className="text-gray-700 text-xs font-bold mb-1 flex items-center"
+                          className="text-gray-700 dark:text-gray-200 text-xs font-bold mb-1 flex items-center"
                           htmlFor="date-mobile"
                         >
                           <Calendar className="mr-1 h-3 w-3 text-gray-500" />
@@ -362,7 +362,7 @@ export default function TeacherCreateAttendance() {
                         <input
                           type="text"
                           id="date-mobile"
-                          className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-sm text-gray-700 leading-tight bg-gray-50 cursor-not-allowed"
+                          className="shadow-sm border border-gray-300 dark:border-zinc-700 rounded-lg w-full py-2 px-3 text-sm text-gray-700 dark:text-zinc-100 leading-tight bg-gray-50 dark:bg-zinc-900 cursor-not-allowed"
                           value={new Date().toLocaleDateString()}
                           disabled
                         />
@@ -376,12 +376,12 @@ export default function TeacherCreateAttendance() {
               <div className="block sm:hidden">
                 <button
                   type="button"
-                  className="w-full flex justify-between items-center py-3 px-4 bg-gray-50 rounded-lg text-left"
+                  className="w-full flex justify-between items-center py-3 px-4 bg-gray-50 dark:bg-zinc-900 rounded-lg text-left"
                   onClick={() => toggleSection("attendance")}
                 >
                   <div className="flex items-center">
                     <BookOpen className="mr-2 h-4 w-4 text-primary" />
-                    <span className="font-semibold text-gray-800">
+                    <span className="font-semibold text-gray-800 dark:text-zinc-100">
                       Attendance Information
                     </span>
                   </div>
@@ -394,11 +394,11 @@ export default function TeacherCreateAttendance() {
                 </button>
 
                 {expandedSection === "attendance" && (
-                  <div className="mt-3 p-4 border border-gray-200 rounded-lg">
+                  <div className="mt-3 p-4 border border-gray-200 dark:border-zinc-700 rounded-lg">
                     <div className="space-y-4">
                       <div>
                         <label
-                          className="text-gray-700 text-xs font-bold mb-1 flex items-center"
+                          className="text-gray-700 dark:text-gray-200 text-xs font-bold mb-1 flex items-center"
                           htmlFor="section-mobile"
                         >
                           <Users className="mr-1 h-3 w-3 text-gray-500" />
@@ -407,7 +407,7 @@ export default function TeacherCreateAttendance() {
                         <input
                           type="text"
                           id="section-mobile"
-                          className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
+                          className="shadow-sm border border-gray-300 dark:border-zinc-700 rounded-lg w-full py-2 px-3 text-sm text-gray-700 dark:text-zinc-100 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors dark:bg-zinc-900"
                           value={section}
                           onChange={(e) => setSection(e.target.value)}
                           placeholder="LFAU333A004"
@@ -417,7 +417,7 @@ export default function TeacherCreateAttendance() {
 
                       <div>
                         <label
-                          className="text-gray-700 text-xs font-bold mb-1 flex items-center"
+                          className="text-gray-700 dark:text-gray-200 text-xs font-bold mb-1 flex items-center"
                           htmlFor="course-mobile"
                         >
                           <BookOpen className="mr-1 h-3 w-3 text-gray-500" />
@@ -426,7 +426,7 @@ export default function TeacherCreateAttendance() {
                         <input
                           type="text"
                           id="course-mobile"
-                          className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
+                          className="shadow-sm border border-gray-300 dark:border-zinc-700 rounded-lg w-full py-2 px-3 text-sm text-gray-700 dark:text-zinc-100 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors dark:bg-zinc-900"
                           value={course}
                           onChange={(e) => setCourse(e.target.value)}
                           placeholder="Introduction to Computer Science"
@@ -436,7 +436,7 @@ export default function TeacherCreateAttendance() {
 
                       <div>
                         <label
-                          className="text-gray-700 text-xs font-bold mb-1 flex items-center"
+                          className="text-gray-700 dark:text-gray-200 text-xs font-bold mb-1 flex items-center"
                           htmlFor="room-mobile"
                         >
                           <MapPin className="mr-1 h-3 w-3 text-gray-500" />
@@ -445,7 +445,7 @@ export default function TeacherCreateAttendance() {
                         <input
                           type="text"
                           id="room-mobile"
-                          className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
+                          className="shadow-sm border border-gray-300 dark:border-zinc-700 rounded-lg w-full py-2 px-3 text-sm text-gray-700 dark:text-zinc-100 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors dark:bg-zinc-900"
                           value={room}
                           onChange={(e) => setRoom(e.target.value)}
                           placeholder="B-301"
@@ -455,7 +455,7 @@ export default function TeacherCreateAttendance() {
 
                       <div>
                         <label
-                          className="text-gray-700 text-xs font-bold mb-1 flex items-center"
+                          className="text-gray-700 dark:text-gray-200 text-xs font-bold mb-1 flex items-center"
                           htmlFor="expireHours-mobile"
                         >
                           <Clock className="mr-1 h-3 w-3 text-gray-500" />
@@ -463,7 +463,7 @@ export default function TeacherCreateAttendance() {
                         </label>
                         <select
                           id="expireHours-mobile"
-                          className="shadow-sm border border-gray-300 rounded-lg w-full py-2 px-3 text-sm text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
+                          className="shadow-sm border border-gray-300 dark:border-zinc-700 rounded-lg w-full py-2 px-3 text-sm text-gray-700 dark:text-zinc-100 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors dark:bg-zinc-900"
                           value={expireHours}
                           onChange={(e) => setExpireHours(e.target.value)}
                           required
@@ -484,16 +484,16 @@ export default function TeacherCreateAttendance() {
               <div className="hidden sm:grid sm:grid-cols-2 sm:gap-6">
                 {/* Teacher Information */}
                 <div className="col-span-2">
-                  <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                  <h2 className="text-lg font-semibold text-gray-800 dark:text-zinc-100 mb-4 flex items-center">
                     <User className="mr-2 h-5 w-5 text-primary" />
                     Teacher Information
                   </h2>
-                  <div className="h-0.5 bg-gray-100 mb-4"></div>
+                  <div className="h-0.5 bg-gray-100 dark:bg-zinc-700 mb-4"></div>
                 </div>
 
                 <div className="mb-4">
                   <label
-                    className="text-gray-700 text-sm font-bold mb-2 flex items-center"
+                    className="text-gray-700 dark:text-gray-200 text-sm font-bold mb-2 flex items-center"
                     htmlFor="teacherName"
                   >
                     <User className="mr-2 h-4 w-4 text-gray-500" />
@@ -502,7 +502,7 @@ export default function TeacherCreateAttendance() {
                   <input
                     type="text"
                     id="teacherName"
-                    className="shadow-sm border border-gray-300 rounded-lg w-full py-2.5 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
+                    className="shadow-sm border border-gray-300 dark:border-zinc-700 rounded-lg w-full py-2.5 px-4 text-gray-700 dark:text-zinc-100 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors dark:bg-zinc-900"
                     value={teacherName}
                     onChange={(e) => setTeacherName(e.target.value)}
                     disabled={currentUserData?.name}
@@ -512,7 +512,7 @@ export default function TeacherCreateAttendance() {
 
                 <div className="mb-4">
                   <label
-                    className="text-gray-700 text-sm font-bold mb-2 flex items-center"
+                    className="text-gray-700 dark:text-gray-200 text-sm font-bold mb-2 flex items-center"
                     htmlFor="teacherEmail"
                   >
                     <Mail className="mr-2 h-4 w-4 text-gray-500" />
@@ -521,7 +521,7 @@ export default function TeacherCreateAttendance() {
                   <input
                     type="email"
                     id="teacherEmail"
-                    className="shadow-sm border border-gray-300 rounded-lg w-full py-2.5 px-4 text-gray-700 leading-tight bg-gray-50 cursor-not-allowed"
+                    className="shadow-sm border border-gray-300 dark:border-zinc-700 rounded-lg w-full py-2.5 px-4 text-gray-700 dark:text-zinc-100 leading-tight bg-gray-50 dark:bg-zinc-900 cursor-not-allowed"
                     value={currentUser?.email || ""}
                     disabled
                   />
@@ -529,7 +529,7 @@ export default function TeacherCreateAttendance() {
 
                 <div className="mb-4">
                   <label
-                    className="text-gray-700 text-sm font-bold mb-2 flex items-center"
+                    className="text-gray-700 dark:text-gray-200 text-sm font-bold mb-2 flex items-center"
                     htmlFor="department"
                   >
                     <Building className="mr-2 h-4 w-4 text-gray-500" />
@@ -538,7 +538,7 @@ export default function TeacherCreateAttendance() {
                   <input
                     type="text"
                     id="department"
-                    className="shadow-sm border border-gray-300 rounded-lg w-full py-2.5 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
+                    className="shadow-sm border border-gray-300 dark:border-zinc-700 rounded-lg w-full py-2.5 px-4 text-gray-700 dark:text-zinc-100 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors dark:bg-zinc-900"
                     value={department}
                     onChange={(e) => setDepartment(e.target.value)}
                     placeholder="Computer Science"
@@ -548,7 +548,7 @@ export default function TeacherCreateAttendance() {
 
                 <div className="mb-4">
                   <label
-                    className="text-gray-700 text-sm font-bold mb-2 flex items-center"
+                    className="text-gray-700 dark:text-gray-200 text-sm font-bold mb-2 flex items-center"
                     htmlFor="date"
                   >
                     <Calendar className="mr-2 h-4 w-4 text-gray-500" />
@@ -557,7 +557,7 @@ export default function TeacherCreateAttendance() {
                   <input
                     type="text"
                     id="date"
-                    className="shadow-sm border border-gray-300 rounded-lg w-full py-2.5 px-4 text-gray-700 leading-tight bg-gray-50 cursor-not-allowed"
+                    className="shadow-sm border border-gray-300 dark:border-zinc-700 rounded-lg w-full py-2.5 px-4 text-gray-700 dark:text-zinc-100 leading-tight bg-gray-50 dark:bg-zinc-900 cursor-not-allowed"
                     value={new Date().toLocaleDateString()}
                     disabled
                   />
@@ -565,16 +565,16 @@ export default function TeacherCreateAttendance() {
 
                 {/* Attendance Information */}
                 <div className="col-span-2 mt-6">
-                  <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                  <h2 className="text-lg font-semibold text-gray-800 dark:text-zinc-100 mb-4 flex items-center">
                     <BookOpen className="mr-2 h-5 w-5 text-primary" />
                     Attendance Information
                   </h2>
-                  <div className="h-0.5 bg-gray-100 mb-4"></div>
+                  <div className="h-0.5 bg-gray-100 dark:bg-zinc-700 mb-4"></div>
                 </div>
 
                 <div className="mb-4">
                   <label
-                    className="text-gray-700 text-sm font-bold mb-2 flex items-center"
+                    className="text-gray-700 dark:text-gray-200 text-sm font-bold mb-2 flex items-center"
                     htmlFor="section"
                   >
                     <Users className="mr-2 h-4 w-4 text-gray-500" />
@@ -583,7 +583,7 @@ export default function TeacherCreateAttendance() {
                   <input
                     type="text"
                     id="section"
-                    className="shadow-sm border border-gray-300 rounded-lg w-full py-2.5 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
+                    className="shadow-sm border border-gray-300 dark:border-zinc-700 rounded-lg w-full py-2.5 px-4 text-gray-700 dark:text-zinc-100 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors dark:bg-zinc-900"
                     value={section}
                     onChange={(e) => setSection(e.target.value)}
                     placeholder="LFAU333A004"
@@ -593,7 +593,7 @@ export default function TeacherCreateAttendance() {
 
                 <div className="mb-4">
                   <label
-                    className="text-gray-700 text-sm font-bold mb-2 flex items-center"
+                    className="text-gray-700 dark:text-gray-200 text-sm font-bold mb-2 flex items-center"
                     htmlFor="course"
                   >
                     <BookOpen className="mr-2 h-4 w-4 text-gray-500" />
@@ -602,7 +602,7 @@ export default function TeacherCreateAttendance() {
                   <input
                     type="text"
                     id="course"
-                    className="shadow-sm border border-gray-300 rounded-lg w-full py-2.5 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
+                    className="shadow-sm border border-gray-300 dark:border-zinc-700 rounded-lg w-full py-2.5 px-4 text-gray-700 dark:text-zinc-100 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors dark:bg-zinc-900"
                     value={course}
                     onChange={(e) => setCourse(e.target.value)}
                     placeholder="Introduction to Computer Science"
@@ -612,7 +612,7 @@ export default function TeacherCreateAttendance() {
 
                 <div className="mb-4">
                   <label
-                    className="text-gray-700 text-sm font-bold mb-2 flex items-center"
+                    className="text-gray-700 dark:text-gray-200 text-sm font-bold mb-2 flex items-center"
                     htmlFor="room"
                   >
                     <MapPin className="mr-2 h-4 w-4 text-gray-500" />
@@ -621,7 +621,7 @@ export default function TeacherCreateAttendance() {
                   <input
                     type="text"
                     id="room"
-                    className="shadow-sm border border-gray-300 rounded-lg w-full py-2.5 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
+                    className="shadow-sm border border-gray-300 dark:border-zinc-700 rounded-lg w-full py-2.5 px-4 text-gray-700 dark:text-zinc-100 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors dark:bg-zinc-900"
                     value={room}
                     onChange={(e) => setRoom(e.target.value)}
                     placeholder="B-301"
@@ -631,7 +631,7 @@ export default function TeacherCreateAttendance() {
 
                 <div className="mb-4">
                   <label
-                    className="text-gray-700 text-sm font-bold mb-2 flex items-center"
+                    className="text-gray-700 dark:text-gray-200 text-sm font-bold mb-2 flex items-center"
                     htmlFor="expireHours"
                   >
                     <Clock className="mr-2 h-4 w-4 text-gray-500" />
@@ -639,7 +639,7 @@ export default function TeacherCreateAttendance() {
                   </label>
                   <select
                     id="expireHours"
-                    className="shadow-sm border border-gray-300 rounded-lg w-full py-2.5 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
+                    className="shadow-sm border border-gray-300 dark:border-zinc-700 rounded-lg w-full py-2.5 px-4 text-gray-700 dark:text-zinc-100 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors dark:bg-zinc-900"
                     value={expireHours}
                     onChange={(e) => setExpireHours(e.target.value)}
                     required
@@ -677,17 +677,17 @@ export default function TeacherCreateAttendance() {
           </form>
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
-          <div className="background-primary px-4 sm:px-6 py-3 sm:py-4">
-            <h2 className="text-primary text-base sm:text-lg font-semibold flex items-center">
+        <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-md overflow-hidden">
+          <div className="background-primary dark:bg-gradient-to-r dark:from-indigo-600 dark:to-gray-800 px-4 sm:px-6 py-3 sm:py-4">
+            <h2 className=" dark:text-zinc-100 text-base sm:text-lg font-semibold flex items-center">
               <CheckCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               Attendance Created Successfully!
             </h2>
-            <p className="text-primary-secondary text-xs sm:text-sm">
+            <p className="text-primary-secondary dark:text-zinc-300 text-xs sm:text-sm">
               Students can use the QR code below or connect to hardware for registration
             </p>
             {emailStatus && (
-              <p className="text-primary-secondary text-xs sm:text-sm mt-1">
+              <p className="text-primary-secondary dark:text-zinc-300 text-xs sm:text-sm mt-1">
                 {emailStatus}
               </p>
             )}
@@ -697,14 +697,14 @@ export default function TeacherCreateAttendance() {
             <div className="flex flex-col items-center">
               {/* Student QR Code Section */}
               <div className="w-full max-w-md mb-6 sm:mb-8">
-                <div className="flex flex-col items-center bg-white border border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
+                <div className="flex flex-col items-center bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl p-4 sm:p-6 shadow-sm">
                   <div className="flex items-center mb-3 sm:mb-4 text-primary">
                     <QrCode className="h-4 w-4 sm:h-6 sm:w-6 mr-1.5 sm:mr-2" />
-                    <h3 className="font-semibold text-primary text-sm sm:text-lg">
+                    <h3 className="font-semibold text-primary dark:text-zinc-100 text-sm sm:text-lg">
                       Student QR Code
                     </h3>
                   </div>
-                  <div className="p-2 sm:p-4 bg-white border border-gray-200 rounded-lg mb-3 sm:mb-4 flex items-center justify-center">
+                  <div className="p-2 sm:p-4 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg mb-3 sm:mb-4 flex items-center justify-center">
                     {qrCodeValue && (
                       <QRCode
                         value={qrCodeValue}
@@ -719,48 +719,26 @@ export default function TeacherCreateAttendance() {
                       />
                     )}
                   </div>
-                  {/* <p className="text-xs sm:text-sm text-gray-600 text-center">
-                    Students can scan this QR code to mark their attendance
-                  </p>
-                  <div className="mt-3 sm:mt-4 w-full">
-                    <a
-                      href={qrCodeValue}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs sm:text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
-                    >
-                      <ExternalLink className="mr-1.5 h-3 w-3 sm:h-4 sm:w-4" />
-                      Open Attendance Link
-                    </a>
-                  </div> */}
                 </div>
               </div>
 
               {/* Hardware Connection Section */}
               <div className="w-full max-w-md mb-6 sm:mb-8">
-                <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm">
+                <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl p-4 sm:p-6 shadow-sm">
                   <div className="flex items-center mb-3 sm:mb-4 text-primary">
                     <Microchip className="h-4 w-4 sm:h-6 sm:w-6 mr-1.5 sm:mr-2" />
-                    <h3 className="font-semibold text-primary text-sm sm:text-lg">
+                    <h3 className="font-semibold text-primary dark:text-zinc-100 text-sm sm:text-lg">
                       Hardware Connection (RECOMMENDED)
                     </h3>
                   </div>
-                  <p className="text-xs sm:text-sm text-gray-600 text-center mb-4">
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-zinc-300 text-center mb-4">
                     Connect attendance hardware for automated student registration
                   </p>
 
                   <div className="space-y-3">
-                    {/* <button
-                      onClick={handleUSBConnection}
-                      className="w-full inline-flex items-center justify-center px-4 py-2.5 border border-gray-300 text-xs sm:text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
-                    >
-                      <Usb className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                      Connect USB Hardware
-                    </button> */}
-
                     <button
                       onClick={handleWirelessConnection}
-                      className="w-full inline-flex items-center justify-center px-4 py-2.5 border border-gray-300 text-xs sm:text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
+                      className="w-full inline-flex items-center justify-center px-4 py-2.5 border border-gray-300 dark:border-zinc-700 text-xs sm:text-sm font-medium rounded-md text-gray-700 dark:text-zinc-100 bg-white dark:bg-zinc-900 hover:bg-gray-50 dark:hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
                     >
                       <Wifi className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                       Connect Wireless Hardware
@@ -781,8 +759,8 @@ export default function TeacherCreateAttendance() {
 
               {/* Attendance Details Summary */}
               <div className="w-full max-w-2xl">
-                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 sm:p-6">
-                  <h3 className="font-semibold text-gray-800 text-sm sm:text-lg mb-4 flex items-center">
+                <div className="bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl p-4 sm:p-6">
+                  <h3 className="font-semibold text-gray-800 dark:text-zinc-100 text-sm sm:text-lg mb-4 flex items-center">
                     <BookOpen className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                     Attendance Session Details
                   </h3>
@@ -790,47 +768,47 @@ export default function TeacherCreateAttendance() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
                     <div className="flex items-center">
                       <Users className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
-                      <span className="text-gray-600">Section:</span>
-                      <span className="ml-2 font-medium text-gray-800">{attendanceData?.section}</span>
+                      <span className="text-gray-600 dark:text-zinc-300">Section:</span>
+                      <span className="ml-2 font-medium text-gray-800 dark:text-zinc-100">{attendanceData?.section}</span>
                     </div>
 
                     <div className="flex items-center">
                       <BookOpen className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
-                      <span className="text-gray-600">Course:</span>
-                      <span className="ml-2 font-medium text-gray-800">{attendanceData?.course}</span>
+                      <span className="text-gray-600 dark:text-zinc-300">Course:</span>
+                      <span className="ml-2 font-medium text-gray-800 dark:text-zinc-100">{attendanceData?.course}</span>
                     </div>
 
                     <div className="flex items-center">
                       <MapPin className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
-                      <span className="text-gray-600">Room:</span>
-                      <span className="ml-2 font-medium text-gray-800">{attendanceData?.room}</span>
+                      <span className="text-gray-600 dark:text-zinc-300">Room:</span>
+                      <span className="ml-2 font-medium text-gray-800 dark:text-zinc-100">{attendanceData?.room}</span>
                     </div>
 
                     <div className="flex items-center">
                       <User className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
-                      <span className="text-gray-600">Teacher:</span>
-                      <span className="ml-2 font-medium text-gray-800">{attendanceData?.teacherName}</span>
+                      <span className="text-gray-600 dark:text-zinc-300">Teacher:</span>
+                      <span className="ml-2 font-medium text-gray-800 dark:text-zinc-100">{attendanceData?.teacherName}</span>
                     </div>
 
                     <div className="flex items-center">
                       <Calendar className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
-                      <span className="text-gray-600">Date:</span>
-                      <span className="ml-2 font-medium text-gray-800">{attendanceData?.date}</span>
+                      <span className="text-gray-600 dark:text-zinc-300">Date:</span>
+                      <span className="ml-2 font-medium text-gray-800 dark:text-zinc-100">{attendanceData?.date}</span>
                     </div>
 
                     <div className="flex items-center">
                       <Clock className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
-                      <span className="text-gray-600">Expires:</span>
-                      <span className="ml-2 font-medium text-gray-800">
+                      <span className="text-gray-600 dark:text-zinc-300">Expires:</span>
+                      <span className="ml-2 font-medium text-gray-800 dark:text-zinc-100">
                         {attendanceData?.expiresAt && new Date(attendanceData.expiresAt).toLocaleString()}
                       </span>
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-4 border-t border-gray-200">
+                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-zinc-700">
                     <div className="flex items-center justify-between text-xs sm:text-sm">
-                      <span className="text-gray-600">Attendance Code:</span>
-                      <span className="font-mono font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded">
+                      <span className="text-gray-600 dark:text-zinc-300">Attendance Code:</span>
+                      <span className="font-mono font-bold text-purple-600 dark:text-purple-300 bg-purple-50 dark:bg-purple-900 px-2 py-1 rounded">
                         {attendanceData?.attendanceCode}
                       </span>
                     </div>
@@ -851,7 +829,7 @@ export default function TeacherCreateAttendance() {
                     setQrCodeValue("");
                     setEmailStatus("");
                   }}
-                  className="w-full inline-flex items-center justify-center px-4 py-2.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
+                  className="w-full inline-flex items-center justify-center px-4 py-2.5 border border-gray-300 dark:border-zinc-700 text-sm font-medium rounded-md text-gray-700 dark:text-zinc-100 bg-white dark:bg-zinc-900 hover:bg-gray-50 dark:hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
                 >
                   <Plus className="mr-2 h-4 w-4" />
                   Create Another Session

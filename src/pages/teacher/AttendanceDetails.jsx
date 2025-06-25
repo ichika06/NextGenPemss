@@ -386,7 +386,7 @@ export default function AttendanceDetailsPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10 dark:bg-zinc-900 bg-white">
       {/* Back Button */}
       <button
         onClick={() => navigate(`/${currentUserData?.role || "teacher"}/manage-attendance`)}
@@ -410,20 +410,20 @@ export default function AttendanceDetailsPage() {
       ) : session ? (
         <>
           {/* Session Header */}
-          <div className="bg-white rounded-xl shadow-md overflow-hidden mb-6">
-            <div className="background-primary px-4 sm:px-6 py-4">
+          <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-md overflow-hidden mb-6">
+            <div className="background-primary dark:bg-gradient-to-r dark:from-zinc-600 dark:to-gray-800 px-4 sm:px-6 py-4">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                 <div>
-                  <h1 className="text-primary text-xl sm:text-2xl font-bold">{session.course || "Unnamed Course"}</h1>
-                  <p className="text-primary-secondary">Section: {session.section || "N/A"}</p>
+                  <h1 className=" dark:text-zinc-100 text-xl sm:text-2xl font-bold">{session.course || "Unnamed Course"}</h1>
+                  <p className=" dark:text-zinc-300">Section: {session.section || "N/A"}</p>
                 </div>
                 <div className="flex-shrink-0">
                   {isSessionActive(session) ? (
-                    <span className="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                    <span className="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
                       Active
                     </span>
                   ) : (
-                    <span className="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                    <span className="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
                       Expired
                     </span>
                   )}
@@ -436,49 +436,49 @@ export default function AttendanceDetailsPage() {
                 <div className="flex items-center">
                   <Calendar className="h-5 w-5 text-primary mr-2 flex-shrink-0" />
                   <div>
-                    <div className="text-sm text-gray-500">Date</div>
-                    <div className="text-gray-900 truncate">{session.date || "N/A"}</div>
+                    <div className="text-sm text-gray-500 dark:text-zinc-400">Date</div>
+                    <div className="text-gray-900 dark:text-zinc-100 truncate">{session.date || "N/A"}</div>
                   </div>
                 </div>
 
                 <div className="flex items-center">
                   <Building className="h-5 w-5 text-primary mr-2 flex-shrink-0" />
                   <div>
-                    <div className="text-sm text-gray-500">Room</div>
-                    <div className="text-gray-900 truncate">{session.room || "N/A"}</div>
+                    <div className="text-sm text-gray-500 dark:text-zinc-400">Room</div>
+                    <div className="text-gray-900 dark:text-zinc-100 truncate">{session.room || "N/A"}</div>
                   </div>
                 </div>
 
                 <div className="flex items-center">
                   <Clock className="h-5 w-5 text-primary mr-2 flex-shrink-0" />
                   <div>
-                    <div className="text-sm text-gray-500">Created At</div>
-                    <div className="text-gray-900 truncate">{formatDate(session.createdAt)}</div>
+                    <div className="text-sm text-gray-500 dark:text-zinc-400">Created At</div>
+                    <div className="text-gray-900 dark:text-zinc-100 truncate">{formatDate(session.createdAt)}</div>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center border border-yellow-200 bg-yellow-50 px-4 py-3 rounded-lg">
-                <div className="flex items-center bg-yellow-100 rounded-full p-2 mr-3 mb-2 sm:mb-0">
-                  <ClipboardList className="h-5 w-5 text-yellow-700" />
+              <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center border border-yellow-200 dark:border-yellow-900 bg-yellow-50 dark:bg-yellow-950 px-4 py-3 rounded-lg">
+                <div className="flex items-center bg-yellow-100 dark:bg-yellow-900 rounded-full p-2 mr-3 mb-2 sm:mb-0">
+                  <ClipboardList className="h-5 w-5 text-yellow-700 dark:text-yellow-200" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-yellow-800">Attendance Code</div>
-                  <div className="text-lg font-mono font-semibold text-yellow-900">
+                  <div className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Attendance Code</div>
+                  <div className="text-lg font-mono font-semibold text-yellow-900 dark:text-yellow-100">
                     {session.attendanceCode || "N/A"}
                   </div>
                 </div>
               </div>
 
               {/* QR Code Section */}
-              <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center border border-blue-200 bg-blue-50 px-4 py-3 rounded-lg">
-                <div className="flex items-center bg-blue-100 rounded-full p-2 mr-3 mb-2 sm:mb-0">
-                  <QrCode className="h-5 w-5 text-blue-700" />
+              <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950 px-4 py-3 rounded-lg">
+                <div className="flex items-center bg-blue-100 dark:bg-blue-900 rounded-full p-2 mr-3 mb-2 sm:mb-0">
+                  <QrCode className="h-5 w-5 text-blue-700 dark:text-blue-200" />
                 </div>
                 <div className="flex-1">
-                  <div className="text-sm font-medium text-blue-800">Student QR Code</div>
-                  <div className="text-sm text-blue-700 mb-2">Students can scan this code to check in</div>
-                  <div className="bg-white p-2 rounded-lg inline-block">
+                  <div className="text-sm font-medium text-blue-800 dark:text-blue-200">Student QR Code</div>
+                  <div className="text-sm text-blue-700 dark:text-blue-300 mb-2">Students can scan this code to check in</div>
+                  <div className="bg-white dark:bg-zinc-900 p-2 rounded-lg inline-block border border-gray-200 dark:border-zinc-700">
                     <QRCode
                       value={`${window.location.origin}/student-attendance?code=${session.attendanceCode}`}
                       size={120}
@@ -492,50 +492,50 @@ export default function AttendanceDetailsPage() {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div className="bg-white rounded-xl shadow-md p-4">
+            <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-md p-4">
               <div className="flex items-center">
-                <div className="flex-shrink-0 bg-blue-100 rounded-full p-3">
-                  <Users className="h-6 w-6 text-blue-600" />
+                <div className="flex-shrink-0 bg-blue-100 dark:bg-blue-900 rounded-full p-3">
+                  <Users className="h-6 w-6 text-blue-600 dark:text-blue-300" />
                 </div>
                 <div className="ml-4">
-                  <div className="text-sm text-gray-500">Total Students</div>
-                  <div className="text-2xl font-semibold text-gray-900">{stats.totalStudents}</div>
+                  <div className="text-sm text-gray-500 dark:text-zinc-400">Total Students</div>
+                  <div className="text-2xl font-semibold text-gray-900 dark:text-zinc-100">{stats.totalStudents}</div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-md p-4">
+            <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-md p-4">
               <div className="flex items-center">
-                <div className="flex-shrink-0 bg-green-100 rounded-full p-3">
-                  <CheckCircle className="h-6 w-6 text-green-600" />
+                <div className="flex-shrink-0 bg-green-100 dark:bg-green-900 rounded-full p-3">
+                  <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-300" />
                 </div>
                 <div className="ml-4">
-                  <div className="text-sm text-gray-500">On Time</div>
-                  <div className="text-2xl font-semibold text-gray-900">{stats.onTimeStudents}</div>
+                  <div className="text-sm text-gray-500 dark:text-zinc-400">On Time</div>
+                  <div className="text-2xl font-semibold text-gray-900 dark:text-zinc-100">{stats.onTimeStudents}</div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-md p-4">
+            <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-md p-4">
               <div className="flex items-center">
-                <div className="flex-shrink-0 bg-red-100 rounded-full p-3">
-                  <XCircle className="h-6 w-6 text-red-600" />
+                <div className="flex-shrink-0 bg-red-100 dark:bg-red-900 rounded-full p-3">
+                  <XCircle className="h-6 w-6 text-red-600 dark:text-red-200" />
                 </div>
                 <div className="ml-4">
-                  <div className="text-sm text-gray-500">Late</div>
-                  <div className="text-2xl font-semibold text-gray-900">{stats.lateStudents}</div>
+                  <div className="text-sm text-gray-500 dark:text-zinc-400">Late</div>
+                  <div className="text-2xl font-semibold text-gray-900 dark:text-zinc-100">{stats.lateStudents}</div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-md p-4">
+            <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-md p-4">
               <div className="flex items-center">
-                <div className="flex-shrink-0 bg-purple-100 rounded-full p-3">
-                  <Clock className="h-6 w-6 text-purple-600" />
+                <div className="flex-shrink-0 bg-purple-100 dark:bg-purple-900 rounded-full p-3">
+                  <Clock className="h-6 w-6 text-purple-600 dark:text-purple-300" />
                 </div>
                 <div className="ml-4">
-                  <div className="text-sm text-gray-500">Avg. Check-in Time</div>
-                  <div className="text-2xl font-semibold text-gray-900">
+                  <div className="text-sm text-gray-500 dark:text-zinc-400">Avg. Check-in Time</div>
+                  <div className="text-2xl font-semibold text-gray-900 dark:text-zinc-100">
                     {stats.averageCheckInTime !== null ? `+${stats.averageCheckInTime} min` : "N/A"}
                   </div>
                 </div>
@@ -544,11 +544,11 @@ export default function AttendanceDetailsPage() {
           </div>
 
           {/* Attendance List */}
-          <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
-            <div className="background-primary px-4 sm:px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-md overflow-hidden mb-8">
+            <div className="background-primary dark:bg-gradient-to-r dark:from-indigo-600 dark:to-gray-800 px-4 sm:px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div>
-                <h2 className="text-primary text-lg font-semibold">Student Attendance</h2>
-                <p className="text-primary-secondary text-sm">
+                <h2 className="text-gray-800 dark:text-zinc-100 text-lg font-semibold">Student Attendance</h2>
+                <p className="text-gray-700 dark:text-zinc-300 text-sm">
                   {filteredStudents.length} {filteredStudents.length === 1 ? "student" : "students"}
                 </p>
               </div>
@@ -583,14 +583,14 @@ export default function AttendanceDetailsPage() {
             </div>
 
             {/* Search Bar */}
-            <div className="p-4 border-b border-gray-200">
+            <div className="p-4 border-b border-gray-200 dark:border-zinc-700">
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Search className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   type="text"
-                  className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-zinc-900 dark:text-zinc-100"
                   placeholder="Search by name, email, or student ID..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -601,49 +601,49 @@ export default function AttendanceDetailsPage() {
             <div className="overflow-x-auto">
               {filteredStudents.length === 0 ? (
                 <div className="flex flex-col items-center justify-center p-12 text-center">
-                  <Users className="h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-1">No students found</h3>
-                  <p className="text-gray-500 mb-6">
+                  <Users className="h-12 w-12 text-gray-400 dark:text-zinc-600 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-zinc-100 mb-1">No students found</h3>
+                  <p className="text-gray-500 dark:text-zinc-400 mb-6">
                     {searchTerm ? "Try adjusting your search term" : "No students have checked in to this session yet"}
                   </p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-zinc-700">
+                    <thead className="bg-gray-50 dark:bg-zinc-900">
                       <tr>
                         <th
                           scope="col"
-                          className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider"
                         >
                           Student
                         </th>
                         <th
                           scope="col"
-                          className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell"
+                          className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider hidden sm:table-cell"
                         >
                           Check-in Time
                         </th>
                         <th
                           scope="col"
-                          className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider"
                         >
                           Status
                         </th>
                         <th
                           scope="col"
-                          className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider"
                         >
                           Actions
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white dark:bg-zinc-800 divide-y divide-gray-200 dark:divide-zinc-700">
                       {filteredStudents.map((student, index) => (
-                        <tr key={student.studentId || index} className="hover:bg-gray-50">
+                        <tr key={student.studentId || index} className="hover:bg-gray-50 dark:hover:bg-zinc-900">
                           <td className="px-4 sm:px-6 py-4">
                             <div className="flex items-center">
-                              <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                              <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 dark:bg-zinc-700 flex items-center justify-center overflow-hidden">
                                 {student.profileImageUrl ? (
                                   <img
                                     src={student.profileImageUrl || "/placeholder.svg"}
@@ -656,15 +656,15 @@ export default function AttendanceDetailsPage() {
                                     }}
                                   />
                                 ) : (
-                                  <User className="h-5 w-5 text-gray-500" />
+                                  <User className="h-5 w-5 text-gray-500 dark:text-zinc-300" />
                                 )}
                               </div>
                               <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900">{student.name || "N/A"}</div>
-                                <div className="text-sm text-gray-500">{student.email || "No email"}</div>
-                                <div className="text-xs text-gray-500">ID: {student.studentId || "N/A"}</div>
+                                <div className="text-sm font-medium text-gray-900 dark:text-zinc-100">{student.name || "N/A"}</div>
+                                <div className="text-sm text-gray-500 dark:text-zinc-400">{student.email || "No email"}</div>
+                                <div className="text-xs text-gray-500 dark:text-zinc-400">ID: {student.studentId || "N/A"}</div>
                                 {/* Mobile-only check-in time */}
-                                <div className="text-xs text-gray-500 sm:hidden mt-1">
+                                <div className="text-xs text-gray-500 dark:text-zinc-400 sm:hidden mt-1">
                                   {formatDate(student.checkInTime)}
                                   <div>
                                     {student.checkInTime &&
@@ -678,8 +678,8 @@ export default function AttendanceDetailsPage() {
                             </div>
                           </td>
                           <td className="px-4 sm:px-6 py-4 hidden sm:table-cell">
-                            <div className="text-sm text-gray-900">{formatDate(student.checkInTime)}</div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-sm text-gray-900 dark:text-zinc-100">{formatDate(student.checkInTime)}</div>
+                            <div className="text-xs text-gray-500 dark:text-zinc-400">
                               {student.checkInTime &&
                                 session.createdAt &&
                                 `${Math.round(
@@ -689,11 +689,11 @@ export default function AttendanceDetailsPage() {
                           </td>
                           <td className="px-4 sm:px-6 py-4">
                             {getCheckInStatus(student.checkInTime) === "On time" ? (
-                              <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                              <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
                                 On time
                               </span>
                             ) : (
-                              <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                              <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
                                 Late
                               </span>
                             )}
@@ -701,7 +701,7 @@ export default function AttendanceDetailsPage() {
                           <td className="px-4 sm:px-6 py-4 text-right text-sm font-medium">
                             <button
                               onClick={() => handleOpenRemoveModal(student.studentId, student.name)}
-                              className="text-red-600 hover:text-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 rounded-lg px-2 py-1 transition-colors"
+                              className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 rounded-lg px-2 py-1 transition-colors"
                               aria-label="Remove student"
                               title="Remove student"
                             >
@@ -725,12 +725,12 @@ export default function AttendanceDetailsPage() {
           />
         </>
       ) : (
-        <div className="bg-white rounded-xl shadow-md p-8 text-center">
-          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-            <XCircle className="h-6 w-6 text-red-600" />
+        <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-md p-8 text-center">
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 mb-4">
+            <XCircle className="h-6 w-6 text-red-600 dark:text-red-200" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Attendance Session Not Found</h3>
-          <p className="text-gray-500 mb-6">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-zinc-100 mb-2">Attendance Session Not Found</h3>
+          <p className="text-gray-500 dark:text-zinc-400 mb-6">
             The attendance session you are looking for does not exist or you do not have permission to view it.
           </p>
           <button
@@ -756,23 +756,23 @@ export default function AttendanceDetailsPage() {
         <div className="fixed inset-0 z-10 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
             <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+              <div className="absolute inset-0 bg-gray-500 dark:bg-black opacity-75"></div>
             </div>
 
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
               &#8203;
             </span>
 
-            <div className="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full w-full mx-4">
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div className="relative inline-block align-bottom bg-white dark:bg-zinc-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full w-full mx-4">
+              <div className="bg-white dark:bg-zinc-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
-                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                    <UserX className="h-6 w-6 text-red-600" />
+                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
+                    <UserX className="h-6 w-6 text-red-600 dark:text-red-200" />
                   </div>
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">Remove Student</h3>
+                    <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-zinc-100">Remove Student</h3>
                     <div className="mt-2">
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-zinc-400">
                         Are you sure you want to remove{" "}
                         <span className="font-semibold">{removeStudentName || "this student"}</span> from this
                         attendance session? This action cannot be undone.
@@ -781,7 +781,7 @@ export default function AttendanceDetailsPage() {
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+              <div className="bg-gray-50 dark:bg-zinc-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                 <button
                   className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors"
                   onClick={handleRemoveStudent}
@@ -789,7 +789,7 @@ export default function AttendanceDetailsPage() {
                   <span>Remove</span>
                 </button>
                 <button
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-zinc-700 shadow-sm px-4 py-2 bg-white dark:bg-zinc-800 text-base font-medium text-gray-700 dark:text-zinc-100 hover:bg-gray-50 dark:hover:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors"
                   onClick={() => setShowRemoveModal(false)}
                 >
                   <span>Cancel</span>

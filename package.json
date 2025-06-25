@@ -72,6 +72,7 @@
     "html2canvas": "^1.4.1",
     "html5-qrcode": "^2.3.8",
     "jspdf": "^3.0.1",
+    "ldrs": "^1.1.7",
     "lightningcss": "^1.29.3",
     "lucide-react": "^0.485.0",
     "react": "^19.0.0",
@@ -98,6 +99,7 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
+    "terser": "^5.43.1",
     "vite": "^6.2.0",
     "wait-on": "^8.0.3"
   }

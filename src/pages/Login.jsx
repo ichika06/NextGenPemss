@@ -1,6 +1,8 @@
 /**
- * Represents the Login component that allows users to log in using email or NFC.
- * @returns JSX element containing the login form and NFC functionality.
+ * Represents the Login Modal component that allows users to log in using email or NFC.
+ * @param {boolean} isOpen - Controls whether the modal is visible
+ * @param {function} onClose - Function to call when closing the modal
+ * @returns JSX element containing the login modal form and NFC functionality.
  */
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -9,9 +11,7 @@ import {
   LogIn,
   Mail,
   Lock,
-  ArrowLeft,
-  ChevronLeft,
-  ChevronRight,
+  X,
   Loader2,
   Smartphone,
 } from "lucide-react";
@@ -20,26 +20,19 @@ import {
   getDocs,
   query,
   where,
-  orderBy,
-  limit,
 } from "firebase/firestore";
 import { db } from "../firebase/config";
 import useFirestoreChecker from "../components/reuseChecker/FirestoreCheckerHook";
 import logo from "../assets/next-gen-pemss-logo.svg";
-import vocalevent from "../assets/vocalevent.jpg";
-import promnight from "../assets/promnight.jpg";
-import musicevent from "../assets/musicevent.jpg";
 
-export default function Login() {
+export default function LoginModal({ isOpen, onClose }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [nfcReading, setNfcReading] = useState(false);
   const [nfcSupported, setNfcSupported] = useState(false);
-  const [currentSlide, setCurrentSlide] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
-  const [publicEvents, setPublicEvents] = useState([]);
   const { login, userRole, currentUser, authReady } = useAuth();
   const navigate = useNavigate();
   const { checkUserByNfcData } = useFirestoreChecker();
@@ -52,86 +45,26 @@ export default function Login() {
     setNfcSupported(!!window.NDEFReader);
   }, []);
 
-  // Fetch public events for the carousel
+  // Close modal on escape key press
   useEffect(() => {
-    const fetchPublicEvents = async () => {
-      try {
-        const eventsQuery = query(
-          collection(db, "events"),
-          where("isPublic", "==", true),
-          orderBy("date", "desc"),
-          // Limit to 5 events for the carousel
-          limit(5)
-        );
-
-        const querySnapshot = await getDocs(eventsQuery);
-        const eventsData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        setPublicEvents(eventsData);
-      } catch (error) {
-        console.error("Error fetching public events for carousel:", error);
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape' && isOpen) {
+        onClose();
       }
     };
 
-    fetchPublicEvents();
-  }, []);
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscapeKey);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    }
 
-  // Generate carousel images from public events or use fallbacks if no events
-  const carouselImages =
-    publicEvents.length > 0
-      ? publicEvents.map((event) => ({
-        src: event.image || vocalevent, // Use event image or fallback
-        alt: event.title || "Event",
-        title: event.title || "Upcoming Event",
-        description: event.description || "Join us for this exciting event",
-      }))
-      : [
-        {
-          src: vocalevent,
-          alt: "Vocal Event",
-          title: "Show your Talent",
-          description:
-            "Participate in our Vocal Event and showcase your skills",
-        },
-        {
-          src: promnight,
-          alt: "Prom Night",
-          title: "Prom Night",
-          description: "Join us for a night of fun and memories",
-        },
-        {
-          src: musicevent,
-          alt: "Music Event",
-          title: "Music Event",
-          description: "Experience the magic of live music performances",
-        },
-      ];
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, onClose]);
 
-  // Carousel navigation functions
-  const nextSlide = () => {
-    setCurrentSlide((prev) =>
-      prev === carouselImages.length - 1 ? 0 : prev + 1
-    );
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) =>
-      prev === 0 ? carouselImages.length - 1 : prev - 1
-    );
-  };
-
-  // Auto-advance carousel
-  useEffect(() => {
-    const interval = setInterval(() => {
-      nextSlide();
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Effect for handling redirection after authentication is complete
   // Effect for handling redirection after authentication is complete
   useEffect(() => {
     // Stop NFC scanning if it's active and we're authenticated
@@ -159,7 +92,9 @@ export default function Login() {
             // Extract the defaultLandingPage from accountSettings
             const defaultLandingPage = settingsData.accountSettings?.defaultLandingPage || "";
 
-            // Navigate to the appropriate route with the default landing page
+            // Close modal and navigate to the appropriate route
+            onClose();
+            
             if (userRole === "admin") {
               navigate(`/admin${defaultLandingPage ? `/${defaultLandingPage}` : ""}`);
             } else if (userRole === "registrar") {
@@ -173,6 +108,7 @@ export default function Login() {
             }
           } else {
             // If no settings found, navigate to default routes
+            onClose();
             if (userRole === "admin") navigate("/admin");
             else if (userRole === "registrar") navigate("/registrar");
             else if (userRole === "teacher") navigate("/teacher");
@@ -183,6 +119,7 @@ export default function Login() {
           console.error("Error fetching user settings:", error);
 
           // In case of error, fallback to default navigation
+          onClose();
           if (userRole === "admin") navigate("/admin");
           else if (userRole === "registrar") navigate("/registrar");
           else if (userRole === "teacher") navigate("/teacher");
@@ -194,7 +131,7 @@ export default function Login() {
       // Execute the settings fetch
       fetchUserSettings();
     }
-  }, [authReady, currentUser, userRole, navigate, nfcReading]);
+  }, [authReady, currentUser, userRole, navigate, nfcReading, onClose]);
 
   // Handle form submission with email/password
   async function handleSubmit(e) {
@@ -496,7 +433,7 @@ export default function Login() {
     });
   };
 
-  // Make sure to clean up NFC when component unmounts
+  // Make sure to clean up NFC when component unmounts or modal closes
   useEffect(() => {
     return () => {
       if (nfcReading || nfcController) {
@@ -505,367 +442,262 @@ export default function Login() {
     };
   }, [nfcReading, nfcController]);
 
+  // Clean up NFC when modal closes
+  useEffect(() => {
+    if (!isOpen && (nfcReading || nfcController)) {
+      stopNfcReading();
+    }
+  }, [isOpen, nfcReading, nfcController]);
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
+  // Don't render if modal is not open
+  if (!isOpen) {
+    return null;
+  }
+
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-br from-blue-50 to-indigo-100 md:gap-0">
-      {/* Back button - visible on mobile */}
-      <div className="md:hidden p-4">
-        <button
-          onClick={() => navigate("/landingPage")}
-          className="flex items-center gap-2 text-primary-dark hover:text-primary transition-colors"
-          style={{ fontFamily: "var(--paragraph-font)" }}
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Home
-        </button>
-      </div>
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      {/* Backdrop */}
+      <div 
+        className="fixed inset-0 backdrop-blur-xs backdrop-grayscale-900 transition-opacity"
+        onClick={onClose}
+      ></div>
 
-      {/* Login Form Section */}
-      <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-4">
-        <div className="bg-white p-6 md:p-8 rounded-lg shadow-xl max-w-md w-full border border-gray-100">
-          {/* Back button - visible on desktop */}
-          <div className="hidden md:block mb-6">
-            <button
-              onClick={() => navigate("/landingPage")}
-              className="flex items-center gap-2 text-primary-dark hover:text-primary transition-colors"
-              style={{ fontFamily: "var(--paragraph-font)" }}
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Home
-            </button>
-          </div>
+      {/* Modal Container */}
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+          {/* Close Button */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
+          >
+            <X className="h-6 w-6" />
+          </button>
 
-          <div className="text-center mb-8">
-            {/* Logo added here */}
-            <div className="flex justify-center mb-4">
-              <img
-                src={logo || "/placeholder.svg"}
-                alt="NextGen-Pemss Logo"
-                className="w-20 h-20"
-              />
-            </div>
-            <h1
-              className="text-3xl font-bold"
-              style={{
-                fontFamily: "var(--header-font)",
-                color: "var(--primary)",
-              }}
-            >
-              NextGen-Pemss
-            </h1>
-            <p
-              className="mt-2"
-              style={{
-                fontFamily: "var(--paragraph-font)",
-                color: "var(--text-secondary)",
-              }}
-            >
-              Sign in to your account
-            </p>
-          </div>
-
-          {/* NFC Login Button */}
-          {nfcSupported && (
-            <div className="mb-6">
-              <button
-                type="button"
-                onClick={nfcReading || nfcStoppingInProgress ? stopNfcReading : startNfcReading}
-                disabled={loading || nfcStoppingInProgress}
-                className={`w-full font-medium py-3 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-300 transition duration-150 ease-in-out flex items-center justify-center gap-2 ${nfcReading || nfcStoppingInProgress
-                    ? "bg-red-500 hover:bg-red-600 text-white"
-                    : "bg-gradient-to-r from-blue-500 to-indigo-600 text-white"
-                  }`}
-                style={{ fontFamily: "var(--paragraph-font)" }}
-              >
-                {nfcReading ? (
-                  <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    Stop NFC Scanning
-                  </>
-                ) : nfcStoppingInProgress ? (
-                  <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    Stopping...
-                  </>
-                ) : (
-                  <>
-                    <Smartphone className="h-5 w-5" />
-                    Login with NFC
-                  </>
-                )}
-              </button>
-              <p
-                className="text-center text-sm mt-2 text-gray-500"
-                style={{ fontFamily: "var(--paragraph-font)" }}
-              >
-                {nfcReading
-                  ? "Waiting for NFC card... Tap to cancel"
-                  : nfcStoppingInProgress
-                    ? "Stopping NFC scanner..."
-                    : "Tap your NFC card to login instantly"}
-              </p>
-            </div>
-          )}
-
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span
-                className="px-2 bg-white text-gray-500"
-                style={{ fontFamily: "var(--paragraph-font)" }}
-              >
-                Or login with email
-              </span>
-            </div>
-          </div>
-
-          {error && (
-            <div
-              className="bg-danger-light border border-danger text-danger px-4 py-3 rounded-md mb-4 flex items-center"
-              style={{ fontFamily: "var(--paragraph-font)" }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 mr-2"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                  clipRule="evenodd"
+          {/* Modal Content */}
+          <div className="p-6">
+            <div className="text-center mb-8">
+              {/* Logo */}
+              <div className="flex justify-center mb-4">
+                <img
+                  src={logo || "/placeholder.svg"}
+                  alt="NextGen-Pemss Logo"
+                  className="w-20 h-20"
                 />
-              </svg>
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label
-                className="block text-sm font-medium mb-2"
+              </div>
+              <h1
+                className="text-3xl font-bold"
                 style={{
-                  fontFamily: "var(--paragraph-font)",
-                  color: "var(--text-primary)",
+                  fontFamily: "var(--header-font)",
+                  color: "var(--primary)",
                 }}
               >
-                Email
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200"
-                  placeholder="Enter your email"
+                NextGen-Pemss
+              </h1>
+              <p
+                className="mt-2"
+                style={{
+                  fontFamily: "var(--paragraph-font)",
+                  color: "var(--text-secondary)",
+                }}
+              >
+                Sign in to your account
+              </p>
+            </div>
+
+            {/* NFC Login Button */}
+            {nfcSupported && (
+              <div className="mb-6">
+                <button
+                  type="button"
+                  onClick={nfcReading || nfcStoppingInProgress ? stopNfcReading : startNfcReading}
+                  disabled={loading || nfcStoppingInProgress}
+                  className={`w-full font-medium py-3 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-300 transition duration-150 ease-in-out flex items-center justify-center gap-2 ${nfcReading || nfcStoppingInProgress
+                      ? "bg-red-500 hover:bg-red-600 text-white"
+                      : "bg-gradient-to-r from-blue-500 to-indigo-600 text-white"
+                    }`}
                   style={{ fontFamily: "var(--paragraph-font)" }}
-                />
+                >
+                  {nfcReading ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Stop NFC Scanning
+                    </>
+                  ) : nfcStoppingInProgress ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Stopping...
+                    </>
+                  ) : (
+                    <>
+                      <Smartphone className="h-5 w-5" />
+                      Login with NFC
+                    </>
+                  )}
+                </button>
+                <p
+                  className="text-center text-sm mt-2 text-gray-500"
+                  style={{ fontFamily: "var(--paragraph-font)" }}
+                >
+                  {nfcReading
+                    ? "Waiting for NFC card... Tap to cancel"
+                    : nfcStoppingInProgress
+                      ? "Stopping NFC scanner..."
+                      : "Tap your NFC card to login instantly"}
+                </p>
+              </div>
+            )}
+
+            {/* Divider */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span
+                  className="px-2 bg-white text-gray-500"
+                  style={{ fontFamily: "var(--paragraph-font)" }}
+                >
+                  Or login with email
+                </span>
               </div>
             </div>
 
-            <div>
-              <label
-                className="block text-sm font-medium mb-2"
-                style={{
-                  fontFamily: "var(--paragraph-font)",
-                  color: "var(--text-primary)",
-                }}
+            {/* Error Message */}
+            {error && (
+              <div
+                className="bg-danger-light border border-danger text-danger px-4 py-3 rounded-md mb-4 flex items-center"
+                style={{ fontFamily: "var(--paragraph-font)" }}
               >
-                Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200"
-                  placeholder="Enter your password"
-                  style={{ fontFamily: "var(--paragraph-font)" }}
-                />
-                <button
-                  type="button"
-                  onClick={togglePasswordVisibility}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-2"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
                 >
-                  {showPassword ? (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                      <path
-                        fillRule="evenodd"
-                        d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                {error}
+              </div>
+            )}
+
+            {/* Login Form */}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label
+                  className="block text-sm font-medium mb-2"
+                  style={{
+                    fontFamily: "var(--paragraph-font)",
+                    color: "var(--text-primary)",
+                  }}
+                >
+                  Email
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Mail className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="pl-10 w-full px-4 py-2 border text-zinc-900 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200"
+                    placeholder="Enter your email"
+                    style={{ fontFamily: "var(--paragraph-font)" }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label
+                  className="block text-sm font-medium mb-2"
+                  style={{
+                    fontFamily: "var(--paragraph-font)",
+                    color: "var(--text-primary)",
+                  }}
+                >
+                  Password
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Lock className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="pl-10 w-full px-4 py-2 text-zinc-900 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200"
+                    placeholder="Enter your password"
+                    style={{ fontFamily: "var(--paragraph-font)" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    {showPassword ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                        <path
+                          fillRule="evenodd"
+                          d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z"
+                          clipRule="evenodd"
+                        />
+                        <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <button
+                  type="submit"
+                  disabled={loading || nfcStoppingInProgress}
+                  className="w-full btn-primary hover:bg-primary-dark text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-light transition duration-150 ease-in-out flex items-center justify-center gap-2"
+                  style={{ fontFamily: "var(--paragraph-font)" }}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Signing in...
+                    </>
                   ) : (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z"
-                        clipRule="evenodd"
-                      />
-                      <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
-                    </svg>
+                    <>
+                      <LogIn className="h-5 w-5" />
+                      Sign In
+                    </>
                   )}
                 </button>
               </div>
-            </div>
-
-            {/* <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-                />
-                <label
-                  htmlFor="remember-me"
-                  className="ml-2 block text-sm"
-                  style={{
-                    fontFamily: "var(--paragraph-font)",
-                    color: "var(--text-secondary)",
-                  }}
-                >
-                  Remember me
-                </label>
-              </div>
-              <div className="text-sm">
-                <Link
-                  to="/forgot-password"
-                  className="text-primary hover:text-primary-dark transition-colors"
-                  style={{ fontFamily: "var(--paragraph-font)" }}
-                >
-                  Forgot password?
-                </Link>
-              </div>
-            </div> */}
-
-            <div>
-              <button
-                type="submit"
-                disabled={loading || nfcStoppingInProgress}
-                className="w-full btn-primary hover:bg-primary-dark text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-light transition duration-150 ease-in-out flex items-center justify-center gap-2"
-                style={{ fontFamily: "var(--paragraph-font)" }}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    Signing in...
-                  </>
-                ) : (
-                  <>
-                    <LogIn className="h-5 w-5" />
-                    Sign In
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      {/* Custom Carousel Section */}
-      <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-0 md:pl-0 bg-indigo-50 rounded-lg md:rounded-none">
-        <div className="w-full max-w-2xl relative">
-          {/* Carousel container */}
-          <div className="relative overflow-hidden rounded-lg shadow-lg h-[400px] sm:h-[500px]">
-            {/* Carousel slides */}
-            {carouselImages.map((image, index) => (
-              <div
-                key={index}
-                className={`absolute top-0 left-0 w-full h-full transition-all duration-500 ease-in-out ${index === currentSlide
-                    ? "opacity-100 z-10 translate-x-0"
-                    : index < currentSlide
-                      ? "opacity-0 z-0 -translate-x-full"
-                      : "opacity-0 z-0 translate-x-full"
-                  }`}
-              >
-                <img
-                  src={image.src || "/placeholder.svg"}
-                  alt={image.alt}
-                  className="w-full h-[300px] sm:h-[400px] object-cover"
-                  onError={(e) => {
-                    e.target.src = "/api/placeholder/800/600";
-                    e.target.onerror = null;
-                  }}
-                />
-                <div className="p-4 bg-white">
-                  <h3
-                    className="text-lg sm:text-xl font-semibold"
-                    style={{
-                      fontFamily: "var(--header-font-second)",
-                      color: "var(--primary-dark)",
-                    }}
-                  >
-                    {image.title}
-                  </h3>
-                  <p
-                    className="text-sm sm:text-base"
-                    style={{
-                      fontFamily: "var(--paragraph-font)",
-                      color: "var(--text-secondary)",
-                    }}
-                  >
-                    {image.description}
-                  </p>
-                </div>
-              </div>
-            ))}
-
-            {/* Carousel navigation buttons */}
-            <button
-              onClick={prevSlide}
-              className="absolute top-1/2 left-2 z-20 bg-white/80 hover:bg-white rounded-full p-1 sm:p-2 transform -translate-y-1/2 focus:outline-none transition-all duration-200 hover:scale-110"
-              aria-label="Previous slide"
-            >
-              <ChevronLeft className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
-            </button>
-            <button
-              onClick={nextSlide}
-              className="absolute top-1/2 right-2 z-20 bg-white/80 hover:bg-white rounded-full p-1 sm:p-2 transform -translate-y-1/2 focus:outline-none transition-all duration-200 hover:scale-110"
-              aria-label="Next slide"
-            >
-              <ChevronRight className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
-            </button>
-
-            {/* Carousel indicators */}
-            <div className="absolute bottom-20 left-0 right-0 z-20 flex justify-center space-x-2">
-              {carouselImages.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentSlide(index)}
-                  className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full focus:outline-none transition-all duration-200 ${index === currentSlide
-                      ? "bg-primary scale-125"
-                      : "bg-gray-300 hover:bg-gray-400"
-                    }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
-            </div>
+            </form>
           </div>
         </div>
       </div>

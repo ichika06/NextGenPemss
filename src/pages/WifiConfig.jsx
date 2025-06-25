@@ -320,36 +320,36 @@ export default function WifiConfig() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
+    <div className="p-4 sm:p-6 lg:p-8 dark:bg-zinc-800">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
           <div className="flex items-center">
-            <div className="bg-indigo-100 p-3 rounded-xl mr-4">
-              <Usb className="w-8 h-8 text-indigo-600" />
+            <div className="bg-indigo-100 dark:bg-zinc-800 p-3 rounded-xl mr-4">
+              <Usb className="w-8 h-8 text-indigo-600 dark:text-indigo-300" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">PEMSS WiFi Configuration</h1>
-              <p className="text-gray-600 mt-1">Serial communication interface for ESP32 devices</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-zinc-200">PEMSS WiFi Configuration</h1>
+              <p className="text-gray-600 dark:text-zinc-400 mt-1">Serial communication interface for ESP32 devices</p>
             </div>
           </div>
         </div>
 
         {/* Browser Warning */}
         {!("serial" in navigator) && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-6">
+          <div className="bg-amber-50 dark:bg-zinc-900 border border-amber-200 dark:border-amber-700 rounded-xl p-6 mb-6">
             <div className="flex items-start gap-4">
-              <div className="bg-amber-100 p-2 rounded-lg">
-                <AlertTriangle className="w-6 h-6 text-amber-600" />
+              <div className="bg-amber-100 dark:bg-amber-900 p-2 rounded-lg">
+                <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-300" />
               </div>
               <div>
-                <h3 className="font-semibold text-amber-800 text-lg">Browser Compatibility Required</h3>
-                <p className="text-amber-700 mt-1">
+                <h3 className="font-semibold text-amber-800 dark:text-amber-200 text-lg">Browser Compatibility Required</h3>
+                <p className="text-amber-700 dark:text-amber-300 mt-1">
                   This interface requires a Chromium-based browser (Chrome, Edge, Opera) with Web Serial API support.
                 </p>
                 <button
                   onClick={() => setShowDriverInstructions(true)}
-                  className="mt-3 inline-flex items-center px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium transition-colors text-sm"
+                  className="mt-3 inline-flex items-center px-4 py-2 bg-amber-600 hover:bg-amber-700 dark:bg-amber-700 dark:hover:bg-amber-800 text-white rounded-lg font-medium transition-colors text-sm"
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Download USB Driver
@@ -361,11 +361,11 @@ export default function WifiConfig() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Connection Panel */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
-              <div className="px-6 py-5 border-b border-gray-200 bg-gray-50">
-                <h2 className="text-lg font-medium text-gray-800 flex items-center">
-                  <Settings className="w-5 h-5 mr-2 text-indigo-600" />
+          <div className="lg:col-span-1 ">
+            <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-700 overflow-hidden mb-6">
+              <div className="px-6 py-5 border-b border-gray-200 bg-gray-50 dark:bg-zinc-800 dark:border-zinc-700">
+                <h2 className="text-lg font-medium text-gray-800 dark:text-zinc-200 flex items-center">
+                  <Settings className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-300" />
                   Connection Settings
                 </h2>
               </div>
@@ -373,9 +373,9 @@ export default function WifiConfig() {
               <div className="p-6 space-y-6">
                 {/* Connection Status */}
                 <div className="space-y-3">
-                  <label className="block text-sm font-medium text-gray-700">Connection Status</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Connection Status</label>
                   <div
-                    className={`inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium ${getStatusColor()}`}
+                    className={`inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium ${getStatusColor()} dark:bg-opacity-80`}
                   >
                     {getStatusIcon()}
                     <span className="ml-2 capitalize">{connectionStatus}</span>
@@ -385,29 +385,29 @@ export default function WifiConfig() {
                 {/* Device Info */}
                 {deviceInfo && (
                   <div className="space-y-3">
-                    <label className="block text-sm font-medium text-gray-700">Device Information</label>
-                    <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Device Information</label>
+                    <div className="bg-gray-50 dark:bg-zinc-900 rounded-lg p-3 space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Device:</span>
-                        <span className="font-medium text-right flex-1 ml-2">{deviceInfo.friendlyName}</span>
+                        <span className="text-gray-600 dark:text-zinc-300">Device:</span>
+                        <span className="font-medium text-right flex-1 ml-2 dark:text-zinc-100">{deviceInfo.friendlyName}</span>
                       </div>
                       {deviceInfo.isSiliconLabs && (
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">Status:</span>
-                          <span className="text-green-600 font-medium">✓ ESP32 Compatible</span>
+                          <span className="text-gray-600 dark:text-zinc-300">Status:</span>
+                          <span className="text-green-600 dark:text-green-400 font-medium">✓ ESP32 Compatible</span>
                         </div>
                       )}
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Vendor ID:</span>
-                        <span className="font-mono">0x{deviceInfo.vendorId?.toString(16).padStart(4, '0')}</span>
+                        <span className="text-gray-600 dark:text-zinc-300">Vendor ID:</span>
+                        <span className="font-mono dark:text-zinc-200">0x{deviceInfo.vendorId?.toString(16).padStart(4, '0')}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Product ID:</span>
-                        <span className="font-mono">0x{deviceInfo.productId?.toString(16).padStart(4, '0')}</span>
+                        <span className="text-gray-600 dark:text-zinc-300">Product ID:</span>
+                        <span className="font-mono dark:text-zinc-200">0x{deviceInfo.productId?.toString(16).padStart(4, '0')}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Baud Rate:</span>
-                        <span className="font-mono">{deviceInfo.baudRate}</span>
+                        <span className="text-gray-600 dark:text-zinc-300">Baud Rate:</span>
+                        <span className="font-mono dark:text-zinc-200">{deviceInfo.baudRate}</span>
                       </div>
                     </div>
                   </div>
@@ -415,12 +415,12 @@ export default function WifiConfig() {
 
                 {/* Baud Rate Selection */}
                 <div className="space-y-3">
-                  <label className="block text-sm font-medium text-gray-700">Baud Rate</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Baud Rate</label>
                   <select
                     value={baudRate}
                     onChange={(e) => setBaudRate(Number(e.target.value))}
                     disabled={isConnected}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-zinc-900 dark:bg-zinc-900 dark:text-zinc-100"
                   >
                     <option value={9600}>9600</option>
                     <option value={115200}>115200</option>
@@ -435,7 +435,7 @@ export default function WifiConfig() {
                   disabled={isConnecting || !("serial" in navigator)}
                   className={`w-full px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${isConnected
                     ? "bg-red-500 hover:bg-red-600 text-white"
-                    : "bg-indigo-600 hover:bg-indigo-700 text-white disabled:bg-gray-400"
+                    : "bg-indigo-600 hover:bg-indigo-700 text-white disabled:bg-gray-400 dark:disabled:bg-zinc-700"
                     }`}
                 >
                   <Power className="w-5 h-5" />
@@ -445,39 +445,39 @@ export default function WifiConfig() {
             </div>
 
             {/* Usage Instructions */}
-            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-6 border border-indigo-100">
+            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-zinc-900 dark:to-zinc-800 rounded-xl p-6 border border-indigo-100 dark:border-zinc-700">
               <div className="flex items-start gap-4">
-                <div className="bg-indigo-100 p-2 rounded-lg">
-                  <FileText className="w-5 h-5 text-indigo-600" />
+                <div className="bg-indigo-100 dark:bg-zinc-800 p-2 rounded-lg">
+                  <FileText className="w-5 h-5 text-indigo-600 dark:text-indigo-300" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-indigo-800 text-lg mb-3">Usage Instructions</h3>
-                  <ul className="space-y-2 text-indigo-700">
+                  <h3 className="font-semibold text-indigo-800 dark:text-indigo-200 text-lg mb-3">Usage Instructions</h3>
+                  <ul className="space-y-2 text-indigo-700 dark:text-indigo-300">
                     <li className="flex items-start">
-                      <span className="w-2 h-2 bg-indigo-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                      <span className="w-2 h-2 bg-indigo-400 dark:bg-indigo-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
                       Click "Connect" to establish serial connection with your PEMSS device
                     </li>
                     <li className="flex items-start">
-                      <span className="w-2 h-2 bg-indigo-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                      <span className="w-2 h-2 bg-indigo-400 dark:bg-indigo-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
                       Use the textarea to enter commands or code snippets
                     </li>
                     <li className="flex items-start">
-                      <span className="w-2 h-2 bg-indigo-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                      <span className="w-2 h-2 bg-indigo-400 dark:bg-indigo-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
                       Press "Send Command" or Ctrl+Enter to transmit data
                     </li>
                     <li className="flex items-start">
-                      <span className="w-2 h-2 bg-indigo-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                      <span className="w-2 h-2 bg-indigo-400 dark:bg-indigo-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
                       Monitor responses in the serial output window
                     </li>
                     <li className="flex items-start">
-                      <span className="w-2 h-2 bg-indigo-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                      <span className="w-2 h-2 bg-indigo-400 dark:bg-indigo-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
                       Use arrow keys (↑/↓) to navigate command history
                     </li>
                   </ul>
                   <div className="mt-4">
                     <button
                       onClick={() => setShowDriverInstructions(true)}
-                      className="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors text-sm"
+                      className="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-800 text-white rounded-lg font-medium transition-colors text-sm"
                     >
                       <Download className="w-4 h-4 mr-2" />
                       Download USB Driver
@@ -491,17 +491,17 @@ export default function WifiConfig() {
           {/* Command Interface */}
           <div className="lg:col-span-2 space-y-6">
             {/* Command Input */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="px-6 py-5 border-b border-gray-200 bg-gray-50">
-                <h2 className="text-lg font-medium text-gray-800 flex items-center">
-                  <Terminal className="w-5 h-5 mr-2 text-indigo-600" />
+            <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-700 overflow-hidden">
+              <div className="px-6 py-5 border-b border-gray-200 bg-gray-50 dark:bg-zinc-800 dark:border-zinc-700">
+                <h2 className="text-lg font-medium text-gray-800 dark:text-zinc-200 flex items-center">
+                  <Terminal className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-300" />
                   Command Interface
                 </h2>
               </div>
 
               <div className="p-6 space-y-4">
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-950">Command Input</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-zinc-200">Command Input</label>
                   <textarea
                     value={command}
                     onChange={(e) => setCommand(e.target.value)}
@@ -514,7 +514,7 @@ Examples:
 
 Press Ctrl+Enter to send
 Use ↑/↓ arrows for command history`}
-                    className="w-full h-32 p-4 border border-gray-300 dark:text-black rounded-lg font-mono text-sm resize-y focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-gray-50"
+                    className="w-full h-32 p-4 border border-gray-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 rounded-lg font-mono text-sm resize-y focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-gray-50"
                   />
                 </div>
 
@@ -522,7 +522,7 @@ Use ↑/↓ arrows for command history`}
                   <button
                     onClick={sendCommand}
                     disabled={!command.trim() || !isConnected}
-                    className="inline-flex items-center px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg font-medium hover:from-green-600 hover:to-emerald-600 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
+                    className="inline-flex items-center px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-lg font-medium disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
                   >
                     <Send className="w-4 h-4 mr-2" />
                     Send Command
@@ -530,14 +530,14 @@ Use ↑/↓ arrows for command history`}
 
                   <button
                     onClick={() => setCommand("")}
-                    className="inline-flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600 transition-all"
+                    className="inline-flex items-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium transition-all"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Clear
                   </button>
 
                   {commandHistory.length > 0 && (
-                    <div className="text-sm text-gray-500 flex items-center">
+                    <div className="text-sm text-gray-500 dark:text-zinc-300 flex items-center">
                       <span>{commandHistory.length} commands in history</span>
                     </div>
                   )}
@@ -546,31 +546,31 @@ Use ↑/↓ arrows for command history`}
             </div>
 
             {/* Response Output */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="px-6 py-5 border-b border-gray-200 bg-gray-50">
+            <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-700 overflow-hidden">
+              <div className="px-6 py-5 border-b border-gray-200 bg-gray-50 dark:bg-zinc-800 dark:border-zinc-700">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <h2 className="text-lg font-medium text-gray-800 flex items-center">
-                    <Wifi className="w-5 h-5 mr-2 text-green-500" />
+                  <h2 className="text-lg font-medium text-gray-800 dark:text-zinc-200 flex items-center">
+                    <Wifi className="w-5 h-5 mr-2 text-green-500 dark:text-green-400" />
                     Serial Output
                   </h2>
                   <div className="flex gap-2">
                     <button
                       onClick={copyResponse}
-                      className="inline-flex items-center px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-all"
+                      className="inline-flex items-center px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm transition-all"
                     >
                       <Copy className="w-3 h-3 mr-1" />
                       Copy
                     </button>
                     <button
                       onClick={saveResponse}
-                      className="inline-flex items-center px-3 py-1.5 bg-purple-500 text-white rounded-lg text-sm hover:bg-purple-600 transition-all"
+                      className="inline-flex items-center px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-sm transition-all"
                     >
                       <Save className="w-3 h-3 mr-1" />
                       Save
                     </button>
                     <button
                       onClick={clearResponse}
-                      className="inline-flex items-center px-3 py-1.5 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-all"
+                      className="inline-flex items-center px-3 py-1.5 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm transition-all"
                     >
                       <Trash2 className="w-3 h-3 mr-1" />
                       Clear
@@ -579,10 +579,10 @@ Use ↑/↓ arrows for command history`}
                 </div>
               </div>
 
-              <div className="bg-gray-900 h-80 overflow-hidden">
+              <div className="bg-zinc-900 dark:bg-zinc-900 h-80 overflow-hidden">
                 <div
                   ref={responseRef}
-                  className="p-4 h-full dark:bg-gray-300 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800"
+                  className="p-4 h-full overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-600 scrollbar-track-zinc-800"
                 >
                   <pre className="text-green-400 font-mono text-sm whitespace-pre-wrap leading-relaxed">{response}</pre>
                 </div>
@@ -594,12 +594,12 @@ Use ↑/↓ arrows for command history`}
         {/* Driver Instructions Modal */}
         {showDriverInstructions && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-white/80 p-4">
-            <div className="bg-white rounded-xl dark:shadow-gray-300 shadow-2xl w-full max-w-lg overflow-hidden dark:bg-gray-200">
-              <div className="flex items-center justify-between px-6 py-5 border-b border-gray-200 bg-gray-50 dark:bg-gray-200">
-                <h2 className="text-xl font-semibold text-gray-800">USB Driver Installation</h2>
+            <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-gray-200 bg-gray-50 dark:bg-zinc-800">
+                <h2 className="text-xl font-semibold text-gray-800 dark:text-zinc-200">USB Driver Installation</h2>
                 <button
                   onClick={() => setShowDriverInstructions(false)}
-                  className="text-gray-500 hover:text-gray-700 transition-colors p-1"
+                  className="text-gray-500 hover:text-gray-700 dark:text-zinc-300 dark:hover:text-zinc-100 transition-colors p-1"
                   aria-label="Close"
                 >
                   <X className="w-5 h-5" />
@@ -608,22 +608,22 @@ Use ↑/↓ arrows for command history`}
 
               <div className="px-6 py-6">
                 <div className="text-center mb-6">
-                  <div className="bg-blue-100 p-4 rounded-full mx-auto mb-4 w-20 h-20 flex items-center justify-center">
-                    <Download className="h-10 w-10 text-blue-600" />
+                  <div className="bg-blue-100 dark:bg-blue-900 p-4 rounded-full mx-auto mb-4 w-20 h-20 flex items-center justify-center">
+                    <Download className="h-10 w-10 text-blue-600 dark:text-blue-300" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Install USB Drivers</h3>
-                  <p className="text-gray-600">Install the required drivers to communicate with your ESP32 device</p>
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-zinc-200 mb-2">Install USB Drivers</h3>
+                  <p className="text-gray-600 dark:text-zinc-300">Install the required drivers to communicate with your ESP32 device</p>
                 </div>
 
                 <div className="space-y-4 mb-6">
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="font-medium text-gray-800 mb-2">Installation Steps:</h4>
-                    <ol className="list-decimal pl-5 text-gray-600 space-y-2 text-sm">
+                  <div className="bg-gray-50 dark:bg-zinc-900 rounded-lg p-4">
+                    <h4 className="font-medium text-gray-800 dark:text-zinc-200 mb-2">Installation Steps:</h4>
+                    <ol className="list-decimal pl-5 text-gray-600 dark:text-zinc-300 space-y-2 text-sm">
                       <li>Download the driver package using the button below</li>
                       <li>
                         Extract the zip file and run{" "}
-                        <code className="bg-gray-200 px-1 rounded">CP210xVCPInstaller_x64.exe</code> (64-bit) or{" "}
-                        <code className="bg-gray-200 px-1 rounded">CP210xVCPInstaller_x86.exe</code> (32-bit)
+                        <code className="bg-gray-200 dark:bg-zinc-700 px-1 rounded">CP210xVCPInstaller_x64.exe</code> (64-bit) or{" "}
+                        <code className="bg-gray-200 dark:bg-zinc-700 px-1 rounded">CP210xVCPInstaller_x86.exe</code> (32-bit)
                       </li>
                       <li>Follow the installation wizard</li>
                       <li>Restart your browser after installation</li>
@@ -645,7 +645,7 @@ Use ↑/↓ arrows for command history`}
                   </a>
                   <button
                     onClick={() => setShowDriverInstructions(false)}
-                    className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
+                    className="px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-900 dark:hover:bg-zinc-700 text-gray-700 dark:text-zinc-200 rounded-lg font-medium transition-colors"
                   >
                     Close
                   </button>

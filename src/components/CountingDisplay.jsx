@@ -1,33 +1,7 @@
-"use client"
-
 import { useState, useEffect, useRef } from "react"
 import { Calendar, BarChart2, X, BellRing } from "lucide-react"
-import { collection, query, where, onSnapshot } from "firebase/firestore" // Changed getDocs to onSnapshot
+import { collection, query, where, onSnapshot } from "firebase/firestore" 
 
-/**
- * A reusable countdown component that displays the time remaining until an event starts
- * with an optional popup calendar showing event details when clicked
- *
- * @param {Object} props
- * @param {string} props.eventId - The unique identifier for the event
- * @param {string} props.eventDate - The event date in YYYY-MM-DD format
- * @param {string} props.eventTime - The event time in format HH:MM or HH:MM AM/PM
- * @param {string} props.className - Optional CSS class name for styling
- * @param {boolean} props.showSeconds - Whether to show seconds in short time formats (default: true)
- * @param {string} props.startedText - Text to show when event has started (default: "Event has started")
- * @param {string} props.errorText - Text to show when date/time is invalid (default: "Date or time not set")
- * @param {boolean} props.isPublic - Whether the event is public (default: true)
- * @param {boolean} props.isLive - Whether the event is live (default: true)
- * @param {number} props.eventDurationHours - Duration of event in hours (default: 24)
- * @param {string} props.unavailableText - Text to show when event is unavailable (default: "This event is not available")
- * @param {string} props.expiredText - Alternative text for when event is unavailable (deprecated, use unavailableText)
- * @param {string} props.eventTitle - Title of the event (default: "Event")
- * @param {Object} props.eventAnalytics - Analytics data for the event (default: {})
- * @param {boolean} props.detailsOnClick - Whether to show details popup when clicked (default: true)
- * @param {Object} props.db - Firestore database instance
- * @param {number} props.totalCapacity - Total capacity of the event (default: 100)
- * @returns {JSX.Element}
- */
 const CountdownDisplay = ({
   eventId,
   eventDate,
@@ -38,9 +12,9 @@ const CountdownDisplay = ({
   errorText = "Date or time not set",
   isPublic = true,
   isLive = true,
-  eventDurationHours = 24,
+  eventDurationHours = 24, // This prop is now ignored, but kept for backward compatibility
   unavailableText = "This event is not available",
-  expiredText, // For backward compatibility
+  expiredText,
   eventTitle = "Event",
   eventAnalytics = {
     registrations: 0,
@@ -307,9 +281,8 @@ const CountdownDisplay = ({
     const eventStartDateTime = new Date(year, month - 1, day, hours, minutes)
     setEventStartDate(eventStartDateTime)
 
-    // Calculate event end time (default: 24 hours after start)
-    const eventEndDateTime = new Date(eventStartDateTime)
-    eventEndDateTime.setHours(eventEndDateTime.getHours() + eventDurationHours)
+    // MODIFIED: Calculate event end time as 11:59 PM of the same day
+    const eventEndDateTime = new Date(year, month - 1, day, 23, 59, 59, 999)
 
     // Function to update the countdown
     const updateCountdown = () => {
@@ -388,7 +361,7 @@ const CountdownDisplay = ({
     errorText,
     isPublic,
     isLive,
-    eventDurationHours,
+    eventDurationHours, // Still included for backward compatibility
     finalUnavailableText,
     eventStatus,
   ])

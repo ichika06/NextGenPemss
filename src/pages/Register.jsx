@@ -24,6 +24,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import Default_profile from '../assets/Default_Profile.jpg';
+import { Grid } from "ldrs/react";
+import 'ldrs/react/Grid.css';
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -184,7 +186,7 @@ export default function Register() {
         return (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">
+              <label className="block text-gray-700 dark:text-gray-200 text-sm font-medium mb-2">
                 Student ID
               </label>
               <div className="relative">
@@ -202,7 +204,7 @@ export default function Register() {
               </div>
             </div>
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">
+              <label className="block text-gray-700 dark:text-gray-200 text-sm font-medium mb-2">
                 Section
               </label>
               <div className="relative">
@@ -220,7 +222,7 @@ export default function Register() {
               </div>
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-gray-700 text-sm font-medium mb-2">
+              <label className="block text-gray-700 dark:text-gray-200 text-sm font-medium mb-2">
                 Course
               </label>
               <div className="relative">
@@ -243,7 +245,7 @@ export default function Register() {
         return (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">
+              <label className="block text-gray-700 dark:text-gray-200 text-sm font-medium mb-2">
                 Teacher ID
               </label>
               <div className="relative">
@@ -261,7 +263,7 @@ export default function Register() {
               </div>
             </div>
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">
+              <label className="block text-gray-700 dark:text-gray-200 text-sm font-medium mb-2">
                 Department
               </label>
               <div className="relative">
@@ -279,7 +281,7 @@ export default function Register() {
               </div>
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-gray-700 text-sm font-medium mb-2">
+              <label className="block text-gray-700 dark:text-gray-200 text-sm font-medium mb-2">
                 Position
               </label>
               <div className="relative">
@@ -302,7 +304,7 @@ export default function Register() {
         return (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">
+              <label className="block text-gray-700 dark:text-gray-200 text-sm font-medium mb-2">
                 Employee ID
               </label>
               <div className="relative">
@@ -320,7 +322,7 @@ export default function Register() {
               </div>
             </div>
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">
+              <label className="block text-gray-700 dark:text-gray-200 text-sm font-medium mb-2">
                 Office
               </label>
               <div className="relative">
@@ -343,7 +345,7 @@ export default function Register() {
         return (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">
+              <label className="block text-gray-700 dark:text-gray-200 text-sm font-medium mb-2">
                 Admin ID
               </label>
               <div className="relative">
@@ -361,7 +363,7 @@ export default function Register() {
               </div>
             </div>
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">
+              <label className="block text-gray-700 dark:text-gray-200 text-sm font-medium mb-2">
                 Access Level
               </label>
               <div className="relative">
@@ -372,7 +374,7 @@ export default function Register() {
                   value={accessLevel}
                   onChange={(e) => setAccessLevel(e.target.value)}
                   required
-                  className="pl-10 w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="pl-10 w-full px-4 py-3 border border-gray-300 dark:bg-zinc-800 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="standard">Standard</option>
                   <option value="elevated">Elevated</option>
@@ -393,8 +395,8 @@ export default function Register() {
       case "nfc-setup":
         return (
           <div className="max-w-md mx-auto">
-            <h2 className="text-2xl font-semibold text-center mb-4">NFC Setup</h2>
-            <p className="text-gray-600 mb-6 text-center">
+            <h2 className="text-2xl font-semibold text-center mb-4 dark:text-zinc-100">NFC Setup</h2>
+            <p className="text-gray-600 dark:text-zinc-300 mb-6 text-center">
               Please complete NFC setup for the new user
             </p>
             <NFCWriter
@@ -408,21 +410,21 @@ export default function Register() {
         return (
           <div className="max-w-md mx-auto text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mx-auto mb-4"></div>
-            <h2 className="text-xl font-semibold mb-2">Creating Account</h2>
-            <p className="text-gray-600">{emailStatus || "Processing registration..."}</p>
+            <h2 className="text-xl font-semibold mb-2 dark:text-zinc-100">Creating Account</h2>
+            <p className="text-gray-600 dark:text-zinc-300">{emailStatus || "Processing registration..."}</p>
           </div>
         );
       case "complete":
         return (
           <div className="max-w-md mx-auto text-center py-12">
-            <div className="bg-green-100 rounded-full p-4 inline-block mb-4">
-              <UserCheck className="h-12 w-12 text-green-600" />
+            <div className="bg-green-100 dark:bg-green-900 rounded-full p-4 inline-block mb-4">
+              <UserCheck className="h-12 w-12 text-green-600 dark:text-green-200" />
             </div>
-            <h2 className="text-xl font-semibold mb-2">Registration Complete!</h2>
-            <p className="text-gray-600 mb-4">
+            <h2 className="text-xl font-semibold mb-2 dark:text-zinc-100">Registration Complete!</h2>
+            <p className="text-gray-600 dark:text-zinc-300 mb-4">
               User account successfully created. An email has been sent with login instructions.
             </p>
-            <p className="text-gray-500">
+            <p className="text-gray-500 dark:text-zinc-400">
               Preparing NFC setup...
             </p>
           </div>
@@ -430,24 +432,24 @@ export default function Register() {
       case "form":
       default:
         return (
-          <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
+          <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-zinc-800 rounded-lg shadow-md">
             <div className="flex items-center justify-center mb-6">
               <UserPlus className="h-8 w-8 text-indigo-600 mr-2" />
-              <h1 className="text-2xl font-bold text-gray-800">Register New User</h1>
+              <h1 className="text-2xl font-bold text-gray-800 dark:text-zinc-100">Register New User</h1>
             </div>
 
             {error && (
-              <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700">
+              <div className="mb-6 p-4 bg-red-50 dark:bg-red-900 border-l-4 border-red-500 dark:border-red-700 text-red-700 dark:text-red-200">
                 <p>{error}</p>
               </div>
             )}
 
             <form onSubmit={handleSubmit}>
               <div className="mb-6">
-                <h2 className="text-lg font-semibold text-gray-700 mb-4">Basic Information</h2>
+                <h2 className="text-lg font-semibold text-gray-700 dark:text-zinc-200 mb-4">Basic Information</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-gray-700 text-sm font-medium mb-2">
+                    <label className="block text-gray-700 dark:text-zinc-200 text-sm font-medium mb-2">
                       Full Name
                     </label>
                     <div className="relative">
@@ -459,13 +461,13 @@ export default function Register() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         required
-                        className="pl-10 w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="pl-10 w-full px-4 py-3 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-900 dark:text-zinc-100"
                         placeholder="Enter full name"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-gray-700 text-sm font-medium mb-2">
+                    <label className="block text-gray-700 dark:text-zinc-200 text-sm font-medium mb-2">
                       Email Address
                     </label>
                     <div className="relative">
@@ -477,7 +479,7 @@ export default function Register() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
-                        className="pl-10 w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="pl-10 w-full px-4 py-3 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-900 dark:text-zinc-100"
                         placeholder="Enter email address"
                       />
                     </div>
@@ -486,58 +488,62 @@ export default function Register() {
               </div>
 
               <div className="mb-6">
-                <h2 className="text-lg font-semibold text-gray-700 mb-4">Account Type</h2>
+                <h2 className="text-lg font-semibold text-gray-700 dark:text-zinc-200 mb-4">Account Type</h2>
                 <div>
-                  <label className="block text-gray-700 text-sm font-medium mb-2">
+                  <label className="block text-gray-700 dark:text-zinc-200 text-sm font-medium mb-2">
                     User Role
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div
-                      className={`border p-3 rounded-md cursor-pointer transition-all ${role === "student"
-                          ? "border-indigo-500 bg-indigo-50"
-                          : "border-gray-300 hover:border-indigo-300"
-                        }`}
+                      className={`border p-3 rounded-md cursor-pointer transition-all ${
+                        role === "student"
+                          ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900"
+                          : "border-gray-300 dark:border-zinc-700 hover:border-indigo-300 dark:hover:border-indigo-500"
+                      }`}
                       onClick={() => setRole("student")}
                     >
                       <div className="flex flex-col items-center">
                         <BookOpen className="h-6 w-6 mb-2 text-indigo-600" />
-                        <span>Student</span>
+                        <span className="dark:text-zinc-100">Student</span>
                       </div>
                     </div>
                     <div
-                      className={`border p-3 rounded-md cursor-pointer transition-all ${role === "teacher"
-                          ? "border-indigo-500 bg-indigo-50"
-                          : "border-gray-300 hover:border-indigo-300"
-                        }`}
+                      className={`border p-3 rounded-md cursor-pointer transition-all ${
+                        role === "teacher"
+                          ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900"
+                          : "border-gray-300 dark:border-zinc-700 hover:border-indigo-300 dark:hover:border-indigo-500"
+                      }`}
                       onClick={() => setRole("teacher")}
                     >
                       <div className="flex flex-col items-center">
                         <Users className="h-6 w-6 mb-2 text-indigo-600" />
-                        <span>Teacher</span>
+                        <span className="dark:text-zinc-100">Teacher</span>
                       </div>
                     </div>
                     <div
-                      className={`border p-3 rounded-md cursor-pointer transition-all ${role === "registrar"
-                          ? "border-indigo-500 bg-indigo-50"
-                          : "border-gray-300 hover:border-indigo-300"
-                        }`}
+                      className={`border p-3 rounded-md cursor-pointer transition-all ${
+                        role === "registrar"
+                          ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900"
+                          : "border-gray-300 dark:border-zinc-700 hover:border-indigo-300 dark:hover:border-indigo-500"
+                      }`}
                       onClick={() => setRole("registrar")}
                     >
                       <div className="flex flex-col items-center">
                         <Briefcase className="h-6 w-6 mb-2 text-indigo-600" />
-                        <span>Registrar</span>
+                        <span className="dark:text-zinc-100">Registrar</span>
                       </div>
                     </div>
                     <div
-                      className={`border p-3 rounded-md cursor-pointer transition-all ${role === "admin"
-                          ? "border-indigo-500 bg-indigo-50"
-                          : "border-gray-300 hover:border-indigo-300"
-                        }`}
+                      className={`border p-3 rounded-md cursor-pointer transition-all ${
+                        role === "admin"
+                          ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900"
+                          : "border-gray-300 dark:border-zinc-700 hover:border-indigo-300 dark:hover:border-indigo-500"
+                      }`}
                       onClick={() => setRole("admin")}
                     >
                       <div className="flex flex-col items-center">
                         <Shield className="h-6 w-6 mb-2 text-indigo-600" />
-                        <span>Admin</span>
+                        <span className="dark:text-zinc-100">Admin</span>
                       </div>
                     </div>
                   </div>
@@ -545,19 +551,19 @@ export default function Register() {
               </div>
 
               <div className="mb-6">
-                <h2 className="text-lg font-semibold text-gray-700 mb-4">
+                <h2 className="text-lg font-semibold text-gray-700 dark:text-zinc-200 mb-4">
                   Role-specific Information
                 </h2>
                 {renderRoleFields()}
               </div>
 
               <div className="mb-6">
-                <h2 className="text-lg font-semibold text-gray-700 mb-4">
+                <h2 className="text-lg font-semibold text-gray-700 dark:text-zinc-200 mb-4">
                   Security & Identity
                 </h2>
                 <div className="grid grid-cols-1 gap-4">
                   <div>
-                    <label className="block text-gray-700 text-sm font-medium mb-2">
+                    <label className="block text-gray-700 dark:text-zinc-200 text-sm font-medium mb-2">
                       Password (Auto-generated)
                     </label>
                     <div className="relative">
@@ -569,12 +575,12 @@ export default function Register() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
-                        className="pl-10 w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="pl-10 w-full px-4 py-3 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-900 dark:text-zinc-100"
                         placeholder="Password"
                         readOnly
                       />
                     </div>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">
                       This password will be emailed to the user
                     </p>
                   </div>
@@ -582,11 +588,11 @@ export default function Register() {
               </div>
 
               <div className="mb-6">
-                <h2 className="text-lg font-semibold text-gray-700 mb-4">
+                <h2 className="text-lg font-semibold text-gray-700 dark:text-zinc-200 mb-4">
                   Profile Image
                 </h2>
                 <div className="flex items-center space-x-4">
-                  <div className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-full flex items-center justify-center overflow-hidden">
+                  <div className="w-24 h-24 border-2 border-dashed border-gray-300 dark:border-zinc-700 rounded-full flex items-center justify-center overflow-hidden">
                     {profileImageURL ? (
                       <img
                         src={profileImageURL}
@@ -598,7 +604,7 @@ export default function Register() {
                     )}
                   </div>
                   <div>
-                    <label htmlFor="profile-image" className="inline-block px-4 py-2 bg-white border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 transition-colors">
+                    <label htmlFor="profile-image" className="inline-block px-4 py-2 bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors">
                       Upload Image
                       <input
                         id="profile-image"
@@ -608,7 +614,7 @@ export default function Register() {
                         className="hidden"
                       />
                     </label>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">
                       Optional. JPG, PNG or GIF, max 5MB.
                     </p>
                   </div>
@@ -619,7 +625,7 @@ export default function Register() {
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-6 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="px-6 py-3 border border-gray-300 dark:border-zinc-700 rounded-md text-gray-700 dark:text-zinc-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
                 >
                   Reset Form
                 </button>
@@ -630,7 +636,11 @@ export default function Register() {
                     }`}
                 >
                   {loading && (
-                    <span className="mr-2 animate-spin">⟳</span>
+                    <Grid
+                    size="30"
+                    speed="1.5"
+                    color="white" 
+                  />
                   )}
                   Create Account
                 </button>
@@ -642,7 +652,7 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-zinc-900 py-12 px-4 sm:px-6 lg:px-8">
       {renderContent()}
     </div>
   );
